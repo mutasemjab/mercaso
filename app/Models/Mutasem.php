@@ -10,7 +10,7 @@ use Laravel\Passport\HasApiTokens;
 
 
 
-class User extends Authenticatable
+class Mutasem extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
