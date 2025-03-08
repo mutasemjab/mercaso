@@ -101,13 +101,7 @@
                     @enderror
                 </div>
 
-                <div class="form-group col-md-6">
-                    <label for="name_fr"> {{ __('messages.name_fr') }}</label>
-                    <input name="name_fr" id="name_fr" class="form-control" value="{{ old('name_fr') }}">
-                    @error('name_fr')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
+
 
                 <div class="form-group col-md-6">
                     <label for="description_en"> {{ __('messages.description_en') }}</label>
@@ -125,13 +119,7 @@
                     @enderror
                 </div>
 
-                <div class="form-group col-md-6">
-                    <label for="description_fr"> {{ __('messages.description_fr') }}</label>
-                    <textarea name="description_fr" id="description_fr" class="form-control" rows="8">{{ old('description_fr') }}</textarea>
-                    @error('description_fr')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
+               
 
                 <div class="form-group col-md-6">
                     <label for="tax"> {{ __('messages.tax') }} %</label>

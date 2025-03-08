@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @section('title')
-{{ __('messages.cities') }}
+{{ __('messages.businessTypes') }}
 @endsection
 
 
@@ -11,9 +11,9 @@
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title card_title_center"> {{ __('messages.cities') }} </h3>
-        <a href="{{ route('cities.create') }}" class="btn btn-sm btn-success"> {{ __('messages.New') }} {{
-            __('messages.cities') }}</a>
+        <h3 class="card-title card_title_center"> {{ __('messages.businessTypes') }} </h3>
+        <a href="{{ route('businessTypes.create') }}" class="btn btn-sm btn-success"> {{ __('messages.New') }} {{
+            __('messages.businessTypes') }}</a>
 
     </div>
     <!-- /.card-header -->
@@ -28,14 +28,14 @@
         <div class="clearfix"></div>
 
         <div id="ajax_responce_serarchDiv" class="col-md-12">
-            @can('city-table')
+            @can('businessType-table')
             @if (@isset($data) && !@empty($data) && count($data) > 0)
             <table id="example2" class="table table-bordered table-hover">
                 <thead class="custom_thead">
 
 
-                    <th>{{ __('messages.Name_en') }}</th>
-                    <th>{{ __('messages.Name_ar') }}</th>
+                    <th>{{ __('messages.Name') }}</th>
+
 
                     <th></th>
                 </thead>
@@ -44,17 +44,15 @@
                     <tr>
 
 
-                        <td>{{ $info->name_en }}</td>
-                        <td>{{ $info->name_ar }}</td>
-
+                        <td>{{ $info->name }}</td>
 
                         <td>
-                            @can('city-edit')
-                            <a href="{{ route('cities.edit', $info->id) }}" class="btn btn-sm  btn-primary">{{
+                            @can('businessType-edit')
+                            <a href="{{ route('businessTypes.edit', $info->id) }}" class="btn btn-sm  btn-primary">{{
                                 __('messages.Edit') }}</a>
                             @endcan
-                            @can('city-delete')
-                            <form action="{{ route('cities.destroy', $info->id) }}" method="POST">
+                            @can('businessType-delete')
+                            <form action="{{ route('businessTypes.destroy', $info->id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.Delete') }}</button>

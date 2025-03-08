@@ -37,9 +37,9 @@ return new class extends Migration
                 'shop_id'=>null,
             ],
             [
-                'name' => "vertex",
-                'username'=>"vertex",
-                'email' => "aseel@gmail.com",
+                'name' => "mercaso",
+                'username'=>"mercaso",
+                'email' => "ali@gmail.com",
                 'password' => bcrypt('123456789'), // password
                 'is_super' => true, // لكل المتاجر
                 'is_super_admin' => false, // هاي عشان يقدر يضيف متاجر فقط للسوبر ادمن تعطى

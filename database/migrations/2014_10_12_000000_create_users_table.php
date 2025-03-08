@@ -26,10 +26,8 @@ return new class extends Migration
             $table->tinyInteger('activate')->default(1); // 1 yes //2 no
             $table->tinyInteger('is_verified')->default(2); // 1 yes //2 no
             $table->timestamp('email_verified_at')->nullable();
-            $table->unsignedBigInteger('country_id')->nullable();
-            $table->foreign('country_id')->references('id')->on('countries')->onDelete('cascade');
-            $table->unsignedBigInteger('representative_id')->nullable();
-            $table->foreign('representative_id')->references('id')->on('representatives')->onDelete('cascade');
+            $table->unsignedBigInteger('business_type_id')->nullable();
+            $table->foreign('business_type_id')->references('id')->on('business_types')->onDelete('cascade');
             $table->rememberToken();
             $table->timestamps();
 

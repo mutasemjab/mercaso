@@ -47,12 +47,12 @@ class User extends Authenticatable
     {
        return $this->hasMany(UserAddress::class);
     }
-    
+
     public function wholeSales()
     {
        return $this->hasMany(WholeSale::class);
     }
-    
+
     public function orders()
     {
        return $this->hasMany(Order::class);
@@ -61,14 +61,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Product::class, 'favourites', 'user_id', 'product_id');
     }
-    public function country()
-    {
-       return $this->belongsTo(Country::class);
-    }
-    public function representative()
-    {
-       return $this->belongsTo(Representative::class);
-    }
+ 
     public function coupons()
     {
         return $this->belongsToMany(Coupon::class, 'coupon_users','user_id', 'coupon_id');

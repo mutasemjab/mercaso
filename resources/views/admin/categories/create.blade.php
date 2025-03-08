@@ -37,15 +37,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label> {{ __('messages.name_fr') }}</label>
-                            <input name="name_fr" id="name_fr" class="form-control" value="{{ old('name_fr') }}">
-                            @error('name_fr')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
+
 
                     <div class="col-md-6">
                         <div class="form-group">
@@ -66,35 +58,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label> {{ __('messages.description_fr') }}</label>
-                            <textarea name="description_fr" id="description_fr" class="form-control" value="{{ old('description_fr') }}" rows="8"></textarea>
-                            @error('description_fr')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label> {{ __('messages.color') }}</label>
-                            <input type="color" name="color" id="color" class="form-control" value="{{ old('color') }}">
-                            @error('color')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label> {{ __('messages.color_picker') }}</label>
-                            <input type="color" name="color_picker" id="color_picker" class="form-control" value="{{ old('color_picker') }}">
-                            @error('color_picker')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
 
                     <div class="form-group col-md-6">
                         <label for="category_id">Parent Category</label>
@@ -110,18 +74,7 @@
                     </div>
 
 
-                    <div class="form-group col-md-6">
-                        <label for="countries">Country</label>
-                        <select class="form-control" name="country_ids[]" id="countries" multiple>
-                            <option value="">Select Country</option>
-                            @foreach($countries as $country)
-                                <option value="{{ $country->id }}">{{ $country->name_ar }}</option>
-                            @endforeach
-                        </select>
-                        @error('country_ids')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+
 
 
                     <div class="col-md-12">

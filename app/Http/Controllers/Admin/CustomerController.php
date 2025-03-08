@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UsersExport;
-use App\Models\Country;
 use App\Models\Delivery;
 use App\Models\Representative;
 use App\Models\Shop;
@@ -34,7 +33,7 @@ class CustomerController extends Controller
 
         return response()->json($addresses);
     }
-    
+
     public function getFee($deliveryId)
     {
         $delivery = Delivery::findOrFail($deliveryId);
@@ -46,19 +45,16 @@ class CustomerController extends Controller
         // Get the logged-in admin's shop_id
         $admin = auth()->user();
         $shop = Shop::where('id', $admin->shop_id)->first();
-        $countryId = $shop->country_id;
 
         // Check if there's a search query
         if ($request->search) {
             $data = User::where('user_type', 1)
-                        ->where('country_id', $countryId)
                         ->where(function ($q) use ($request) {
                             $q->where(\DB::raw('CONCAT_WS(" ", `name`, `email`, `phone`)'), 'like', '%' . $request->search . '%');
                         })
                         ->paginate(PAGINATION_COUNT);
         } else {
             $data = User::where('user_type', 1)
-                        ->where('country_id', $countryId)
                         ->paginate(PAGINATION_COUNT);
         }
 
@@ -86,9 +82,7 @@ class CustomerController extends Controller
     {
         if (auth()->user()->can('customer-edit')) {
             $data = User::where('user_type',1)->findorFail($id);
-            $countries=Country::get();
-            $representatives=Representative::get();
-            return view('admin.customers.edit', compact('data','representatives','countries'));
+            return view('admin.customers.edit', compact('data'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -107,8 +101,6 @@ class CustomerController extends Controller
              $customer->email = $request->get('email');
              $customer->phone = $request->get('phone');
              $customer->can_pay_with_receivable = $request->get('can_pay_with_receivable');
-             $customer->country_id = $request->get('country');
-             $customer->representative_id = $request->get('representative');
 
              if($request->activate){
                 $customer->activate = $request->get('activate');

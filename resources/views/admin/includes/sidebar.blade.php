@@ -37,27 +37,22 @@
                             </a>
                         </li>
                     @endif
-                    @if (
-                        $user->can('country-table') ||
-                            $user->can('country-add') ||
-                            $user->can('country-edit') ||
-                            $user->can('country-delete'))
-                        <li class="nav-item">
-                            <a href="{{ route('countries.index') }}" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p> {{ __('messages.countries') }} </p>
-                            </a>
-                        </li>
-                    @endif
-                    @if ($user->can('city-table') || $user->can('city-add') || $user->can('city-edit') || $user->can('city-delete'))
-                        <li class="nav-item">
-                            <a href="{{ route('cities.index') }}" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p> {{ __('messages.cities') }} </p>
-                            </a>
-                        </li>
-                    @endif
+
                 @else
+
+                @if (
+                    $user->can('businessType-table') ||
+                        $user->can('businessType-add') ||
+                        $user->can('businessType-edit') ||
+                        $user->can('businessType-delete'))
+                    <li class="nav-item">
+                        <a href="{{ route('businessTypes.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p> {{ __('messages.businessTypes') }} </p>
+                        </a>
+                    </li>
+                @endif
+
                     @if (
                         $user->can('customer-table') ||
                             $user->can('customer-add') ||
@@ -108,6 +103,14 @@
                         </li>
                     @endif
 
+                    @if ($user->can('brand-table') || $user->can('brand-add') || $user->can('brand-edit') || $user->can('brand-delete'))
+                        <li class="nav-item">
+                            <a href="{{ route('brands.index') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p> {{ __('messages.brands') }} </p>
+                            </a>
+                        </li>
+                    @endif
                     @if (
                         $user->can('product-table') ||
                             $user->can('product-add') ||
@@ -175,18 +178,7 @@
                         </li>
                     @endif
 
-                    @if (
-                        $user->can('representative-table') ||
-                            $user->can('representative-add') ||
-                            $user->can('representative-edit') ||
-                            $user->can('representative-delete'))
-                        <li class="nav-item">
-                            <a href="{{ route('representatives.index') }}" class="nav-link">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p> {{ __('messages.representatives') }} </p>
-                            </a>
-                        </li>
-                    @endif
+                 
 
 
 

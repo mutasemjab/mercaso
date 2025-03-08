@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\BusinessTypeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -166,6 +168,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::resource('representatives', RepresentativeController::class);
         Route::resource('orders', OrderController::class);
         Route::resource('deliveries', DeliveryController::class);
+        Route::resource('businessTypes', BusinessTypeController::class);
+        Route::resource('brands', BrandController::class);
     });
 });
 

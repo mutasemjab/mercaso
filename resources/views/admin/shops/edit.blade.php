@@ -77,31 +77,17 @@
                         @enderror
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="country">{{ __('messages.country') }}</label>
-                        <select class="form-control" name="country" id="country_id">
-                            <option value="">Select country</option>
-                            @foreach($countries as $country)
-                                <option value="{{ $country->id }}" @if($data->country_id == $country->id) selected @endif>{{ $country->name_ar }}</option>
-                            @endforeach
-                            <option value="0" @if($data->country_id === null) selected @endif>No country</option>
-                        </select>
-                        @error('country')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
-                
+
+
 
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="active">{{ __('messages.Activate') }}</label>
-                        <select name="active" id="active" class="form-control">
-                            <option @if ($data->active == 1) selected="selected" @endif value="1">Active</option>
-                            <option @if ($data->active == 2) selected="selected" @endif value="2">Inactive</option>
+                        <select name="activate" id="activate" class="form-control">
+                            <option @if ($data->activate == 1) selected="selected" @endif value="1">activate</option>
+                            <option @if ($data->activate == 2) selected="selected" @endif value="2">Inactivate</option>
                         </select>
-                        @error('active')
+                        @error('activate')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>

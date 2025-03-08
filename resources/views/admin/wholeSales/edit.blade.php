@@ -64,41 +64,7 @@
                         </div>
                     </div>
 
-                    <!-- Country Selection -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="country">{{ __('messages.countries') }}</label>
-                            <select class="form-control" name="country" id="country">
-                                <option value="">Select countries</option>
-                                @foreach($countries as $country)
-                                    <option value="{{ $country->id }}" {{ $country->id == $data->country_id ? 'selected' : '' }}>
-                                        {{ $country->name_ar }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('country')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
 
-                    <!-- Representative Selection -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="representative">{{ __('messages.representatives') }}</label>
-                            <select class="form-control" name="representative" id="representative">
-                                <option value="">Select representatives</option>
-                                @foreach($representatives as $representative)
-                                    <option value="{{ $representative->id }}" {{ $representative->id == $data->representative_id ? 'selected' : '' }}>
-                                        {{ $representative->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('representative')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
 
                     <!-- Photo Upload -->
                     <div class="col-md-6">
@@ -116,68 +82,6 @@
                         </div>
                     </div>
 
-                    <!-- Wholesale Information -->
-                    @if ($data->wholeSales)
-                        <div class="col-md-6">
-                            <div class="image">
-                                @if ($data->wholeSales->first()->store_license ?? null)
-                                    <img class="custom_img" src="{{ asset('assets/admin/uploads/' . $data->wholeSales->first()->store_license) }}">
-                                @else
-                                    <p>No store license available.</p>
-                                @endif
-                            </div>
-                            <div class="image">
-                                @if ($data->wholeSales->first()->commercial_record ?? null)
-                                    <img class="custom_img" src="{{ asset('assets/admin/uploads/' . $data->wholeSales->first()->commercial_record) }}">
-                                @else
-                                    <p>No commercial record available.</p>
-                                @endif
-                            </div>
-                            <div class="image">
-                                @if ($data->wholeSales->first()->import_license ?? null)
-                                    <img class="custom_img" src="{{ asset('assets/admin/uploads/' . $data->wholeSales->first()->import_license) }}">
-                                @else
-                                    <p>No import license available.</p>
-                                @endif
-                            </div>
-
-                            <div class="form-group">
-                                <label for="company_type">Company Type</label>
-                                <p>{{ $data->wholeSales->first()->company_type ?? 'N/A' }}</p>
-
-                                <label for="other_company_type">Other Company Type</label>
-                                <p>{{ $data->wholeSales->first()->other_company_type ?? 'N/A' }}</p>
-
-                                <label for="tax_number">Tax Number</label>
-                                <p>{{ $data->wholeSales->first()->tax_number ?? 'N/A' }}</p>
-                            </div>
-                        </div>
-                    @else
-                        <div class="col-md-6">
-                            <p>No wholesale information available.</p>
-                        </div>
-                    @endif
-
-                    <!-- Address -->
-                    <div class="col-md-6">
-                        <label for="location">Location:</label>
-                        <p>{{ $data->addresses->first()->address ?? 'N/A' }}</p>
-                    </div>
-
-                    <!-- Payment Option -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>{{ __('messages.can_pay_with_receivable') }}</label>
-                            <select name="can_pay_with_receivable" id="can_pay_with_receivable" class="form-control">
-                                <option value="">Select</option>
-                                <option value="1" {{ $data->can_pay_with_receivable == 1 ? 'selected' : '' }}>Yes</option>
-                                <option value="2" {{ $data->can_pay_with_receivable == 2 ? 'selected' : '' }}>No</option>
-                            </select>
-                            @error('can_pay_with_receivable')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
 
                     <!-- Activation Status -->
                     <div class="col-md-6">

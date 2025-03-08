@@ -61,28 +61,13 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="address">{{ __('messages.address') }}</label>
+                        <label for="address">{{ __('messages.Address') }}</label>
                         <input type="text" name="address" id="address" class="form-control" value="{{ old('address') }}">
                         @error('address')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="country_id">Country</label>
-                        <select class="form-control" name="country" id="country_id">
-                            <option value="">Select country</option>
-                            @foreach($countries as $country)
-                                <option value="{{ $country->id }}">{{ $country->name_ar }}</option>
-                            @endforeach
-                        </select>
-                        @error('country')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
-
 
 
                 <div class="col-md-6">

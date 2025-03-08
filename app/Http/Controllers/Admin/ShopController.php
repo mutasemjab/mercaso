@@ -25,8 +25,7 @@ class ShopController extends Controller
     public function create()
     {
         if (auth()->user()->can('shop-add')) {
-            $countries=Country::get();
-            return view('admin.shops.create',compact('countries'));
+            return view('admin.shops.create');
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -49,7 +48,6 @@ class ShopController extends Controller
             $shop->photo = $request->get('photo');
             $shop->address = $request->get('address');
             $shop->activate = $request->get('activate');
-            $shop->country_id = $request->get('country');
             if ($request->has('photo')) {
                 $the_file_path = uploadImage('assets/admin/uploads', $request->photo);
                 $shop->photo = $the_file_path;
@@ -79,8 +77,8 @@ class ShopController extends Controller
     {
         if (auth()->user()->can('shop-edit')) {
             $data = Shop::findorFail($id);
-            $countries=Country::get();
-            return view('admin.shops.edit', compact('data','countries',));
+
+            return view('admin.shops.edit', compact('data',));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -104,7 +102,7 @@ class ShopController extends Controller
             if ($request->activate) {
                 $shop->activate = $request->get('activate');
             }
-            $shop->country_id = $request->get('country');
+
             if ($request->has('photo')) {
                 $the_file_path = uploadImage('assets/admin/uploads', $request->photo);
                 $shop->photo = $the_file_path;
@@ -141,9 +139,6 @@ class ShopController extends Controller
     {
         try {
             $shop = Shop::findOrFail($id);
-
-
-
             // Delete the category
             if ($shop->delete()) {
                 return redirect()->back()->with(['success' => 'shop deleted successfully']);

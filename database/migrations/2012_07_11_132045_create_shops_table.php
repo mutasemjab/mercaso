@@ -24,19 +24,16 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->string('address');
             $table->tinyInteger('activate')->default(1); // 1 yes // 2 no
-            $table->unsignedBigInteger('country_id')->nullable();
-            $table->foreign('country_id')->references('id')->on('countries')->onDelete('cascade');
             $table->timestamps();
         });
         DB::table('shops')->insert([
             [
-                'name' => "vertex",
-                'name_of_manager' => "Aseel",
-                'email' => "aseel@gmail.com",
+                'name' => "mercaso",
+                'name_of_manager' => "Ali",
+                'email' => "Ali@gmail.com",
                 'password' => bcrypt('123456789'), // password,
                 'phone' => "0795970357",
                 'address' => "shmesani",
-                'country_id' => 1,
             ],
         ]);
     }

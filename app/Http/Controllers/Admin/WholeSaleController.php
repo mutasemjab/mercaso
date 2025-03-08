@@ -7,8 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Exports\UsersExport;
-use App\Models\Country;
-use App\Models\Representative;
+
 use App\Models\Shop;
 use App\Models\WholeSale;
 use Illuminate\Support\Facades\Log;
@@ -53,19 +52,17 @@ class WholeSaleController extends Controller
         // Get the logged-in admin's shop_id
         $admin = auth()->user();
         $shop = Shop::where('id', $admin->shop_id)->first();
-        $countryId = $shop->country_id;
+
 
         // Check if there's a search query
         if ($request->search) {
             $data = User::where('user_type', 2)
-                        ->where('country_id', $countryId)
                         ->where(function ($q) use ($request) {
                             $q->where(\DB::raw('CONCAT_WS(" ", `name`, `email`, `phone`)'), 'like', '%' . $request->search . '%');
                         })
                         ->paginate(PAGINATION_COUNT);
         } else {
             $data = User::where('user_type', 2)
-                        ->where('country_id', $countryId)
                         ->paginate(PAGINATION_COUNT);
         }
 
@@ -91,9 +88,7 @@ class WholeSaleController extends Controller
     {
         if (auth()->user()->can('wholeSale-edit')) {
             $data = User::where('user_type', 2)->findorFail($id);
-            $countries=Country::get();
-            $representatives=Representative::get();
-            return view('admin.wholeSales.edit', compact('data','representatives','countries'));
+            return view('admin.wholeSales.edit', compact('data'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -112,8 +107,7 @@ class WholeSaleController extends Controller
             $customer->email = $request->get('email');
             $customer->phone = $request->get('phone');
             $customer->can_pay_with_receivable = $request->get('can_pay_with_receivable');
-            $customer->country_id = $request->get('country');
-            $customer->representative_id = $request->get('representative');
+
 
             if ($request->activate) {
                 $customer->activate = $request->get('activate');
@@ -124,28 +118,6 @@ class WholeSaleController extends Controller
             }
 
             if ($customer->save()) {
-
-                // Save Whole sale data
-                $wholeSale = new WholeSale();
-                if ($request->has('store_license')) {
-                    $the_file_path = uploadImage('assets/admin/uploads', $request->store_license);
-                    $wholeSale->store_license = $the_file_path;
-                }
-                if ($request->has('commercial_record')) {
-                    $the_file_path = uploadImage('assets/admin/uploads', $request->commercial_record);
-                    $wholeSale->commercial_record = $the_file_path;
-                }
-                $wholeSale->tax_number = $request->get('tax_number');
-
-
-                if ($request->has('import_license')) {
-                    $the_file_path = uploadImage('assets/admin/uploads', $request->import_license);
-                    $wholeSale->import_license = $the_file_path;
-                }
-                $wholeSale->company_type = $request->get('company_type');
-                $wholeSale->other_company_type = $request->get('other_company_type');
-                $wholeSale->user_id = $customer->id;
-
                 return redirect()->route('admin.wholeSale.index')->with(['success' => 'WholeSale update']);
             } else {
                 return redirect()->back()->with(['error' => 'Something wrong']);

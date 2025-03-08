@@ -1,48 +1,38 @@
 @extends('layouts.admin')
 @section('title')
-    {{ __('messages.units') }}
+    {{ __('messages.businessTypes') }}
 @endsection
 
 
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title card_title_center"> {{ __('messages.Add_New') }} {{ __('messages.units') }} </h3>
+            <h3 class="card-title card_title_center"> {{ __('messages.Add_New') }} {{ __('messages.businessTypes') }} </h3>
         </div>
         <!-- /.card-header -->
         <div class="card-body">
 
 
-            <form action="{{ route('units.store') }}" method="post" enctype='multipart/form-data'>
+            <form action="{{ route('businessTypes.store') }}" method="post" enctype='multipart/form-data'>
                 <div class="row">
                     @csrf
 
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label> {{ __('messages.Name_en') }}</label>
-                            <input name="name_en" id="name_en" class="form-control" value="{{ old('name_en') }}">
-                            @error('name_en')
+                            <label> {{ __('messages.Name') }}</label>
+                            <input name="name" id="name" class="form-control" value="{{ old('name') }}">
+                            @error('name')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label> {{ __('messages.Name_ar') }}</label>
-                            <input name="name_ar" id="name_ar" class="form-control" value="{{ old('name_ar') }}">
-                            @error('name_ar')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
 
-                  
 
                     <div class="col-md-12">
                         <div class="form-group text-center">
                             <button id="do_add_item_cardd" type="submit" class="btn btn-primary btn-sm"> {{__('messages.Submit')}}</button>
-                            <a href="{{ route('units.index') }}" class="btn btn-sm btn-danger">{{__('messages.Cancel')}}</a>
+                            <a href="{{ route('businessTypes.index') }}" class="btn btn-sm btn-danger">{{__('messages.Cancel')}}</a>
 
                         </div>
                     </div>

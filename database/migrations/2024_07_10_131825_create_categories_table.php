@@ -17,16 +17,12 @@ return new class extends Migration
             $table->id();
             $table->string('name_en');
             $table->string('name_ar');
-            $table->string('name_fr');
             $table->text('description_en')->nullable();
             $table->text('description_ar')->nullable();
-            $table->text('description_fr')->nullable();
             $table->string('photo');
-            $table->string('color');
-            $table->string('color_picker');
             $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
-           
+
             $table->timestamps();
         });
     }

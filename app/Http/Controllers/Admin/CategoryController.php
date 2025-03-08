@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use App\Models\Country;
+
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -22,8 +22,8 @@ class CategoryController extends Controller
     {
         if (auth()->user()->can('category-add')) {
             $categories= Category::get();
-            $countries= Country::get();
-            return view('admin.categories.create',compact('countries','categories'));
+
+            return view('admin.categories.create',compact('categories'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -40,12 +40,8 @@ class CategoryController extends Controller
 
             $category->name_en = $request->get('name_en');
             $category->name_ar = $request->get('name_ar');
-            $category->name_fr = $request->get('name_fr');
             $category->description_en = $request->get('description_en');
             $category->description_ar = $request->get('description_ar');
-            $category->description_fr = $request->get('description_fr');
-            $category->color = $request->get('color');
-            $category->color_picker = $request->get('color_picker');
 
 
             $parentCategoryID = $request->input('category_id');
@@ -65,8 +61,7 @@ class CategoryController extends Controller
             }
 
             if ($category->save()) {
-                $countryIds = $request->get('country_ids', []);
-                $category->countries()->sync($countryIds);
+
 
                 return redirect()->route('categories.index')->with(['success' => 'Category created']);
             } else {
@@ -83,9 +78,8 @@ class CategoryController extends Controller
     {
         if (auth()->user()->can('category-edit')) {
             $data = Category::findorFail($id);
-            $countries= Country::get();
             $categories= Category::get();
-            return view('admin.categories.edit', compact('data','countries','categories'));
+            return view('admin.categories.edit', compact('data','categories'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -99,12 +93,9 @@ class CategoryController extends Controller
 
             $category->name_en = $request->get('name_en');
             $category->name_ar = $request->get('name_ar');
-            $category->name_fr = $request->get('name_fr');
             $category->description_en = $request->get('description_en');
             $category->description_ar = $request->get('description_ar');
-            $category->description_fr = $request->get('description_fr');
-            $category->color = $request->get('color');
-            $category->color_picker = $request->get('color_picker');
+
 
 
             $parentCategoryID = $request->input('category_id');
@@ -127,8 +118,6 @@ class CategoryController extends Controller
                 $category->photo = $the_file_path;
             }
             if ($category->save()) {
-                $countryIds = $request->input('country_ids', []);
-                $category->countries()->sync($countryIds);
                 return redirect()->route('categories.index')->with(['success' => 'Category update']);
             } else {
                 return redirect()->back()->with(['error' => 'Something wrong']);
@@ -144,9 +133,6 @@ class CategoryController extends Controller
     {
         try {
             $category = Category::findOrFail($id);
-
-            // Detach all countries associated with this category
-            $category->countries()->detach();
 
             // Delete the category
             if ($category->delete()) {
