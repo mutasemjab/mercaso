@@ -44,7 +44,7 @@
                     @foreach ($data as $info)
                     <tr>
 
-                        <td>{{ $info->with_each_other }}</td>
+                        <td>{{ $info->with_each_other == 1 ? 'yes' : 'No' }}</td>
                         <td>{{ $info->category->name_en }}</td>
 
                         <td>

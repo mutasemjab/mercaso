@@ -146,7 +146,7 @@ class ProductController extends Controller
     public function create()
     {
         if (auth()->user()->can('product-add')) {
-            $categories = Category::where('category_id','!=',null)->get();
+            $categories = Category::get();
             $units = Unit::get();
             return view('admin.products.create', compact('categories', 'units'));
         } else {
@@ -271,7 +271,7 @@ class ProductController extends Controller
     {
         if (auth()->user()->can('product-edit')) {
             $data = Product::findOrFail($id); // Retrieve the category by ID
-            $categories = Category::where('category_id','!=',null)->get();
+            $categories = Category::get();
             $units = Unit::all();
             return view('admin.products.edit', ['units' => $units, 'categories' => $categories, 'data' => $data]);
         } else {
