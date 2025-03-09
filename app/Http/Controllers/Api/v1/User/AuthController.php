@@ -26,21 +26,21 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
-            'country' => 'required|exists:countries,id',
+            'business_type' => 'required|exists:business_types,id',
             'phone' => 'nullable|unique:users,phone',
             'user_type' => 'required|integer',
             // Add other necessary validation rules for wholesale fields
         ], [
             'name.required' => 'The name field is required.',
             'password.required' => 'The password field is required.',
-            'country.required' => 'The country field is required.',
+            'business_type.required' => 'The business type field is required.',
             'phone.unique' => 'The phone has already been taken for the selected user type.',
             'email.unique' => 'The email has already been taken for the selected user type.',
             'user_type.required' => 'The user type field is required.',
             'user_type.integer' => 'The user type must be an integer.',
             // Add other necessary validation messages for wholesale fields
         ]);
-    
+
         DB::beginTransaction();
         try {
             $user = new User();
@@ -48,51 +48,19 @@ class AuthController extends Controller
             $user->phone = $request->get('phone');
             $user->user_type = $request->get('user_type');
             $user->email = $request->get('email');
-            $user->country_id = $request->get('country');
+            $user->business_type_id = $request->get('business_type');
             $user->password = Hash::make($request->get('password'));
-    
+
             if ($request->has('fcm_token')) {
                 $user->fcm_token = $request->get('fcm_token');
             }
-    
+
             $user->save();
-    
-            if ($request->user_type == 2) {
-                $user->activate = 2;
-                $user->save();
-    
-                $details = new WholeSale();
-                $details->user_id = $user->id;
-                $details->tax_number = $request->get('tax_number');
-                $details->company_type = $request->get('company_type');
-    
-                if ($request->has('other_company_type')) {
-                    $details->other_company_type = $request->get('other_company_type');
-                }
-    
-                if ($request->hasFile('import_license')) {
-                    $the_file_path = uploadImage('assets/admin/uploads', $request->file('import_license'));
-                    $details->import_license = $the_file_path;
-                }
-    
-                if ($request->hasFile('store_license')) {
-                    $the_file_path = uploadImage('assets/admin/uploads', $request->file('store_license'));
-                    $details->store_license = $the_file_path;
-                }
-    
-                if ($request->hasFile('commercial_record')) {
-                    $the_file_path = uploadImage('assets/admin/uploads', $request->file('commercial_record'));
-                    $details->commercial_record = $the_file_path;
-                }
-    
-                $details->save();
-            }
-    
             DB::commit();
-    
+
             $accessToken = $user->createToken('authToken')->accessToken;
             return response(['user' => $user, 'token' => $accessToken], 201);
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response(['error' => 'Registration failed, please try again.'], 500);
@@ -104,30 +72,22 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $data = $request->validate([
-            'email' => 'required_without:phone|email',
-            'phone' => 'required_without:email',
+            'email' => 'required|email',
             'password' => 'required|string',
             'user_type' => 'required|integer',
         ], [
-            'email.required_without' => 'The email field is required when phone is not present.',
+            'email.required' => 'The email field is required.',
             'email.email' => 'The email must be a valid email address.',
-            'phone.required_without' => 'The phone field is required when email is not present.',
             'password.required' => 'The password field is required.',
             'password.string' => 'The password must be a string.',
             'user_type.required' => 'The user type field is required.',
             'user_type.integer' => 'The user type must be an integer.',
         ]);
 
-        $user = null;
-        if ($request->email) {
-            $user = User::where('email', $request->email)
+
+        $user = User::where('email', $request->email)
                         ->where('user_type', $request->user_type)
                         ->first();
-        } else {
-            $user = User::where('phone', $request->phone)
-                        ->where('user_type', $request->user_type)
-                        ->first();
-        }
 
         if (!$user) {
             return response(["message" => "User not found."], 404);
@@ -235,7 +195,7 @@ class AuthController extends Controller
            return response([ 'data' => $notifications], 200);
 
    }
-   
+
     public function upgrade(Request  $request)
     {
         $user = User::find(auth()->id());

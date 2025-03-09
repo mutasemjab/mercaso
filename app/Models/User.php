@@ -43,6 +43,11 @@ class User extends Authenticatable
 
 
 
+    public function business_type()
+    {
+       return $this->belongsTo(BusinessType::class);
+    }
+
     public function addresses()
     {
        return $this->hasMany(UserAddress::class);
