@@ -39,7 +39,6 @@ class UnitController extends Controller
 
             $unit->name_en = $request->get('name_en');
             $unit->name_ar = $request->get('name_ar');
-            $unit->name_fr = $request->get('name_fr');
 
 
             if ($unit->save()) {
@@ -73,7 +72,6 @@ class UnitController extends Controller
 
             $unit->name_en = $request->get('name_en');
             $unit->name_ar = $request->get('name_ar');
-            $unit->name_fr = $request->get('name_fr');
 
             if ($unit->save()) {
 
