@@ -31,7 +31,7 @@ class AuthController extends Controller
         $this->validate($request, [
             'name' => 'required|string|max:255',
             'email' => 'nullable|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:6',
             'business_type' => 'required|exists:business_types,id',
             'phone' => 'nullable|unique:users,phone',
             'user_type' => 'required|integer',

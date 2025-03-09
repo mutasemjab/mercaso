@@ -37,6 +37,7 @@ Route::group(['prefix' => 'v1/user'], function () {
     Route::get('/pages/{type}', [PageController::class,'index']);
 
     Route::get('/business_type', [AuthController::class, 'get_business_type']); // Done
+    Route::get('/banners', [BannerController::class, 'index']); // Done
 
     //---------------- Auth --------------------//
     Route::post('/register', [AuthController::class, 'register']);

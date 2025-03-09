@@ -10,7 +10,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\Admin\RepresentativeController;
+use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\DeliveryController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\CountryController;
@@ -161,15 +161,13 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::resource('coupons', CouponController::class);
         Route::resource('products', ProductController::class);
         Route::resource('shops', ShopController::class);
-        Route::resource('countries', CountryController::class);
-        Route::resource('cities', CityController::class);
         Route::resource('categories', CategoryController::class);
         Route::resource('units', UnitController::class);
-        Route::resource('representatives', RepresentativeController::class);
         Route::resource('orders', OrderController::class);
         Route::resource('deliveries', DeliveryController::class);
         Route::resource('businessTypes', BusinessTypeController::class);
         Route::resource('brands', BrandController::class);
+        Route::resource('banners', BannerController::class);
     });
 });
 

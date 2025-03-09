@@ -138,12 +138,12 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>{{ __('messages.Activate') }}</label>
-                            <select name="active" id="active" class="form-control">
+                            <select name="activate" id="activate" class="form-control">
                                 <option value="">Select</option>
-                                <option @if ($data->active == 1) selected="selected" @endif value="1">Active</option>
-                                <option @if ($data->active == 2) selected="selected" @endif value="2">Inactive</option>
+                                <option @if ($data->activate == 1) selected="selected" @endif value="1">activate</option>
+                                <option @if ($data->activate == 2) selected="selected" @endif value="2">Inactivate</option>
                             </select>
-                            @error('active')
+                            @error('activate')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

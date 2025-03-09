@@ -41,6 +41,19 @@
                 @else
 
                 @if (
+                    $user->can('banner-table') ||
+                        $user->can('banner-add') ||
+                        $user->can('banner-edit') ||
+                        $user->can('banner-delete'))
+                    <li class="nav-item">
+                        <a href="{{ route('banners.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p> {{ __('messages.banners') }} </p>
+                        </a>
+                    </li>
+                @endif
+
+              @if (
                     $user->can('businessType-table') ||
                         $user->can('businessType-add') ||
                         $user->can('businessType-edit') ||
@@ -178,7 +191,7 @@
                         </li>
                     @endif
 
-                 
+
 
 
 
