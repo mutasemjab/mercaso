@@ -32,12 +32,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 //Route unAuth
 Route::group(['prefix' => 'v1/user'], function () {
-    
-    
+
+
     Route::get('/pages/{type}', [PageController::class,'index']);
 
-    Route::get('/countries', [AuthController::class, 'countries']); // Done
-    Route::get('/countries/{id}/cities', [AuthController::class,'get_cities']); // Done
+    Route::get('/business_type', [AuthController::class, 'get_business_type']); // Done
 
     //---------------- Auth --------------------//
     Route::post('/register', [AuthController::class, 'register']);

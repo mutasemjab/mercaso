@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\v1\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\BusinessType;
 use App\Models\Country;
 use App\Models\Notification;
 use App\Models\User;
@@ -19,6 +20,11 @@ use Illuminate\Support\Facades\DB;
 class AuthController extends Controller
 {
 
+    public function get_business_type()
+    {
+        $data = BusinessType::get();
+        return response()->json(['data'=>$data]);
+    }
 
     public function register(Request $request)
     {
