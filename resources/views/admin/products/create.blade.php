@@ -44,6 +44,19 @@
             <div class="row">
                 @csrf
                 <div class="form-group col-md-6">
+                    <label for="category_id"> {{ __('messages.brands') }}</label>
+                    <select class="form-control" name="brand" id="brand_id">
+                        <option value="">Select Parent brand</option>
+                        @foreach($brands as $brand)
+                        <option value="{{ $brand->id }}">{{ $brand->name}}</option>
+                        @endforeach
+                    </select>
+                    @error('brand')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group col-md-6">
                     <label for="category_id"> {{ __('messages.categories') }}</label>
                     <select class="form-control" name="category" id="category_id">
                         <option value="">Select Parent Category</option>
@@ -119,7 +132,7 @@
                     @enderror
                 </div>
 
-               
+
 
                 <div class="form-group col-md-6">
                     <label for="tax"> {{ __('messages.tax') }} %</label>

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ProductsImport;
 use App\Exports\ProductsSampleExport;
+use App\Models\Brand;
 use Maatwebsite\Excel\Excel as ExcelWriter;
 
 class ProductController extends Controller
@@ -148,7 +149,9 @@ class ProductController extends Controller
         if (auth()->user()->can('product-add')) {
             $categories = Category::get();
             $units = Unit::get();
-            return view('admin.products.create', compact('categories', 'units'));
+            $brands = Brand::get();
+
+            return view('admin.products.create', compact('categories', 'units','brands'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -171,10 +174,8 @@ class ProductController extends Controller
             $product->barcode = $request->input('barcode');
             $product->name_en = $request->input('name_en');
             $product->name_ar = $request->input('name_ar');
-            $product->name_fr = $request->input('name_fr');
             $product->description_en = $request->input('description_en');
             $product->description_ar = $request->input('description_ar');
-            $product->description_fr = $request->input('description_fr');
             $product->has_variation = $request->input('has_variation');
             $product->tax = $request->input('tax');
             $product->selling_price_for_user = $request->input('selling_price_for_user');
@@ -186,6 +187,7 @@ class ProductController extends Controller
             $product->status = $request->input('status');
             $product->category_id = $request->input('category');
             $product->unit_id = $request->input('unit');
+            $product->brand_id = $request->input('brand') ?? null;
             $product->shop_id = auth()->user()->shop_id;
 
             if ($product->has_variation) {
@@ -272,8 +274,9 @@ class ProductController extends Controller
         if (auth()->user()->can('product-edit')) {
             $data = Product::findOrFail($id); // Retrieve the category by ID
             $categories = Category::get();
+            $brands = Brand::get();
             $units = Unit::all();
-            return view('admin.products.edit', ['units' => $units, 'categories' => $categories, 'data' => $data]);
+            return view('admin.products.edit', ['units' => $units, 'categories' => $categories, 'brands' => $brands,'data' => $data]);
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -311,6 +314,7 @@ class ProductController extends Controller
             $product->status = $request->input('status');
             $product->category_id = $request->input('category');
             $product->unit_id = $request->input('unit');
+            $product->brand_id = $request->input('brand') ?? null;
 
            if ($request->hasFile('photo')) {
                 // Delete all previous photos associated with the product

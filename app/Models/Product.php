@@ -61,6 +61,10 @@ class Product extends Model
     {
         return $this->belongsTo(Shop::class,);
     }
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class,);
+    }
     public function units()
     {
         return $this->belongsToMany(Unit::class, 'product_units', 'product_id', 'unit_id')->withPivot('barcode', 'releation', 'selling_price');

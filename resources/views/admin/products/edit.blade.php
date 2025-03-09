@@ -63,12 +63,27 @@
 
 
                 <div class="form-group col-md-6">
+                    <label for="category_id">Brand</label>
+                    <select class="form-control" name="brand" id="brand_id">
+                        <option value="">Select Brand</option>
+                        @foreach($brands as $brand)
+                        <option value="{{ $brand->id }}" {{ $brand->id == $data->brand_id ? 'selected' : '' }}>
+                            {{ $brand->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('brand')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group col-md-6">
                     <label for="category_id">Parent Category</label>
                     <select class="form-control" name="category" id="category_id">
                         <option value="">Select Parent Category</option>
                         @foreach($categories as $category)
                         <option value="{{ $category->id }}" {{ $category->id == $data->category_id ? 'selected' : '' }}>
-                            {{ $category->name }}
+                            {{ $category->name_en }}
                         </option>
                         @endforeach
                     </select>
