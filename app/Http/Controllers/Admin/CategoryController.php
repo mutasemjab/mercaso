@@ -42,6 +42,7 @@ class CategoryController extends Controller
             $category->name_ar = $request->get('name_ar');
             $category->description_en = $request->get('description_en');
             $category->description_ar = $request->get('description_ar');
+            $category->in_home_screen = $request->get('in_home_screen');
 
 
             $parentCategoryID = $request->input('category_id');
@@ -95,7 +96,7 @@ class CategoryController extends Controller
             $category->name_ar = $request->get('name_ar');
             $category->description_en = $request->get('description_en');
             $category->description_ar = $request->get('description_ar');
-
+            $category->in_home_screen = $request->get('in_home_screen');
 
 
             $parentCategoryID = $request->input('category_id');

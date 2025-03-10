@@ -74,7 +74,19 @@
                     </div>
 
 
-
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>{{ __('messages.in_home_screen') }}</label>
+                            <select name="in_home_screen" id="in_home_screen" class="form-control">
+                                <option value="">Select</option>
+                                <option selected="selected" value="1">Yes</option>
+                                <option  value="2">No</option>
+                            </select>
+                            @error('in_home_screen')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
 
 
                     <div class="col-md-12">

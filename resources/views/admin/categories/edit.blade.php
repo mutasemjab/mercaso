@@ -41,7 +41,7 @@
                         @enderror
                     </div>
                 </div>
-              
+
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="description_en">{{ __('messages.description_en') }}</label>
@@ -72,6 +72,21 @@
                             <option value="0" @if($data->category_id === null) selected @endif>No Parent Category</option>
                         </select>
                         @error('category_id')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>{{ __('messages.in_home_screen') }}</label>
+                        <select name="in_home_screen" id="in_home_screen" class="form-control">
+                            <option value="">Select</option>
+                            <option @if ($data->in_home_screen == 1) selected="selected" @endif value="1">Yes</option>
+                            <option @if ($data->in_home_screen == 2) selected="selected" @endif value="2">No</option>
+                        </select>
+                        @error('in_home_screen')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>

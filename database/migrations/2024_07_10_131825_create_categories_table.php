@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('photo');
             $table->unsignedBigInteger('category_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
-
+            $table->tinyInteger('in_home_screen')->default(1); // 1 yes  // 2 no
             $table->timestamps();
         });
     }
