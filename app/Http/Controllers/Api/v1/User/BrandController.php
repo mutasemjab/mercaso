@@ -7,7 +7,7 @@ use App\Models\Banner;
 use App\Models\Brand;
 use App\Models\Product;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
 
 class BrandController extends Controller
 {
@@ -19,12 +19,92 @@ class BrandController extends Controller
 
     }
 
-    public function getBrandProduct($id)
+    public function getBrandProduct($id, Request $request)
     {
-        $data = Product::where('brand_id',$id)->get();
-        return response()->json(['data'=>$data]);
+        $token = $request->bearerToken();
+        $authenticatedUser = null;
 
+        if ($token) {
+            $authenticatedUser = Auth::guard('user-api')->user();
+        }
+
+        // Load the brand with its products and related data
+        $brand = Brand::with([
+            'products.productImages',
+            'products.productReviews',
+            'products.variations',
+            'products.units',
+            'products.unit',
+            'products.offers',
+        ])->find($id);
+
+        if (!$brand) {
+            return response()->json(['message' => 'Brand not found'], 404);
+        }
+
+        // Prepare the response data
+        $response = [
+            'brand' => [
+                'name' => $brand->name,
+                'photo' => $brand->photo,
+            ],
+            'products' => $this->formatProducts($brand->products, $authenticatedUser)
+        ];
+
+        return response()->json(['data' => $response]);
     }
+
+    private function formatProducts($products, $authenticatedUser)
+    {
+        $formattedProducts = [];
+
+        foreach ($products as $item) {
+            if ($authenticatedUser) {
+                $userType = $authenticatedUser->user_type;
+
+                // Filter product data based on user_type
+                if ($userType == 1) {
+                    $item->unit_name = $item->unit ? $item->unit->name_ar : null;
+                    $item->price = $item->selling_price_for_user;
+                    $item->quantity = $item->available_quantity_for_user;
+                } elseif ($userType == 2) {
+                    $unit = $item->units->first();
+                    $item->unit_name = $unit ? $unit->name_ar : null;
+                    $item->price = $unit ? $unit->pivot->selling_price : null;
+                    $item->quantity = $item->available_quantity_for_wholeSale;
+                }
+
+                // Check if the product is a favorite for the authenticated user
+                $item->is_favourite = $authenticatedUser->favourites()->where('product_id', $item->id)->exists();
+
+                // Filter offers by user_type
+                $item->has_offer = $item->offers()->where('user_type', $userType)->exists();
+                $item->offer_id = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->id : 0;
+                $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->price : 0;
+
+            } else {
+                // Default data for non-authenticated users
+                $item->unit_name = $item->unit ? $item->unit->name_ar : null;
+                $item->price = $item->selling_price_for_user;
+                $item->quantity = $item->available_quantity_for_user;
+                $item->is_favourite = false;
+
+                // Default offers for non-authenticated users (assume user_type = 1)
+                $item->has_offer = $item->offers()->where('user_type', 1)->exists();
+                $item->offer_id = $item->has_offer ? $item->offers()->where('user_type', 1)->first()->id : 0;
+                $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', 1)->first()->price : 0;
+            }
+
+            // Set additional product details
+            $item->rating = $item->rating;
+            $item->total_rating = $item->total_rating;
+
+            $formattedProducts[] = $item;
+        }
+
+        return $formattedProducts;
+    }
+
 
 
 }
