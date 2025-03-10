@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\v1\User\ProductReviewController;
 use App\Http\Controllers\Api\v1\User\UserAddressController;
 use App\Http\Controllers\Api\v1\User\PageController;
 use App\Http\Controllers\Api\v1\User\ForgotPasswordController;
+use App\Http\Controllers\Api\v1\User\BrandController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -38,6 +39,8 @@ Route::group(['prefix' => 'v1/user'], function () {
 
     Route::get('/business_type', [AuthController::class, 'get_business_type']); // Done
     Route::get('/banners', [BannerController::class, 'index']); // Done
+    Route::get('/brands', [BrandController::class, 'index']); // Done
+    Route::get('/brands/{id}/products', [BrandController::class, 'getBrandProduct']); // Done
 
     //---------------- Auth --------------------//
     Route::post('/register', [AuthController::class, 'register']);
