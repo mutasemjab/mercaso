@@ -60,11 +60,13 @@ class CategoryController extends Controller
                 'id' => $category->id,
                 'name' => $category->name,
                 'photo' => $category->photo,
+                'in_home_screen' => $category->in_home_screen,
                 'childCategories' => $category->childCategories->map(function ($childCategory) use ($authenticatedUser) {
                     return [
                         'id' => $childCategory->id,
                         'name' => $childCategory->name,
                         'photo' => $childCategory->photo,
+                        'in_home_screen' => $childCategory->in_home_screen,
                         'products' => $this->formatProducts($childCategory->products, $authenticatedUser)
                     ];
                 })
