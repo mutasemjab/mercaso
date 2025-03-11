@@ -74,8 +74,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::post('/mobile_verified', [AuthController::class, 'mobileVerified']);
         Route::post('/update_profile', [AuthController::class, 'updateProfile']);
         Route::post('/delete_account', [AuthController::class, 'deleteAccount']);
-        Route::get('/user_profile', [AuthController::class, 'userProfile']); // غير مستخدمة حاليا
-        Route::post('/upgrade', [AuthController::class, 'upgrade']); // Done
+        Route::get('/user_profile', [AuthController::class, 'userProfile']);
 
         //Notification
         Route::get('/notifications', [AuthController::class, 'notifications']);

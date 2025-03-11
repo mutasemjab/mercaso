@@ -202,38 +202,13 @@ class AuthController extends Controller
 
    }
 
-    public function upgrade(Request  $request)
-    {
-        $user = User::find(auth()->id());
-        $user->user_type  = 2;
-        $user->activate = 0;
-        $user->save();
-
-        $details = new WholeSale();
-        $details->user_id = $user->id;
-        $details->tax_number = $request->get('tax_number');
-        $details->company_type = $request->get('company_type');
-
-        if ($request->other_company_type) {
-            $details->other_company_type = $request->get('other_company_type');
-        }
-
-        if ($request->import_license) {
-            $import_license = $request->import_license->store('wholesales/import_license', 'public');
-            $details->import_license = $import_license;
-        }
-        if ($request->store_license) {
-            $store_license = $request->store_license->store('wholesales/store_license', 'public');
-            $details->store_license = $store_license;
-        }
-
-        if ($request->commercial_record) {
-            $commercial_record = $request->commercial_record->store('wholesales/commercial_record', 'public');
-            $details->commercial_record = $commercial_record;
-        }
-        $details->save();
-        return response(['message' => ['Your setting has been changed'], 'user' => $user]);
-    }
+   public function userProfile()
+   {
+        $user = auth()->user();
+        return response()->json([
+            'user' => $user,
+        ]);
+   }
 
 }
 
