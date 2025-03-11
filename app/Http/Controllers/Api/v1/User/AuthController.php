@@ -177,25 +177,6 @@ class AuthController extends Controller
        }
    }
 
-    public function countries()
-    {
-        $countries = Country::get();
-
-        return response()->json(['data'=>$countries]);
-    }
-
-    public function get_cities($id)
-    {
-        $country = Country::find($id);
-
-        if (!$country) {
-            return response()->json(['error' => 'Country not found'], 404);
-        }
-
-        $cities = $country->cities;
-
-        return response()->json(['data' => $cities]);
-    }
 
    public function deleteAccount(Request $request)
    {
