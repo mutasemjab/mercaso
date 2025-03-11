@@ -119,26 +119,45 @@ class AuthController extends Controller
 
 
 
-   public function updateProfile(Request $request){
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
 
+        // Validate the request data
+        $request->validate([
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:6|confirmed',
+        ]);
 
-       $user =  auth()->user();
+        // Update user fields if provided
+        if ($request->filled('name')) {
+            $user->name = $request->name;
+        }
+        if ($request->filled('email')) {
+            $user->email = $request->email;
+        }
+        if ($request->filled('phone')) {
+            $user->phone = $request->phone;
+        }
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
 
-       if(isset($request->password)){
-           $user->password = Hash::make($request->password);
-       }
+        // Save the user and return response
+        if ($user->save()) {
+            return response()->json([
+                'message' => ['Your profile has been updated successfully'],
+                'user' => $user
+            ]);
+        } else {
+            return response()->json([
+                'errors' => ['There was an error updating your profile']
+            ], 422);
+        }
+    }
 
-       if ($request->has('photo')) {
-        $the_file_path = uploadImage('assets/admin/uploads', $request->photo);
-        $user->photo = $the_file_path;
-     }
-
-       if($user->save()){
-           return response(['message'=>['Your setting has been changed'],'user'=>$user]);
-       }else{
-           return response(['errors'=>['There is something wrong']],402);
-       }
-   }
 
    public function mobileVerified(Request $request)
    {
