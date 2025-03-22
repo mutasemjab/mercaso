@@ -17,36 +17,36 @@ class CartController extends Controller
         public function index()
     {
         $user = auth()->user();
-    
+
         $carts = Cart::with([
             'product' => function ($query) {
-                $query->with('category', 'variations', 'productImages', 'units', 'unit', 'offers', 'category.countries', 'shop');
+                $query->with('category', 'variations', 'productImages', 'units', 'unit', 'offers',  'shop');
             },
             'variation' // Include this if variation is directly related to the Cart model
         ])->where('user_id', auth()->id())->where('status', 1)->get();
-    
+
         $token = request()->bearerToken();
         $authenticatedUser = null;
-    
+
         if ($token) {
             $authenticatedUser = Auth::guard('user-api')->user();
         }
-    
+
         $total = 0;
         $totalDiscount = 0;
         $currency = '';
         $shopId = null;
-    
+
         foreach ($carts as $cart) {
             $item = $cart->product;
-    
+
             if ($authenticatedUser) {
                 $userType = $authenticatedUser->user_type;
-    
+
                 // Filter offers by user_type and get the correct offer for the authenticated user
                 $item->has_offer = $item->offers()->where('user_type', $userType)->exists();
                 $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->price : null;
-    
+
                 // Set the price based on user_type and offers
                 if ($userType == 1) {
                     $item->unit_name = $item->unit ? $item->unit->name_ar : null;
@@ -58,45 +58,44 @@ class CartController extends Controller
                     $item->price = $item->has_offer ? $item->offer_price : ($unit ? $unit->pivot->selling_price : null);
                     $item->quantity = $item->available_quantity_for_wholeSale;
                 }
-    
+
                 $item->is_favourite = $authenticatedUser->favourites()->where('product_id', $item->id)->exists();
             }
-    
+
             $item->rating = $item->rating;
             $item->total_rating = $item->total_rating;
-            $item->currency = $item->category->countries->first()->sympol ?? '';
             $currency = $item->currency; // Assuming all products have the same currency
-    
+
             // Calculate the total price for the product in the cart
             $cart->total_price_product = $cart->quantity * $item->price;
-    
+
             // Apply offer discount if available
             if ($item->has_offer) {
                 $discount = ($item->selling_price_for_user - $item->offer_price) * $cart->quantity;
                 $cart->total_price_product = $item->offer_price * $cart->quantity; // Set to offer price * quantity
                 $totalDiscount += $discount;
             }
-    
+
             // Add to the overall total
             $total += $cart->total_price_product;
-    
+
             // Set the shop ID for the response (assuming all products in the cart are from the same shop)
             if ($item->shop) {
                 $shopId = $item->shop->id;
             }
         }
-    
+
         // Apply coupon discount as a percentage of the total
         $couponDiscount = $this->applyCouponDiscount($user->id, $total);
         $totalDiscount += $couponDiscount;
         $totalAfterDiscounts = $total - $couponDiscount;
-    
+
         // Update the cart records with the coupon discount
         foreach ($carts as $cart) {
             $cart->discount_coupon = $couponDiscount;
             $cart->save();
         }
-    
+
         return response()->json([
             'data' => $carts,
             'total' => $total,
@@ -107,23 +106,23 @@ class CartController extends Controller
         ]);
     }
 
-    
+
     private function applyCouponDiscount($userId, $total)
     {
         $couponDiscount = 0;
-    
+
         // Fetch applied coupons
         $userCoupons = UserCoupon::where('user_id', $userId)->with('coupon')->get();
-    
+
         foreach ($userCoupons as $userCoupon) {
             $coupon = $userCoupon->coupon;
-    
+
             if ($coupon && $coupon->expired_at > now()) {
                 // Calculate the discount as a percentage of the total
                 $couponDiscount += $coupon->amount;
             }
         }
-    
+
         return $couponDiscount;
     }
 
