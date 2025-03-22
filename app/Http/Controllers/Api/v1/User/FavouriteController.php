@@ -14,11 +14,11 @@ class FavouriteController extends Controller
   public function index()
     {
         $user = auth()->user();
-        $favourites = $user->favourites()->with('category', 'variations', 'productImages', 'units', 'unit', 'category.countries')->get();
-    
+        $favourites = $user->favourites()->with('category', 'variations', 'productImages', 'units', 'unit')->get();
+
         foreach ($favourites as $item) {
             $userType = $user->user_type;
-    
+
             if ($userType == 1) {
                 $item->unit_name = $item->unit ? $item->unit->name_ar : null;
                 $item->price = $item->selling_price_for_user;
@@ -29,16 +29,15 @@ class FavouriteController extends Controller
                 $item->price = $unit ? $unit->pivot->selling_price : null;
                 $item->quantity = $item->available_quantity_for_wholeSale;
             }
-    
+
             $item->is_favourite = $user->favourites()->where('product_id', $item->id)->exists();
             $item->rating = $item->rating;
             $item->total_rating = $item->total_rating;
-            $item->currency = $item->category->countries->first()->sympol ?? '';
             $item->has_offer = $item->offers()->exists();
             $item->offer_id = $item->has_offer ? $item->offers()->first()->id : 0;
             $item->offer_price = $item->has_offer ? $item->offers()->first()->price : 0;
         }
-    
+
         return response()->json(['data' => $favourites]);
     }
 
