@@ -17,7 +17,7 @@ class BrandController extends Controller
      */
     public function index()
     {
-        $data= Brand::where('shop_id',auth()->user()->shop_id)->paginate(PAGINATION_COUNT);
+        $data= Brand::paginate(PAGINATION_COUNT);
 
         return view('admin.brands.index',compact('data'));
     }
