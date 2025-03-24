@@ -38,8 +38,8 @@ class ForgotPasswordController extends Controller
         $email = $request->email;
 
         // Store code in database
-        DB::table('password_reset_tokens')->where('email', $email)->delete();
-        DB::table('password_reset_tokens')->insert([
+        DB::table('password_resets')->where('email', $email)->delete();
+        DB::table('password_resets')->insert([
             'email' => $email,
             'token' => $resetCode,
             'created_at' => Carbon::now()
@@ -83,7 +83,7 @@ class ForgotPasswordController extends Controller
             ], 422);
         }
 
-        $resetRecord = DB::table('password_reset_tokens')
+        $resetRecord = DB::table('password_resets')
             ->where('email', $request->email)
             ->where('token', $request->reset_code)
             ->first();
@@ -131,7 +131,7 @@ class ForgotPasswordController extends Controller
         }
 
         // Verify code again for security
-        $resetRecord = DB::table('password_reset_tokens')
+        $resetRecord = DB::table('password_resets')
             ->where('email', $request->email)
             ->where('token', $request->reset_code)
             ->first();
@@ -158,7 +158,7 @@ class ForgotPasswordController extends Controller
         $user->save();
 
         // Delete used code
-        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+        DB::table('password_resets')->where('email', $request->email)->delete();
 
         return response()->json([
             'status' => 1,
