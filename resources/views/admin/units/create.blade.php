@@ -43,8 +43,8 @@
                             <label>{{ __('messages.add_one_or_less') }}</label>
                             <select name="add_one_or_less" id="add_one_or_less" class="form-control">
                                 <option value="">Select</option>
-                                <option @if ($data->add_one_or_less == 1) selected="selected" @endif value="1">One</option>
-                                <option @if ($data->add_one_or_less == 2) selected="selected" @endif value="2">less than one</option>
+                                <option  selected="selected"  value="1">One</option>
+                                <option  value="2">less than one</option>
                             </select>
                             @error('add_one_or_less')
                                 <span class="text-danger">{{ $message }}</span>
