@@ -20,6 +20,19 @@ use Illuminate\Support\Facades\DB;
 class AuthController extends Controller
 {
 
+    public function change_user_type()
+    {
+        $user = auth()->user();
+        if($user->user_type == 1)
+        {
+            $user->user_type = 2;  
+        }else{
+            $user->user_type = 1;  
+        }
+        $user->save();
+        return response(['success' => 'The account change successfully'], 200);
+    }
+
     public function get_business_type()
     {
         $data = BusinessType::get();

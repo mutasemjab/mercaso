@@ -45,8 +45,10 @@ Route::group(['prefix' => 'v1/user'], function () {
     //---------------- Auth --------------------//
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']); // Done
-
+    // Mobile app password reset flow
+    Route::post('/password/request-reset', [ForgotPasswordController::class, 'requestReset']);
+    Route::post('/password/verify-code', [ForgotPasswordController::class, 'verifyCode']);
+    Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword']);
 
     //Route unAuth
     Route::get('/latest',  [ProductController::class, 'latest']); // Done
@@ -73,6 +75,7 @@ Route::group(['prefix' => 'v1/user'], function () {
 
         Route::post('/mobile_verified', [AuthController::class, 'mobileVerified']);
         Route::post('/update_profile', [AuthController::class, 'updateProfile']);
+        Route::post('/change_user_type', [AuthController::class, 'change_user_type']);
         Route::post('/delete_account', [AuthController::class, 'deleteAccount']);
         Route::get('/user_profile', [AuthController::class, 'userProfile']);
 
