@@ -48,7 +48,6 @@ class BrandController extends Controller
                 $the_file_path = uploadImage('assets/admin/uploads', $request->photo);
                 $brand->photo = $the_file_path;
             }
-            $brand->shop_id = auth()->user()->shop_id;
 
 
             if($brand->save()){

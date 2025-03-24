@@ -16,7 +16,7 @@ class CouponController extends Controller
      */
     public function index()
     {
-        $data= Coupon::where('shop_id',auth()->user()->shop_id)->paginate(PAGINATION_COUNT);
+        $data= Coupon::paginate(PAGINATION_COUNT);
 
         return view('admin.coupons.index',compact('data'));
     }
@@ -46,7 +46,6 @@ class CouponController extends Controller
             $coupon->amount = $request->get('amount');
             $coupon->minimum_total = $request->get('minimum_total');
             $coupon->expired_at = $request->get('expired_at');
-            $coupon->shop_id = auth()->user()->shop_id;
             if($coupon->save()){
                 return redirect()->route('coupons.index')->with(['success' => 'coupon created']);
 

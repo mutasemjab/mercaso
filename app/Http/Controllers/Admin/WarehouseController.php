@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Shop;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 
@@ -21,8 +20,8 @@ class WarehouseController extends Controller
     public function create()
     {
         if (auth()->user()->can('warehouse-add')) {
-             $shops = Shop::get();
-            return view('admin.warehouses.create',compact('shops'));
+
+            return view('admin.warehouses.create');
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -38,7 +37,7 @@ class WarehouseController extends Controller
             $warehouse = new Warehouse();
 
             $warehouse->name = $request->get('name');
-            $warehouse->shop_id = $request->get('shop');
+
 
 
             if ($warehouse->save()) {
@@ -58,8 +57,8 @@ class WarehouseController extends Controller
     {
         if (auth()->user()->can('warehouse-edit')) {
             $data = Warehouse::findorFail($id);
-            $shops = Shop::get();
-            return view('admin.warehouses.edit', compact('data','shops'));
+
+            return view('admin.warehouses.edit', compact('data'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -72,7 +71,6 @@ class WarehouseController extends Controller
         try {
 
             $warehouse->name = $request->get('name');
-            $warehouse->shop_id = $request->get('shop');
 
 
             if ($warehouse->save()) {

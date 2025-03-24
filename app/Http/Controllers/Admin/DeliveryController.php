@@ -16,7 +16,7 @@ class DeliveryController extends Controller
      */
     public function index()
     {
-        $data= Delivery::where('shop_id',auth()->user()->shop_id)->paginate(PAGINATION_COUNT);
+        $data= Delivery::paginate(PAGINATION_COUNT);
 
         return view('admin.deliveries.index',compact('data'));
     }
@@ -44,7 +44,6 @@ class DeliveryController extends Controller
 
             $delivery->place = $request->get('place');
             $delivery->price = $request->get('price');
-            $delivery->shop_id = auth()->user()->shop_id;
 
 
             if($delivery->save()){

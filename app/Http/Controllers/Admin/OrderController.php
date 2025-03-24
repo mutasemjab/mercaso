@@ -7,7 +7,6 @@ use App\Models\NoteVoucher;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
-use App\Models\Shop;
 use App\Models\User;
 use App\Models\UserAddress;
 use App\Models\Warehouse;
@@ -22,16 +21,14 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    
+
     public function index(Request $request)
     {
-        // Get the logged-in admin's shop_id
-        $admin = auth()->user();
-        $shop = Shop::find($admin->shop_id); // Use find() instead of where('id', ...) -> first()
-    
-        // Create an initial query to retrieve orders for the authenticated user's shop
-        $query = Order::where('shop_id', $shop->id);
-    
+
+
+        // Create an initial query to retrieve orders for the authenticated user's 
+        $query = Order::query();
+
         // Apply search filter if present in the request
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -39,33 +36,31 @@ class OrderController extends Controller
                 $q->where('number', 'LIKE', "%$search%");
             });
         }
-    
+
         // Retrieve all orders with pagination
         $data = $query->orderBy('created_at', 'desc')->paginate(PAGINATION_COUNT);
-    
+
         return view('admin.orders.index', compact('data'));
     }
-    
+
 
     public function create()
     {
         $products = Product::get();
         $users = User::get();
-        $shops = Shop::get();
         $warehouses = Warehouse::get();
-        return view('admin.orders.create', compact('products','users','shops','warehouses'));
+        return view('admin.orders.create', compact('products','users','warehouses'));
     }
 
-    
+
 
 public function store(Request $request)
 {
-    
+
     // Validate the request data
     $validatedData = $request->validate([
         'order_type' => 'required|integer',
         'date' => 'required|date',
-        'shop' => 'required|integer|exists:shops,id',
         'payment_type' => 'required|string',
         'address' => 'required|integer|exists:user_addresses,id',
         'products' => 'required|array',
@@ -90,7 +85,7 @@ public function store(Request $request)
                   ->lockForUpdate()
                   ->first();
 
-        
+
         // Generate the unique order number
         $newOrderNumber = $lastOrder ? $lastOrder->number + 1 : 1;
       //  return $newOrderNumber;
@@ -110,7 +105,7 @@ public function store(Request $request)
         $deliveryFee = doubleval($address->delivery->price ?? 0);
 
         $user = User::where('name', $request->user)->first();
-        
+
         // Create the order
         $order = Order::create([
             'number' => $newOrderNumber,
@@ -125,7 +120,6 @@ public function store(Request $request)
             'date' => Carbon::parse($request->date),
             'user_id' => $user->id,
             'address_id' => $request->address,
-            'shop_id' => $request->shop,
             'coupon_discount' => $request->coupon_discount ?? 0,
         ]);
 
@@ -198,9 +192,8 @@ public function store(Request $request)
                 'note_voucher_type_id' => 1,
                 'date_note_voucher' => $order->date,
                 'number' => $newVoucherNumber,
-                'from_warehouse_id' => $order->shop->warehouse->id ?? 1,
+                'from_warehouse_id' => $order->warehouse->id ?? 1,
                 'to_warehouse_id' => $request['toWarehouse'] ?? null,
-                'shop_id' => $order->shop->id,
                 'order_id' => $order->id,
                 'note' => "فاتورة مرتجع رقم " . (string)$order->number,
             ]);
@@ -253,8 +246,7 @@ public function store(Request $request)
     public function edit($id)
     {
         $order = Order::with(['products.units', 'products.unit', 'user.addresses'])->findOrFail($id);
-        $shops = Shop::all();
-        return view('admin.orders.edit', compact('order', 'shops'));
+        return view('admin.orders.edit', compact('order'));
     }
 
  public function update(Request $request, $id)
@@ -278,7 +270,7 @@ public function store(Request $request)
     $order->update([
         'order_status' => $request->order_status,
         'date' => Carbon::parse($request->date),
-        'shop_id' => $request->shop,
+
         'payment_type' => $request->payment_type,
         'address_id' => $request->address,
         'user_id' => User::where('name', $request->user)->first()->id,
@@ -298,38 +290,38 @@ public function store(Request $request)
     // Attach new products
     foreach ($request->products as $productData) {
         $product = Product::where('name_ar', $productData['name'])->first();
-    
+
         if ($product) {
             $quantity = $productData['quantity'];
             $unitPriceWithoutTax = $productData['selling_price_without_tax'];
             $taxPercentage = $productData['tax'];
             $unitPriceWithTax = $unitPriceWithoutTax * (1 + $taxPercentage / 100);
-    
+
             $totalPriceBeforeTax = $unitPriceWithoutTax * $quantity;
-    
+
             // Get the original discount values from the form submission
             $originalLineDiscountValue = $productData['original_line_discount_value'] ?? 0;
             $originalLineDiscountPercentage = $productData['original_line_discount_percentage'] ?? 0;
-    
+
             // Get new discount inputs from the form
             $lineDiscountPercentage = $productData['line_discount_percentage'] ?? 0;
             $lineDiscountValue = $productData['line_discount_value'] ?? 0;
-    
+
             // Recalculate the line discount value if the percentage has changed
             if ($lineDiscountPercentage != $originalLineDiscountPercentage) {
                 $lineDiscountValue = ($totalPriceBeforeTax * $lineDiscountPercentage / 100);
             }
-    
+
             // If the line_discount_value was manually changed and percentage remains unchanged, keep it as is
             if ($lineDiscountValue != $originalLineDiscountValue && $lineDiscountPercentage == $originalLineDiscountPercentage) {
                 // No recalculation required for the manually changed line_discount_value
             }
-    
+
             // Calculate totals after applying the discount
             $totalPriceAfterLineDiscount = $totalPriceBeforeTax - $lineDiscountValue;
             $totalRowTax = $totalPriceAfterLineDiscount * ($taxPercentage / 100);
             $totalPriceAfterTax = $totalPriceAfterLineDiscount + $totalRowTax;
-    
+
             // Attach the product to the order with the correct discount and tax values
             $order->products()->attach($product->id, [
                 'unit_id' => $productData['unit'],
@@ -343,17 +335,17 @@ public function store(Request $request)
                 'line_discount_percentage' => $lineDiscountPercentage,  // Save the updated percentage
                 'line_discount_value' => $lineDiscountValue,  // Save the updated or manually entered discount value
             ]);
-    
+
             // Accumulate totals
             $totalTaxes += $totalRowTax;
             $totalPrices += $totalPriceAfterTax;
             $totalDiscounts += $lineDiscountValue;
         }
     }
-     
-    
-    
-    
+
+
+
+
 
     // Update order totals
     $order->update([
@@ -371,9 +363,9 @@ public function store(Request $request)
              'note_voucher_type_id' => 2,
              'date_note_voucher' => $order->date,
              'number' => $newNumber,
-             'from_warehouse_id' => $order->shop->warehouse->id ?? 1,
+             'from_warehouse_id' => $order->warehouse->id ?? 1,
              'to_warehouse_id' => $request['toWarehouse'] ?? null,
-             'shop_id' =>  $order->shop->id,
+
              'order_id' =>  $order->id,
              'note' => "فاتورة بيع رقم " . (string)$order->number,
          ]);
@@ -401,9 +393,9 @@ public function store(Request $request)
              'note_voucher_type_id' => 1,
              'date_note_voucher' => $order->date,
              'number' => $newNumber,
-             'from_warehouse_id' => $order->shop->warehouse->id ?? 1,
+             'from_warehouse_id' => $order->warehouse->id ?? 1,
              'to_warehouse_id' => $request['toWarehouse'] ?? null,
-             'shop_id' =>  $order->shop->id,
+
              'order_id' =>  $order->id,
              'note' => "فاتورة مرتجع رقم " . (string)$order->number,
          ]);

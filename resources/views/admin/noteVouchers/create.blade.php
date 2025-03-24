@@ -38,18 +38,6 @@
 
 
 
-            <div class="col-md-6">
-                <div class="form-group mt-3">
-                    <label for="shop">{{ __('messages.shop') }}</label>
-                    <select name="shop" class="form-control" required>
-                        @foreach ($shops as $shop)
-                            <option value="{{ $shop->id }}">{{ $shop->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-
 
             <div class="col-md-6">
                 <div class="form-group">

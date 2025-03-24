@@ -66,7 +66,6 @@ class EmployeeController extends Controller
                 $admin = new Admin([
                     'name' => $request->name,
                     'username' => $request->username,
-                    'shop_id' => 1,
                     'is_super' => 0,
                     'password' => Hash::make($request->password),
 

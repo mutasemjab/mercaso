@@ -8,14 +8,14 @@
         @method('PUT')
 
         <input type="hidden" name="redirect_to" id="redirect_to" value="index">
-       
+
         @if($order->order_status == 6 || $order->order_status == 4)
        @else
         <h6 style="color: red"> Just Click One Click Only </h6>
         <button type="submit" class="btn btn-primary" onclick="setRedirect('index')">{{ __('messages.Submit') }}</button>
         <button type="submit" class="btn btn-primary" onclick="setRedirect('show')">{{ __('messages.Save_Print') }}</button>
         @endif
-      
+
 
         @if($order->order_status == 6)
         <h3 style="color:red;">{{ __('messages.Refund') }}</h3>
@@ -39,16 +39,7 @@
                 <input type="date" name="date" class="form-control" value="{{ \Carbon\Carbon::parse($order->date)->format('Y-m-d') }}" required>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="form-group mt-3">
-                <label for="shop">{{ __('messages.shops') }}</label>
-                <select name="shop" class="form-control" required>
-                    @foreach ($shops as $shop)
-                    <option value="{{ $shop->id }}" {{ $order->shop_id == $shop->id ? 'selected' : '' }}>{{ $shop->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
+
         <div class="col-md-6">
             <div class="form-group mt-3">
                 <label for="payment_type">{{ __('messages.payment_type') }}</label>
@@ -94,7 +85,7 @@
                     <th>{{ __('messages.selling_price_with_tax') }}</th>
                     <th>{{ __('messages.tax') }}</th>
                     <th>{{ __('messages.line_discount_percentage') }}</th>
-                   
+
                     <th>{{ __('messages.line_discount_fixed') }}</th>
                     <th>{{ __('messages.total_one_item') }}</th>
                     <th>{{ __('messages.Action') }}</th>
@@ -126,7 +117,7 @@
                     <td><input type="number" class="form-control selling_price_without_tax" name="products[{{ $index }}][selling_price_without_tax]" step="any" value="{{ $sellingPriceWithoutTax }}" /></td>
                     <td><input type="number" class="form-control selling_price_with_tax" name="products[{{ $index }}][selling_price_with_tax]" step="any" value="{{ $sellingPriceWithTax }}" /></td>
                     <td><input type="number" class="form-control tax" name="products[{{ $index }}][tax]" step="any" value="{{ $TaxPercentage }}" /></td>
-                   
+
                     <td>
                         <!-- Input for line_discount_percentage (editable by user) -->
                         <input type="number" class="form-control line_discount_percentage" name="products[{{ $index }}][line_discount_percentage]" step="any" value="{{ $orderProduct->pivot->line_discount_percentage }}" />
@@ -139,20 +130,20 @@
                         <!-- Store original line discount value for backend comparison -->
                         <input type="hidden" name="products[{{ $index }}][original_line_discount_value]" value="{{ $orderProduct->pivot->line_discount_value }}" />
                     </td>
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     <td><input type="number" class="form-control total_one_item" name="products[{{ $index }}][total_one_item]" step="any" value="{{ $orderProduct->pivot->total_one_item }}" /></td>
                     <td><button type="button" class="btn btn-danger remove-row">{{ __('messages.Delete') }}</button></td>
                 </tr>
@@ -396,7 +387,7 @@
 
                 // Check if a discount value exists to avoid recalculating it
                 let lineDiscountValue = parseFloat($(this).find('.line_discount_value').val()) || 0;
-                
+
                 if (lineDiscountValue === 0) {
                     // Total price before line discount
                     const totalPriceBeforeLineDiscount = sellingPriceWithoutTax * quantity;

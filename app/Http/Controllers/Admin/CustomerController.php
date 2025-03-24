@@ -10,7 +10,6 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\UsersExport;
 use App\Models\Delivery;
 use App\Models\Representative;
-use App\Models\Shop;
 
 class CustomerController extends Controller
 {
@@ -42,9 +41,7 @@ class CustomerController extends Controller
 
     public function index(Request $request)
     {
-        // Get the logged-in admin's shop_id
-        $admin = auth()->user();
-        $shop = Shop::where('id', $admin->shop_id)->first();
+     
 
         // Check if there's a search query
         if ($request->search) {

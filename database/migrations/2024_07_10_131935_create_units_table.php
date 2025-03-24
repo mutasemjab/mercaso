@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('name_en');
             $table->string('name_ar');
+            $table->tinyInteger('add_one_or_less')->default(1); // 1 yes one // 2 add 0.5
             $table->timestamps();
         });
     }

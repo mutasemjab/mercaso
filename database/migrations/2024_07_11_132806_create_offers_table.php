@@ -21,8 +21,6 @@ return new class extends Migration
             $table->tinyInteger('user_type'); //1 user // 2 Wholesale
             $table->unsignedBigInteger('product_id')->nullable();
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->unsignedBigInteger('shop_id')->nullable();
-            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->timestamps();
         });
     }

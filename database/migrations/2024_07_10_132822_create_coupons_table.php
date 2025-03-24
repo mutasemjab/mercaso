@@ -19,8 +19,6 @@ return new class extends Migration
             $table->double('amount');
             $table->double('minimum_total');
             $table->date('expired_at');
-            $table->unsignedBigInteger('shop_id')->nullable();
-            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->timestamps();
         });
     }

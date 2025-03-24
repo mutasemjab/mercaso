@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\NoteVoucher;
 use App\Models\NoteVoucherType;
 use App\Models\Product;
-use App\Models\Shop;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -51,8 +50,8 @@ class NoteVoucherController extends Controller
     public function index()
     {
 
-        $shop_id = auth()->user()->shop_id;
-        $data = NoteVoucher::where('shop_id',$shop_id)->get();
+
+        $data = NoteVoucher::get();
 
         return view('admin.noteVouchers.index', ['data' => $data]);
     }
@@ -62,11 +61,11 @@ class NoteVoucherController extends Controller
         if (auth()->user()->can('noteVoucher-add')) {
 
             $note_voucher_type_id = $request->query('id');
-            $shops = Shop::get();
+
             $warehouses = Warehouse::get();
             $note_voucher_type = NoteVoucherType::findOrFail($note_voucher_type_id);
 
-            return view('admin.noteVouchers.create',compact('note_voucher_type_id','shops','warehouses','note_voucher_type'));
+            return view('admin.noteVouchers.create',compact('note_voucher_type_id','warehouses','note_voucher_type'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -87,9 +86,7 @@ class NoteVoucherController extends Controller
         'number' => $newNumber,
         'from_warehouse_id' => $request['fromWarehouse'],
         'to_warehouse_id' => $request['toWarehouse'] ?? null,
-        'shop_id' => $request['shop'],
         'note' => $request['note'],
-        'shop_id' => $request['shop'],
     ]);
 
     // Save the products and update quantities
@@ -121,7 +118,6 @@ class NoteVoucherController extends Controller
         $noteVoucher = NoteVoucher::with([
             'fromWarehouse',
             'toWarehouse',
-            'shop',
             'voucherProducts',
             'voucherProducts.units',
             'noteVoucherType' // Include the related noteVoucherType
@@ -135,19 +131,19 @@ class NoteVoucherController extends Controller
         $noteVoucher = NoteVoucher::with('noteVoucherType','voucherProducts','voucherProducts.units')->findOrFail($id);
         $products = Product::all();
         $warehouses = Warehouse::all();
-        $shops = Shop::all();
+
         // Pass the note voucher and products to the view
-        return view('admin.noteVouchers.edit', compact('noteVoucher', 'products','warehouses','shops'));
+        return view('admin.noteVouchers.edit', compact('noteVoucher', 'products','warehouses'));
     }
-    
+
 
     public function update(Request $request, $id)
     {
         $noteVoucher = NoteVoucher::findOrFail($id);
-    
+
         // Start a database transaction
         DB::beginTransaction();
-    
+
         try {
             // Update the note voucher details
             $noteVoucher->update([
@@ -155,18 +151,18 @@ class NoteVoucherController extends Controller
                 'date_note_voucher' => $request['date_note_voucher'],
                 'from_warehouse_id' => $request['fromWarehouse'],
                 'to_warehouse_id' => $request['toWarehouse'] ?? null,
-                'shop_id' => $request['shop'],
+                
                 'note' => $request['note'],
             ]);
-    
+
             $existingProducts = $noteVoucher->voucherProducts()->pluck('product_id')->toArray();
             $submittedProducts = [];
-    
+
             // Attach or update products
             foreach ($request['products'] as $productData) {
                 $product = Product::where('name_ar', $productData['name'])->firstOrFail();
                 $submittedProducts[] = $product->id;
-    
+
                 // Update existing product or attach a new one
                 $noteVoucher->voucherProducts()->syncWithoutDetaching([
                     $product->id => [
@@ -177,23 +173,23 @@ class NoteVoucherController extends Controller
                     ]
                 ]);
             }
-    
+
             // Detach products that were not in the request
             $productsToDetach = array_diff($existingProducts, $submittedProducts);
             if (!empty($productsToDetach)) {
                 $noteVoucher->voucherProducts()->detach($productsToDetach);
             }
-    
+
             DB::commit();
-    
+
             return redirect()->route('noteVouchers.index')->with('success', 'Note Voucher updated successfully!');
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
-    
+
 
 
     public function destroy($id)

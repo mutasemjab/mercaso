@@ -17,8 +17,6 @@ return new class extends Migration
             $table->id();
             $table->string('place');
             $table->double('price');
-            $table->unsignedBigInteger('shop_id')->nullable();
-            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->timestamps();
         });
     }

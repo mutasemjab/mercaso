@@ -17,7 +17,7 @@ class OfferController extends Controller
      */
     public function index()
     {
-        $data= Offer::where('shop_id',auth()->user()->shop_id)->paginate(PAGINATION_COUNT);
+        $data= Offer::paginate(PAGINATION_COUNT);
 
         return view('admin.offers.index',compact('data'));
     }
@@ -49,7 +49,6 @@ class OfferController extends Controller
             $offer->expired_at = $request->get('expired_at');
             $offer->user_type = $request->get('user_type');
             $offer->product_id = $request->input('product');
-            $offer->shop_id = auth()->user()->shop_id;
 
             if($offer->save())
             {

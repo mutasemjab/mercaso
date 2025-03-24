@@ -39,21 +39,7 @@
                     </div>
 
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="shop">{{ __('messages.shops') }}</label>
-                            <select class="form-control" name="shop" id="shop_id">
-                                <option value="">Select shops</option>
-                                @foreach($shops as $shop)
-                                    <option value="{{ $shop->id }}" @if($data->shop_id == $shop->id) selected @endif>{{ $shop->name }}</option>
-                                @endforeach
-                                <option value="0" @if($data->shop_id === null) selected @endif>No shop</option>
-                            </select>
-                            @error('shop')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
+
 
 
                     <div class="col-md-12">

@@ -131,6 +131,17 @@
 
                 <div class="col-md-6">
                     <div class="form-group">
+                        <label> {{ __('messages.points') }}</label>
+                        <input name="points" id="points" class="form-control"
+                            value="{{ old('points', $data->points) }}">
+                        @error('points')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
                         <label> {{ __('messages.Name_ar') }}</label>
                         <input name="name_ar" id="name_ar" class="form-control"
                             value="{{ old('name_ar', $data->name_ar) }}">

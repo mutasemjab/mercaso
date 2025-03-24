@@ -122,7 +122,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $query = Product::where('shop_id', auth()->user()->shop_id);
+        $query = Product::query();
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -178,6 +178,7 @@ class ProductController extends Controller
             $product->description_ar = $request->input('description_ar');
             $product->has_variation = $request->input('has_variation');
             $product->tax = $request->input('tax');
+            $product->points = $request->input('points');
             $product->selling_price_for_user = $request->input('selling_price_for_user');
             $product->min_order_for_user = $request->input('min_order_for_user');
             $product->min_order_for_wholesale = $request->input('min_order_for_wholesale');
@@ -188,7 +189,7 @@ class ProductController extends Controller
             $product->category_id = $request->input('category');
             $product->unit_id = $request->input('unit');
             $product->brand_id = $request->input('brand') ?? null;
-            $product->shop_id = auth()->user()->shop_id;
+
 
             if ($product->has_variation) {
                 $product->save(); // Save the product first to generate an ID
@@ -305,6 +306,7 @@ class ProductController extends Controller
             $product->description_fr = $request->input('description_fr');
             $product->has_variation = $request->input('has_variation');
             $product->tax = $request->input('tax');
+            $product->points = $request->input('points');
             $product->selling_price_for_user = $request->input('selling_price_for_user');
             $product->min_order_for_user = $request->input('min_order_for_user');
             $product->min_order_for_wholesale = $request->input('min_order_for_wholesale');

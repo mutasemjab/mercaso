@@ -35,17 +35,6 @@
 
 
             <div class="col-md-6">
-                <div class="form-group mt-3">
-                    <label for="shop">{{ __('messages.shop') }}</label>
-                    <select name="shop" class="form-control" required>
-                        @foreach ($shops as $shop)
-                            <option value="{{ $shop->id }}" {{ $noteVoucher->shop_id == $shop->id ? 'selected' : '' }}>{{ $shop->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <div class="col-md-6">
                 <div class="form-group">
                     <label for="note">{{ __('messages.Note') }}</label>
                     <textarea name="note" class="form-control">{{ $noteVoucher->note }}</textarea>

@@ -20,7 +20,7 @@ class CartController extends Controller
 
         $carts = Cart::with([
             'product' => function ($query) {
-                $query->with('category', 'variations', 'productImages', 'units', 'unit', 'offers',  'shop');
+                $query->with('category', 'variations', 'productImages', 'units', 'unit', 'offers');
             },
             'variation' // Include this if variation is directly related to the Cart model
         ])->where('user_id', auth()->id())->where('status', 1)->get();
@@ -34,8 +34,6 @@ class CartController extends Controller
 
         $total = 0;
         $totalDiscount = 0;
-        $currency = '';
-        $shopId = null;
 
         foreach ($carts as $cart) {
             $item = $cart->product;
@@ -64,7 +62,6 @@ class CartController extends Controller
 
             $item->rating = $item->rating;
             $item->total_rating = $item->total_rating;
-            $currency = $item->currency; // Assuming all products have the same currency
 
             // Calculate the total price for the product in the cart
             $cart->total_price_product = $cart->quantity * $item->price;
@@ -79,10 +76,6 @@ class CartController extends Controller
             // Add to the overall total
             $total += $cart->total_price_product;
 
-            // Set the shop ID for the response (assuming all products in the cart are from the same shop)
-            if ($item->shop) {
-                $shopId = $item->shop->id;
-            }
         }
 
         // Apply coupon discount as a percentage of the total
@@ -101,8 +94,7 @@ class CartController extends Controller
             'total' => $total,
             'total_discount' => $totalDiscount,
             'total_after_discounts' => $totalAfterDiscounts,
-            'currency' => $currency,
-            'shop_id' => $shopId,
+
         ]);
     }
 

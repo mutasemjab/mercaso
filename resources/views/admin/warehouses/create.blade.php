@@ -27,20 +27,6 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="shop">{{ __('messages.shops') }}</label>
-                            <select class="form-control" name="shop" id="country_id">
-                                <option value="">Select {{ __('messages.shops') }}</option>
-                                @foreach($shops as $shop)
-                                    <option value="{{ $shop->id }}">{{ $shop->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('shop')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
 
 
                     <div class="col-md-12">

@@ -99,6 +99,14 @@
                 </div>
 
                 <div class="form-group col-md-6">
+                    <label for="points"> {{ __('messages.points') }}</label>
+                    <input name="points" id="points" class="form-control" value="{{ old('points') }}">
+                    @error('points')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group col-md-6">
                     <label for="name_ar"> {{ __('messages.Name_ar') }}</label>
                     <input name="name_ar" id="name_ar" class="form-control" value="{{ old('name_ar') }}">
                     @error('name_ar')
