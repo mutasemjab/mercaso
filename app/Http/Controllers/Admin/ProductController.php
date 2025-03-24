@@ -150,8 +150,9 @@ class ProductController extends Controller
             $categories = Category::get();
             $units = Unit::get();
             $brands = Brand::get();
-
-            return view('admin.products.create', compact('categories', 'units','brands'));
+            $lastNumber = Product::latest('number')->value('number');
+            $newNumber = $lastNumber ? $lastNumber + 1 : 1;
+            return view('admin.products.create', compact('categories', 'units','brands','newNumber'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");

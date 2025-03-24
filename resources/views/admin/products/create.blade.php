@@ -84,7 +84,7 @@
 
                 <div class="form-group col-md-6">
                     <label for="number"> {{ __('messages.number') }}</label>
-                    <input name="number" id="number" class="form-control" value="{{ old('number') }}">
+                    <input name="number" id="number" class="form-control" value="{{ old('number', $newNumber) }}">
                     @error('number')
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
