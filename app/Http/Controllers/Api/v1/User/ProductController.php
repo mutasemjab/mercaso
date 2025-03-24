@@ -9,78 +9,94 @@ use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
-   public function index(Request $request)
-{
-    $token = $request->bearerToken();
-    $authenticatedUser = null;
-    $userType = 1; // Default user_type for non-authenticated users
+    public function index(Request $request)
+    {
+        $token = $request->bearerToken();
+        $authenticatedUser = null;
+        $userType = 1; // Default user_type for non-authenticated users
 
-    // If the user is authenticated, get their user_type
-    if ($token) {
-        $authenticatedUser = Auth::guard('user-api')->user();
-        if ($authenticatedUser) {
-            $userType = $authenticatedUser->user_type;
+        // If the user is authenticated, get their user_type
+        if ($token) {
+            $authenticatedUser = Auth::guard('user-api')->user();
+            if ($authenticatedUser) {
+                $userType = $authenticatedUser->user_type;
+            }
         }
-    }
 
-    $itemlist = Product::with('category', 'variations', 'productImages', 'units', 'unit', 'offers', 'category.countries');
+        $itemlist = Product::with('category', 'variations', 'productImages', 'units', 'unit', 'offers');
 
-    // Search functionality
-    if ($request->has('search')) {
-        $search = $request->search;
-        $itemlist->where(function ($query) use ($search) {
-            $query->where('name_ar', 'like', "%$search%")
-                  ->orWhere('name_en', 'LIKE', "%$search%")
-                  ->orWhere('name_fr', 'LIKE', "%$search%")
-                  ->orWhere('number', 'LIKE', "%$search%");
-        });
-    }
+        // Search functionality
+        if ($request->has('search')) {
+            $search = $request->search;
+            $itemlist->where(function ($query) use ($search) {
+                $query->where('name_ar', 'like', "%$search%")
+                    ->orWhere('name_en', 'LIKE', "%$search%")
+                    ->orWhere('number', 'LIKE', "%$search%")
+                    ->orWhere('barcode', 'LIKE', "%$search%"); // Added barcode search
+            });
+        }
 
-    $itemlist = $itemlist->get();
+        // Get the results
+        $itemlist = $itemlist->get();
 
-    foreach ($itemlist as $item) {
-        if ($authenticatedUser) {
-            // Set data based on the authenticated user's user_type
-            if ($userType == 1) {
+        // Process each product with user-specific data
+        foreach ($itemlist as $item) {
+            if ($authenticatedUser) {
+                // Set data based on the authenticated user's user_type
+                if ($userType == 1) {
+                    $item->unit_name = $item->unit ? $item->unit->name_ar : null;
+                    $item->price = $item->selling_price_for_user;
+                    $item->quantity = $item->available_quantity_for_user;
+                } elseif ($userType == 2) {
+                    $unit = $item->units->first();
+                    $item->unit_name = $unit ? $unit->name_ar : null;
+                    $item->price = $unit ? $unit->pivot->selling_price : null;
+                    $item->quantity = $item->available_quantity_for_wholeSale;
+                }
+
+                // Check if the product is a favorite
+                $item->is_favourite = $authenticatedUser->favourites()->where('product_id', $item->id)->exists();
+
+                // Filter offers based on user_type
+                $item->has_offer = $item->offers()->where('user_type', $userType)->exists();
+                $item->offer_id = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->id : 0;
+                $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->price : 0;
+            } else {
+                // Default values for non-authenticated users
                 $item->unit_name = $item->unit ? $item->unit->name_ar : null;
                 $item->price = $item->selling_price_for_user;
                 $item->quantity = $item->available_quantity_for_user;
-            } elseif ($userType == 2) {
-                $unit = $item->units->first();
-                $item->unit_name = $unit ? $unit->name_ar : null;
-                $item->price = $unit ? $unit->pivot->selling_price : null;
-                $item->quantity = $item->available_quantity_for_wholeSale;
+                $item->is_favourite = false;
+
+                // Default offers for non-authenticated users (user_type = 1)
+                $item->has_offer = $item->offers()->where('user_type', 1)->exists();
+                $item->offer_id = $item->has_offer ? $item->offers()->where('user_type', 1)->first()->id : 0;
+                $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', 1)->first()->price : 0;
             }
 
-            // Check if the product is a favorite
-            $item->is_favourite = $authenticatedUser->favourites()->where('product_id', $item->id)->exists();
-
-            // Filter offers based on user_type
-            $item->has_offer = $item->offers()->where('user_type', $userType)->exists();
-            $item->offer_id = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->id : 0;
-            $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->price : 0;
-        } else {
-            // Default values for non-authenticated users
-            $item->unit_name = $item->unit ? $item->unit->name_ar : null;
-            $item->price = $item->selling_price_for_user;
-            $item->quantity = $item->available_quantity_for_user;
-            $item->is_favourite = false;
-
-            // Default offers for non-authenticated users (user_type = 1)
-            $item->has_offer = $item->offers()->where('user_type', 1)->exists();
-            $item->offer_id = $item->has_offer ? $item->offers()->where('user_type', 1)->first()->id : 0;
-            $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', 1)->first()->price : 0;
+            // Set additional product details
+            $item->rating = $item->rating;
+            $item->total_rating = $item->total_rating;
         }
 
-        // Set additional product details
-        $item->rating = $item->rating;
-        $item->total_rating = $item->total_rating;
-        $item->currency = $item->category->countries->first()->sympol ?? '';
+        // Apply sorting if requested
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'price_high_low':
+                    $itemlist = $itemlist->sortByDesc(function ($item) {
+                        return $item->has_offer ? $item->offer_price : $item->price;
+                    })->values();
+                    break;
+                case 'price_low_high':
+                    $itemlist = $itemlist->sortBy(function ($item) {
+                        return $item->has_offer ? $item->offer_price : $item->price;
+                    })->values();
+                    break;
+            }
+        }
+
+        return response()->json(['status' => 1, 'message' => trans('messages.success'), 'data' => $itemlist], 200);
     }
-
-    return response()->json(['status' => 1, 'message' => trans('messages.success'), 'data' => $itemlist], 200);
-}
-
 
 
 
@@ -150,7 +166,7 @@ class ProductController extends Controller
             ->where('status', 1)
             ->get();
 
-        
+
             foreach ($itemlist as $item) {
                 if ($authenticatedUser) {
                 $userType = $authenticatedUser->user_type;
