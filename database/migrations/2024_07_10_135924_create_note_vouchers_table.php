@@ -21,11 +21,9 @@ return new class extends Migration
             $table->unsignedBigInteger('from_warehouse_id')->nullable();
             $table->unsignedBigInteger('to_warehouse_id')->nullable();
             $table->unsignedBigInteger('order_id')->nullable();
-            $table->unsignedBigInteger('shop_id');
             $table->unsignedBigInteger('note_voucher_type_id');
             $table->foreign('from_warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');
             $table->foreign('to_warehouse_id')->references('id')->on('warehouses')->onDelete('cascade');
-            $table->foreign('shop_id')->references('id')->on('shops')->onDelete('cascade');
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->foreign('note_voucher_type_id')->references('id')->on('note_voucher_types')->onDelete('cascade');
 
