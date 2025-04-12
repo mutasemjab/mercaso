@@ -115,5 +115,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::post('/orders', [OrderController::class, 'store']); // Done
         Route::get('/orders/{id}/cancel', [OrderController::class, 'cancel_order']);
         Route::post('/orders/{id}/refund', [OrderController::class, 'refund']);
+        Route::get('buy-again', [OrderController::class, 'buyAgain']);
+
     });
 });

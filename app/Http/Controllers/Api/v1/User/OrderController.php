@@ -19,6 +19,55 @@ use Illuminate\Support\Facades\Log;
 class OrderController extends Controller
 {
 
+    public function buyAgain(Request $request)
+    {
+        // Get authenticated user
+        $user = auth()->user();
+
+        // Find the latest order for this user
+        $latestOrder = Order::where('user_id', $user->id)
+                            ->where('order_type', 1) // Only "Sell" type orders
+                            ->latest() // Order by created_at desc
+                            ->with(['orderProducts.product', 'orderProducts.variation', 'orderProducts.unit'])
+                            ->first();
+
+        if (!$latestOrder) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No previous orders found'
+            ], 404);
+        }
+
+        // Format the response with order and product information
+        $response = [
+            'status' => true,
+            'data' => [
+                'order' => [
+                    'id' => $latestOrder->id,
+                    'number' => $latestOrder->number,
+                    'date' => $latestOrder->date,
+                    'total' => $latestOrder->total_prices,
+                    'address_id' => $latestOrder->address_id
+                ],
+                'products' => $latestOrder->orderProducts->map(function($orderProduct) {
+                    return [
+                        'product_id' => $orderProduct->product_id,
+                        'variation_id' => $orderProduct->variation_id,
+                        'unit_id' => $orderProduct->unit_id,
+                        'quantity' => $orderProduct->quantity,
+                        'unit_price' => $orderProduct->unit_price,
+                        'total_price' => $orderProduct->total_price_after_tax,
+                        'product_name' => $orderProduct->product->name ?? null,
+                        'variation_name' => $orderProduct->variation->name ?? null,
+                        'unit_name' => $orderProduct->unit->name ?? null
+                    ];
+                })
+            ]
+        ];
+
+        return response()->json($response);
+    }
+
         public function index()
     {
         $user_id = auth()->user()->id;
@@ -27,10 +76,10 @@ class OrderController extends Controller
             'orderProducts' => function ($query) {
                 $query->with([
                     'product' => function ($query) {
-                        $query->with(['category', 'productImages', 'category.countries']);
+                        $query->with(['category', 'productImages']);
                     },
                     'unit' => function ($query) {
-                        $query->select('id', 'name_en', 'name_ar', 'name_fr'); // Include locale fields
+                        $query->select('id', 'name_en', 'name_ar'); // Include locale fields
                     },
                     'variation' => function ($query) {
                         $query->select('id', 'product_id', 'variation');
@@ -121,7 +170,7 @@ class OrderController extends Controller
                 'total_prices' => $total_prices + $delivery_fee,
                 'date' => now(),
                 'user_id' => $user_id,
-          
+
             ]);
 
             // Handle photo note upload

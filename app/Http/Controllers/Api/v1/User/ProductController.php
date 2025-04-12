@@ -162,7 +162,7 @@ class ProductController extends Controller
             $authenticatedUser = Auth::guard('user-api')->user();
         }
 
-        $itemlist = Product::with('category', 'variations', 'productImages', 'units', 'unit', 'category.countries')
+        $itemlist = Product::with('category', 'variations', 'productImages', 'units', 'unit',)
             ->where('status', 1)
             ->get();
 
@@ -191,7 +191,6 @@ class ProductController extends Controller
             }
                 $item->rating = $item->rating;
                 $item->total_rating = $item->total_rating;
-                $item->currency = $item->category->countries->first()->sympol ?? '';
                 $item->has_offer = $item->offers()->exists();
                 $item->offer_id = $item->has_offer ? $item->offers()->first()->id : 0;
                 $item->offer_price = $item->has_offer ? $item->offers()->first()->price : 0;
