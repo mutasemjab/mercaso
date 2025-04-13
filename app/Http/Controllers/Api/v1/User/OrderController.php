@@ -38,34 +38,9 @@ class OrderController extends Controller
             ], 404);
         }
 
-        // Format the response with order and product information
-        $response = [
-            'status' => true,
-            'data' => [
-                'order' => [
-                    'id' => $latestOrder->id,
-                    'number' => $latestOrder->number,
-                    'date' => $latestOrder->date,
-                    'total' => $latestOrder->total_prices,
-                    'address_id' => $latestOrder->address_id
-                ],
-                'products' => $latestOrder->orderProducts->map(function($orderProduct) {
-                    return [
-                        'product_id' => $orderProduct->product_id,
-                        'variation_id' => $orderProduct->variation_id,
-                        'unit_id' => $orderProduct->unit_id,
-                        'quantity' => $orderProduct->quantity,
-                        'unit_price' => $orderProduct->unit_price,
-                        'total_price' => $orderProduct->total_price_after_tax,
-                        'product_name' => $orderProduct->product->name ?? null,
-                        'variation_name' => $orderProduct->variation->name ?? null,
-                        'unit_name' => $orderProduct->unit->name ?? null
-                    ];
-                })
-            ]
-        ];
 
-        return response()->json($response);
+        return response()->json(['data' => $latestOrder]);
+
     }
 
         public function index()
