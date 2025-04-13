@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 class OrderController extends Controller
 {
-
     public function buyAgain(Request $request)
     {
         // Get authenticated user
@@ -28,7 +27,13 @@ class OrderController extends Controller
         $latestOrder = Order::where('user_id', $user->id)
                             ->where('order_type', 1) // Only "Sell" type orders
                             ->latest() // Order by created_at desc
-                            ->with(['orderProducts.product', 'orderProducts.variation', 'orderProducts.unit'])
+                            ->with(['orderProducts.product.category',
+                                    'orderProducts.product.variations',
+                                    'orderProducts.product.productImages',
+                                    'orderProducts.product.units',
+                                    'orderProducts.product.unit',
+                                    'orderProducts.variation',
+                                    'orderProducts.unit'])
                             ->first();
 
         if (!$latestOrder) {
@@ -38,9 +43,39 @@ class OrderController extends Controller
             ], 404);
         }
 
+        // Extract products from the latest order
+        $itemlist = collect();
+        foreach ($latestOrder->orderProducts as $orderProduct) {
+            $product = $orderProduct->product;
 
-        return response()->json(['data' => $latestOrder]);
+            if ($product && $product->status == 1) {
+                // Determine user type and set properties accordingly
+                $userType = $user->user_type;
 
+                if ($userType == 1) {
+                    $product->unit_name = $product->unit ? $product->unit->name_ar : null;
+                    $product->price = $product->selling_price_for_user;
+                    $product->quantity = $product->available_quantity_for_user;
+                } elseif ($userType == 2) {
+                    $unit = $product->units->first();
+                    $product->unit_name = $unit ? $unit->name_ar : null;
+                    $product->price = $unit ? $unit->pivot->selling_price : null;
+                    $product->quantity = $product->available_quantity_for_wholeSale;
+                }
+
+                // Set additional product properties
+                $product->is_favourite = $user->favourites()->where('product_id', $product->id)->exists();
+                $product->rating = $product->rating;
+                $product->total_rating = $product->total_rating;
+                $product->has_offer = $product->offers()->exists();
+                $product->offer_id = $product->has_offer ? $product->offers()->first()->id : 0;
+                $product->offer_price = $product->has_offer ? $product->offers()->first()->price : 0;
+
+                $itemlist->push($product);
+            }
+        }
+
+        return response()->json(['data' => $itemlist]);
     }
 
         public function index()
