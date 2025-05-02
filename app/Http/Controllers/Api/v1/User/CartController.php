@@ -121,89 +121,86 @@ class CartController extends Controller
 
 
     public function store(Request $request)
-{
-    // Validate the request data
-    $request->validate([
-        'product_id' => 'required|exists:products,id',
-        'variation_id' => 'nullable|integer',
-    ]);
+    {
+        // Validate the request data
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'variation_id' => 'nullable|integer',
+        ]);
 
-    // Fetch the authenticated user and their user_type
-    $user = auth()->user();
-    $userType = $user->user_type;
+        // Fetch the authenticated user and their user_type
+        $user = auth()->user();
+        $userType = $user->user_type;
 
-    // Fetch the product based on the provided product_id
-    $product = Product::findOrFail($request->input('product_id'));
+        // Fetch the product based on the provided product_id
+        $product = Product::findOrFail($request->input('product_id'));
 
-    // Filter offers by user_type and get the offer price if available for this user type
-    $offer = $product->offers()->where('user_type', $userType)->first();
+        // Filter offers by user_type and get the offer price if available for this user type
+        $offer = $product->offers()->where('user_type', $userType)->first();
 
-    // Determine the price based on user_type and available offers
-    if ($offer) {
-        // Use the offer price if there is a matching offer for the user_type
-        $price = $offer->price;
-    } else {
-        // No matching offer, calculate the price based on user_type
-        if ($userType == 1) {
-            $price = $product->selling_price_for_user;
-        } elseif ($userType == 2) {
-            $unit = $product->units()->first();
-            if ($unit) {
-                $price = $unit->pivot->selling_price;
-            } else {
-                return response()->json(['message' => 'No unit found for the product'], 400);
-            }
-        }
-    }
-
-    // Check if the product is already in the cart for the authenticated user
-    $cartItem = Cart::where('user_id', auth()->id())
-        ->where('product_id', $request->input('product_id'))
-        ->where('variation_id', $request->input('variation_id'))
-        ->where('status', 1)
-        ->first();
-
-    if ($cartItem) {
-        // Update the quantity if the product is already in the cart
-        $cartItem->quantity += $request->input('quantity');
-
-        if ($cartItem->quantity < 1) {
-            // Remove the item from the cart if quantity is zero
-            $cartItem->delete();
-
-            // Check if a coupon exists for the user and delete it if necessary
-            $userCoupon = UserCoupon::where('user_id', $user->id)->first();
-            if ($userCoupon) {
-                $userCoupon->delete();
-            }
-
-            return response()->json(['message' => 'Item removed from cart'], 200);
+        // Determine the price based on user_type and available offers
+        if ($offer) {
+            // Use the offer price if there is a matching offer for the user_type
+            $price = $offer->price;
         } else {
-            // Correctly calculate the total price for the product
-            $cartItem->total_price_product = $price * $cartItem->quantity;
-            $cartItem->price = $price;
-            $cartItem->save();
-
-            return response()->json($cartItem, 200);
+            // No matching offer, calculate the price based on user_type
+            if ($userType == 1) {
+                $price = $product->selling_price_for_user;
+            } elseif ($userType == 2) {
+                $unit = $product->units()->first();
+                if ($unit) {
+                    $price = $unit->pivot->selling_price;
+                } else {
+                    return response()->json(['message' => 'No unit found for the product'], 400);
+                }
+            }
         }
-    } else {
-        // Product is not in the cart, create a new entry with quantity set to 1
-        $cart = new Cart();
-        $cart->user_id = auth()->id();
-        $cart->product_id = $request->input('product_id');
-        $cart->variation_id = $request->input('variation_id');
-        $cart->quantity = 1;
-        $cart->price = $price;
-        $cart->total_price_product = $price; // Set total price as price * quantity (1 in this case)
-        $cart->status = 1;
-        $cart->save();
 
-        return response()->json($cart, 201);
+        // Check if the product is already in the cart for the authenticated user
+        $cartItem = Cart::where('user_id', auth()->id())
+            ->where('product_id', $request->input('product_id'))
+            ->where('variation_id', $request->input('variation_id'))
+            ->where('status', 1)
+            ->first();
+
+        if ($cartItem) {
+            // Update the quantity if the product is already in the cart
+            $cartItem->quantity += $request->input('quantity');
+
+            if ($cartItem->quantity < 1) {
+                // Remove the item from the cart if quantity is zero
+                $cartItem->delete();
+
+                // Check if a coupon exists for the user and delete it if necessary
+                $userCoupon = UserCoupon::where('user_id', $user->id)->first();
+                if ($userCoupon) {
+                    $userCoupon->delete();
+                }
+
+                return response()->json(['message' => 'Item removed from cart'], 200);
+            } else {
+                // Correctly calculate the total price for the product
+                $cartItem->total_price_product = $price * $cartItem->quantity;
+                $cartItem->price = $price;
+                $cartItem->save();
+
+                return response()->json($cartItem, 200);
+            }
+        } else {
+            // Product is not in the cart, create a new entry with quantity set to 1
+            $cart = new Cart();
+            $cart->user_id = auth()->id();
+            $cart->product_id = $request->input('product_id');
+            $cart->variation_id = $request->input('variation_id');
+            $cart->quantity = 1;
+            $cart->price = $price;
+            $cart->total_price_product = $price; // Set total price as price * quantity (1 in this case)
+            $cart->status = 1;
+            $cart->save();
+
+            return response()->json($cart, 201);
+        }
     }
-}
-
-
-
 
 
 
@@ -251,6 +248,14 @@ class CartController extends Controller
         // Find the cart item by ID and delete it
         $cart = Cart::where('user_id', auth()->id())->findOrFail($id);
         $cart->delete();
+
+        return response()->json(null, 204);
+    }
+
+    public function destroyAll()
+    {
+        // Delete all cart items for the authenticated user
+        Cart::where('user_id', auth()->id())->delete();
 
         return response()->json(null, 204);
     }

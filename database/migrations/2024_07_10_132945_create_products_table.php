@@ -15,13 +15,14 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+            $table->string('crv')->nullable();
             $table->string('number');
             $table->string('barcode')->unique();
             $table->string('name_en');
             $table->string('name_ar');
             $table->text('description_en');
             $table->text('description_ar');
-            $table->double('tax');
+            $table->double('tax')->nullable();
             $table->double('selling_price_for_user');
             $table->tinyInteger('in_stock')->default(1); // 1 in stock // 2 out of stock
             $table->double('min_order_for_user');

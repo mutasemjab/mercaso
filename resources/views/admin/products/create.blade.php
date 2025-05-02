@@ -97,6 +97,14 @@
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
+             
+                <div class="form-group col-md-6">
+                    <label for="barcode"> {{ __('messages.crv') }}</label>
+                    <input name="crv" id="crv" class="form-control" value="{{ old('crv') }}">
+                    @error('crv')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
 
                 <div class="form-group col-md-6">
                     <label for="points"> {{ __('messages.points') }}</label>

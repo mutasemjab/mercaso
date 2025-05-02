@@ -106,7 +106,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::post('/carts', [CartController::class, 'store']); // Done
         Route::post('/carts/{id}', [CartController::class, 'update']); // Done
         Route::delete('/carts/{id}', [CartController::class, 'destroy']); // Done
-
+        Route::delete('cart', [CartController::class, 'destroyAll']);
 
         //---------------------- Order -----------------------//
         Route::get('/orders', [OrderController::class, 'index']); // Done

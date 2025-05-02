@@ -190,7 +190,7 @@ class ProductController extends Controller
             $product->category_id = $request->input('category');
             $product->unit_id = $request->input('unit');
             $product->brand_id = $request->input('brand') ?? null;
-
+            $product->crv = $request->input('crv');
 
             if ($product->has_variation) {
                 $product->save(); // Save the product first to generate an ID
@@ -301,10 +301,9 @@ class ProductController extends Controller
             $product->barcode = $request->input('barcode');
             $product->name_en = $request->input('name_en');
             $product->name_ar = $request->input('name_ar');
-            $product->name_fr = $request->input('name_fr');
+            $product->crv = $request->input('crv');
             $product->description_en = $request->input('description_en');
             $product->description_ar = $request->input('description_ar');
-            $product->description_fr = $request->input('description_fr');
             $product->has_variation = $request->input('has_variation');
             $product->tax = $request->input('tax');
             $product->points = $request->input('points');

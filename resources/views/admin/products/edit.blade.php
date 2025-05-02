@@ -128,6 +128,13 @@
                         @enderror
                     </div>
                 </div>
+                <div class="form-group col-md-6">
+                    <label for="barcode"> {{ __('messages.crv') }}</label>
+                    <input name="crv" id="crv" class="form-control" value="{{ old('crv', $data->crv) }}">
+                    @error('crv')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
 
                 <div class="col-md-6">
                     <div class="form-group">
@@ -162,17 +169,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.Name_fr') }}</label>
-                        <input name="name_fr" id="name_fr" class="form-control"
-                            value="{{ old('name_fr', $data->name_fr) }}">
-                        @error('name_fr')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
-
+               
                 <div class="col-md-6">
                     <div class="form-group">
                         <label> {{ __('messages.description_en') }}</label>
@@ -193,16 +190,7 @@
                         @enderror
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.description_fr') }}</label>
-                        <textarea name="description_fr" id="description_fr" class="form-control"
-                            value="{{ old('description_fr') }}" rows="8">{{$data->description_fr}}</textarea>
-                        @error('description_fr')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
+              
 
                 <div class="col-md-6">
                     <div class="form-group">
