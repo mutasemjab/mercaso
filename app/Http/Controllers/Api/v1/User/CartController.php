@@ -15,88 +15,88 @@ class CartController extends Controller
 {
 
         public function index()
-    {
-        $user = auth()->user();
+        {
+            $user = auth()->user();
 
-        $carts = Cart::with([
-            'product' => function ($query) {
-                $query->with('category', 'variations', 'productImages', 'units', 'unit', 'offers');
-            },
-            'variation' // Include this if variation is directly related to the Cart model
-        ])->where('user_id', auth()->id())->where('status', 1)->get();
+            $carts = Cart::with([
+                'product' => function ($query) {
+                    $query->with('category', 'variations', 'productImages', 'units', 'unit', 'offers');
+                },
+                'variation' // Include this if variation is directly related to the Cart model
+            ])->where('user_id', auth()->id())->where('status', 1)->get();
 
-        $token = request()->bearerToken();
-        $authenticatedUser = null;
+            $token = request()->bearerToken();
+            $authenticatedUser = null;
 
-        if ($token) {
-            $authenticatedUser = Auth::guard('user-api')->user();
-        }
+            if ($token) {
+                $authenticatedUser = Auth::guard('user-api')->user();
+            }
 
-        $total = 0;
-        $totalDiscount = 0;
+            $total = 0;
+            $totalDiscount = 0;
 
-        foreach ($carts as $cart) {
-            $item = $cart->product;
+            foreach ($carts as $cart) {
+                $item = $cart->product;
 
-            if ($authenticatedUser) {
-                $userType = $authenticatedUser->user_type;
+                if ($authenticatedUser) {
+                    $userType = $authenticatedUser->user_type;
 
-                // Filter offers by user_type and get the correct offer for the authenticated user
-                $item->has_offer = $item->offers()->where('user_type', $userType)->exists();
-                $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->price : null;
+                    // Filter offers by user_type and get the correct offer for the authenticated user
+                    $item->has_offer = $item->offers()->where('user_type', $userType)->exists();
+                    $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->price : null;
 
-                // Set the price based on user_type and offers
-                if ($userType == 1) {
-                    $item->unit_name = $item->unit ? $item->unit->name_ar : null;
-                    $item->price = $item->has_offer ? $item->offer_price : $item->selling_price_for_user;
-                    $item->quantity = $item->available_quantity_for_user;
-                } elseif ($userType == 2) {
-                    $unit = $item->units->first();
-                    $item->unit_name = $unit ? $unit->name_ar : null;
-                    $item->price = $item->has_offer ? $item->offer_price : ($unit ? $unit->pivot->selling_price : null);
-                    $item->quantity = $item->available_quantity_for_wholeSale;
+                    // Set the price based on user_type and offers
+                    if ($userType == 1) {
+                        $item->unit_name = $item->unit ? $item->unit->name_ar : null;
+                        $item->price = $item->has_offer ? $item->offer_price : $item->selling_price_for_user;
+                        $item->quantity = $item->available_quantity_for_user;
+                    } elseif ($userType == 2) {
+                        $unit = $item->units->first();
+                        $item->unit_name = $unit ? $unit->name_ar : null;
+                        $item->price = $item->has_offer ? $item->offer_price : ($unit ? $unit->pivot->selling_price : null);
+                        $item->quantity = $item->available_quantity_for_wholeSale;
+                    }
+
+                    $item->is_favourite = $authenticatedUser->favourites()->where('product_id', $item->id)->exists();
                 }
 
-                $item->is_favourite = $authenticatedUser->favourites()->where('product_id', $item->id)->exists();
+                $item->rating = $item->rating;
+                $item->total_rating = $item->total_rating;
+
+                // Calculate the total price for the product in the cart
+                $cart->total_price_product = round($cart->quantity * $item->price, 2);
+
+                // Apply offer discount if available
+                if ($item->has_offer) {
+                    $discount = round(($item->selling_price_for_user - $item->offer_price) * $cart->quantity, 2);
+                    $cart->total_price_product = round($item->offer_price * $cart->quantity, 2); // Set to offer price * quantity
+                    $totalDiscount += $discount;
+                }
+
+                // Add to the overall total
+                $total += $cart->total_price_product;
+
             }
 
-            $item->rating = $item->rating;
-            $item->total_rating = $item->total_rating;
+            // Apply coupon discount as a percentage of the total
+            $couponDiscount = $this->applyCouponDiscount($user->id, $total);
+            $totalDiscount += $couponDiscount;
+            $totalAfterDiscounts = round($total - $couponDiscount, 2);
 
-            // Calculate the total price for the product in the cart
-            $cart->total_price_product = $cart->quantity * $item->price;
-
-            // Apply offer discount if available
-            if ($item->has_offer) {
-                $discount = ($item->selling_price_for_user - $item->offer_price) * $cart->quantity;
-                $cart->total_price_product = $item->offer_price * $cart->quantity; // Set to offer price * quantity
-                $totalDiscount += $discount;
+            // Update the cart records with the coupon discount
+            foreach ($carts as $cart) {
+                $cart->discount_coupon = round($couponDiscount, 2);
+                $cart->save();
             }
 
-            // Add to the overall total
-            $total += $cart->total_price_product;
+            return response()->json([
+                'data' => $carts,
+                'total' => round($total, 2),
+                'total_discount' => round($totalDiscount, 2),
+                'total_after_discounts' => $totalAfterDiscounts,
 
+            ]);
         }
-
-        // Apply coupon discount as a percentage of the total
-        $couponDiscount = $this->applyCouponDiscount($user->id, $total);
-        $totalDiscount += $couponDiscount;
-        $totalAfterDiscounts = $total - $couponDiscount;
-
-        // Update the cart records with the coupon discount
-        foreach ($carts as $cart) {
-            $cart->discount_coupon = $couponDiscount;
-            $cart->save();
-        }
-
-        return response()->json([
-            'data' => $carts,
-            'total' => $total,
-            'total_discount' => $totalDiscount,
-            'total_after_discounts' => $totalAfterDiscounts,
-
-        ]);
-    }
 
 
     private function applyCouponDiscount($userId, $total)
@@ -115,7 +115,7 @@ class CartController extends Controller
             }
         }
 
-        return $couponDiscount;
+        return round($couponDiscount, 2);
     }
 
 
@@ -180,8 +180,8 @@ class CartController extends Controller
                 return response()->json(['message' => 'Item removed from cart'], 200);
             } else {
                 // Correctly calculate the total price for the product
-                $cartItem->total_price_product = $price * $cartItem->quantity;
-                $cartItem->price = $price;
+                $cartItem->total_price_product = round($price * $cartItem->quantity, 2);
+                $cartItem->price = round($price, 2);
                 $cartItem->save();
 
                 return response()->json($cartItem, 200);
@@ -193,8 +193,8 @@ class CartController extends Controller
             $cart->product_id = $request->input('product_id');
             $cart->variation_id = $request->input('variation_id');
             $cart->quantity = 1;
-            $cart->price = $price;
-            $cart->total_price_product = $price; // Set total price as price * quantity (1 in this case)
+            $cart->price = round($price, 2);
+            $cart->total_price_product = round($price, 2); // Set total price as price * quantity (1 in this case)
             $cart->status = 1;
             $cart->save();
 
@@ -235,7 +235,7 @@ class CartController extends Controller
 
         // Update the quantity
         $cart->quantity += $request->input('quantity');
-        $totalPrice = $cart->product->selling_price * $cart->quantity;
+        $totalPrice = round($cart->product->selling_price * $cart->quantity, 2);
         $cart->total_price_product = $totalPrice;
         $cart->save();
 
