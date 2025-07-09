@@ -14,89 +14,103 @@ use Illuminate\Support\Facades\Auth;
 class CartController extends Controller
 {
 
-        public function index()
-        {
-            $user = auth()->user();
+      public function index()
+    {
+        $user = auth()->user();
 
-            $carts = Cart::with([
-                'product' => function ($query) {
-                    $query->with('category', 'variations', 'productImages', 'units', 'unit', 'offers');
-                },
-                'variation' // Include this if variation is directly related to the Cart model
-            ])->where('user_id', auth()->id())->where('status', 1)->get();
+        $carts = Cart::with([
+            'product' => function ($query) {
+                $query->with('category', 'variations', 'productImages', 'units', 'unit', 'offers');
+            },
+            'variation' // Include this if variation is directly related to the Cart model
+        ])->where('user_id', auth()->id())->where('status', 1)->get();
 
-            $token = request()->bearerToken();
-            $authenticatedUser = null;
+        $token = request()->bearerToken();
+        $authenticatedUser = null;
 
-            if ($token) {
-                $authenticatedUser = Auth::guard('user-api')->user();
-            }
-
-            $total = 0;
-            $totalDiscount = 0;
-
-            foreach ($carts as $cart) {
-                $item = $cart->product;
-
-                if ($authenticatedUser) {
-                    $userType = $authenticatedUser->user_type;
-
-                    // Filter offers by user_type and get the correct offer for the authenticated user
-                    $item->has_offer = $item->offers()->where('user_type', $userType)->exists();
-                    $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->price : null;
-
-                    // Set the price based on user_type and offers
-                    if ($userType == 1) {
-                        $item->unit_name = $item->unit ? $item->unit->name_ar : null;
-                        $item->price = $item->has_offer ? $item->offer_price : $item->selling_price_for_user;
-                        $item->quantity = $item->available_quantity_for_user;
-                    } elseif ($userType == 2) {
-                        $unit = $item->units->first();
-                        $item->unit_name = $unit ? $unit->name_ar : null;
-                        $item->price = $item->has_offer ? $item->offer_price : ($unit ? $unit->pivot->selling_price : null);
-                        $item->quantity = $item->available_quantity_for_wholeSale;
-                    }
-
-                    $item->is_favourite = $authenticatedUser->favourites()->where('product_id', $item->id)->exists();
-                }
-
-                $item->rating = $item->rating;
-                $item->total_rating = $item->total_rating;
-
-                // Calculate the total price for the product in the cart
-                $cart->total_price_product = round($cart->quantity * $item->price, 2);
-
-                // Apply offer discount if available
-                if ($item->has_offer) {
-                    $discount = round(($item->selling_price_for_user - $item->offer_price) * $cart->quantity, 2);
-                    $cart->total_price_product = round($item->offer_price * $cart->quantity, 2); // Set to offer price * quantity
-                    $totalDiscount += $discount;
-                }
-
-                // Add to the overall total
-                $total += $cart->total_price_product;
-
-            }
-
-            // Apply coupon discount as a percentage of the total
-            $couponDiscount = $this->applyCouponDiscount($user->id, $total);
-            $totalDiscount += $couponDiscount;
-            $totalAfterDiscounts = round($total - $couponDiscount, 2);
-
-            // Update the cart records with the coupon discount
-            foreach ($carts as $cart) {
-                $cart->discount_coupon = round($couponDiscount, 2);
-                $cart->save();
-            }
-
-            return response()->json([
-                'data' => $carts,
-                'total' => round($total, 2),
-                'total_discount' => round($totalDiscount, 2),
-                'total_after_discounts' => $totalAfterDiscounts,
-
-            ]);
+        if ($token) {
+            $authenticatedUser = Auth::guard('user-api')->user();
         }
+
+        $total = 0;
+        $totalDiscount = 0;
+        $totalTax = 0;
+        $totalCrv = 0;
+
+        foreach ($carts as $cart) {
+            $item = $cart->product;
+
+            if ($authenticatedUser) {
+                $userType = $authenticatedUser->user_type;
+
+                // Filter offers by user_type and get the correct offer for the authenticated user
+                $item->has_offer = $item->offers()->where('user_type', $userType)->exists();
+                $item->offer_price = $item->has_offer ? $item->offers()->where('user_type', $userType)->first()->price : null;
+
+                // Set the price based on user_type and offers
+                if ($userType == 1) {
+                    $item->unit_name = $item->unit ? $item->unit->name_ar : null;
+                    $item->price = $item->has_offer ? $item->offer_price : $item->selling_price_for_user;
+                    $item->quantity = $item->available_quantity_for_user;
+                } elseif ($userType == 2) {
+                    $unit = $item->units->first();
+                    $item->unit_name = $unit ? $unit->name_ar : null;
+                    $item->price = $item->has_offer ? $item->offer_price : ($unit ? $unit->pivot->selling_price : null);
+                    $item->quantity = $item->available_quantity_for_wholeSale;
+                }
+
+                $item->is_favourite = $authenticatedUser->favourites()->where('product_id', $item->id)->exists();
+            }
+
+            $item->rating = $item->rating;
+            $item->total_rating = $item->total_rating;
+
+            // Calculate the total price for the product in the cart
+            $cart->total_price_product = round($cart->quantity * $item->price, 2);
+
+            // Apply offer discount if available
+            if ($item->has_offer) {
+                $discount = round(($item->selling_price_for_user - $item->offer_price) * $cart->quantity, 2);
+                $cart->total_price_product = round($item->offer_price * $cart->quantity, 2); // Set to offer price * quantity
+                $totalDiscount += $discount;
+            }
+
+            // Calculate tax and CRV for this product (percentages)
+            if ($item->tax && $item->tax > 0) {
+                $productTax = round(($cart->total_price_product * $item->tax) / 100, 2);
+                $totalTax += $productTax;
+            }
+
+            if ($item->crv && $item->crv > 0) {
+                $productCrv = round(($cart->total_price_product * $item->crv) / 100, 2);
+                $totalCrv += $productCrv;
+            }
+
+            // Add to the overall total
+            $total += $cart->total_price_product;
+
+        }
+
+        // Apply coupon discount as a percentage of the total
+        $couponDiscount = $this->applyCouponDiscount($user->id, $total);
+        $totalDiscount += $couponDiscount;
+        $totalAfterDiscounts = round($total - $couponDiscount, 2);
+
+        // Update the cart records with the coupon discount
+        foreach ($carts as $cart) {
+            $cart->discount_coupon = round($couponDiscount, 2);
+            $cart->save();
+        }
+
+        return response()->json([
+            'data' => $carts,
+            'total' => round($total, 2),
+            'total_discount' => round($totalDiscount, 2),
+            'total_after_discounts' => $totalAfterDiscounts,
+            'total_tax' => round($totalTax, 2),
+            'total_crv' => round($totalCrv, 2),
+        ]);
+    }
 
 
     private function applyCouponDiscount($userId, $total)
