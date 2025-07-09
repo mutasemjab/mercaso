@@ -117,6 +117,9 @@ class OrderController extends Controller
             'payment_type' => 'required',
             'address_id' => 'required|exists:user_addresses,id',
             'note' => 'nullable',
+            'date' => 'nullable',
+            'from_time' => 'nullable',
+            'to_time' => 'nullable',
             'photo_note' => 'nullable',
         ]);
 
@@ -178,7 +181,9 @@ class OrderController extends Controller
                 'delivery_fee' => $delivery_fee,
                 'total_taxes' => $total_taxes,
                 'total_prices' => $total_prices + $delivery_fee,
-                'date' => now(),
+                'date' => $request->date,
+                'from_time' => $request->from_time,
+                'to_time' => $request->to_time,
                 'user_id' => $user_id,
 
             ]);
