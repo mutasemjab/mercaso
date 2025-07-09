@@ -11,25 +11,7 @@
             <h1 class="h3 mb-3 text-gray-800">{{ __('messages.order_report') }}</h1>
             <form method="GET" action="{{ route('order_report') }}">
                 <div class="form-row align-items-end">
-                    <div class="form-group col-md-3">
-                        <label for="shop_id">{{ __('messages.shop') }}</label>
-                        <select id="shop_id" name="shop_id" class="form-control" required>
-                            <option value="">{{ __('messages.select_shop') }}</option>
-                            @foreach($shops as $shop)
-                                <option value="{{ $shop->id }}" {{ request('shop_id') == $shop->id ? 'selected' : '' }}>{{ $shop->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label for="representative_id">{{ __('messages.representatives') }}</label>
-                        <select id="representative_id" name="representative_id" class="form-control">
-                            <option value="">{{ __('messages.select_representative') }}</option>
-                            @foreach($representatives as $representative)
-                                <option value="{{ $representative->id }}" {{ request('representative_id') == $representative->id ? 'selected' : '' }}>{{ $representative->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
+                 
                     <div class="form-group col-md-3">
                         <label for="user_type">{{ __('messages.user_type') }}</label>
                         <select id="user_type" name="user_type" class="form-control">
@@ -81,7 +63,6 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('messages.number') }}</th>
-                                    <th>{{ __('messages.representative') }}</th>
                                     <th>{{ __('messages.User') }}</th>
                                     <th>{{ __('messages.total_prices') }}</th>
                                     <th>{{ __('messages.order_status') }}</th>
@@ -91,7 +72,6 @@
                                 @foreach($reportData as $data)
                                 <tr>
                                     <td>{{ $data['order_id'] }}</td>
-                                    <td>{{ $data['representative'] }}</td>
                                     <td>{{ $data['user'] }}</td>
                                     <td>{{ $data['total_prices'] }}</td>
                                     <td>{{ $data['order_status'] }}</td>

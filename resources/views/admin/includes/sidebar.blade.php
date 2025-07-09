@@ -167,13 +167,14 @@
                     @endif
                     @php
                         $noteVouchertypes = App\Models\NoteVoucherType::get();
+                        $locale = app()->getLocale();
                     @endphp
                     @foreach ($noteVouchertypes as $noteVouchertype)
                         <li class="nav-item">
                             <a href="{{ route('noteVouchers.create', ['id' => $noteVouchertype->id]) }}"
                                 class="nav-link">
                                 <i class="far fa-circle nav-icon"></i>
-                                <p> {{ $noteVouchertype->name }} </p>
+                                <p> {{$locale == 'ar'? $noteVouchertype->name : $noteVouchertype->name_en }} </p>
                             </a>
                         </li>
                     @endforeach
@@ -267,36 +268,14 @@
                             </p>
                         </a>
                         <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ route('inventory_report') }}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p> {{ __('messages.inventory_report_with_costs') }} </p>
-                                </a>
-                            </li>
+                           
                             <li class="nav-item">
                                 <a href="{{ route('order_report') }}" class="nav-link">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p> {{ __('messages.order_report') }} </p>
                                 </a>
                             </li>
-                            <li class="nav-item">
-                                <a href="{{ route('product_move') }}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p> {{ __('messages.product_move') }} </p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('product_move_all') }}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p> {{ __('messages.product_move_all') }} </p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('tax_report') }}" class="nav-link">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p> {{ __('messages.tax_report') }} </p>
-                                </a>
-                            </li>
+                        
                             <li class="nav-item">
                                 <a href="{{ route('user_report') }}" class="nav-link">
                                     <i class="far fa-circle nav-icon"></i>
@@ -326,6 +305,19 @@
                         </a>
                     </li>
                     @endif
+                    <li class="nav-item">
+                        <a href="{{ route('taxes.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>{{ __('messages.taxes') }} </p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('crvs.index') }}" class="nav-link">
+                            <i class="far fa-circle nav-icon"></i>
+                            <p>{{ __('messages.crvs') }} </p>
+                        </a>
+                    </li>
+                    
                     <li class="nav-item">
                         <a href="{{ route('admin.login.edit', auth()->user()->id) }}" class="nav-link">
                             <i class="far fa-circle nav-icon"></i>

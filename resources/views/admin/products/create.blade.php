@@ -97,14 +97,6 @@
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-             
-                <div class="form-group col-md-6">
-                    <label for="barcode"> {{ __('messages.crv') }}</label>
-                    <input name="crv" id="crv" class="form-control" value="{{ old('crv') }}">
-                    @error('crv')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
 
                 <div class="form-group col-md-6">
                     <label for="points"> {{ __('messages.points') }}</label>
@@ -130,8 +122,6 @@
                     @enderror
                 </div>
 
-
-
                 <div class="form-group col-md-6">
                     <label for="description_en"> {{ __('messages.description_en') }}</label>
                     <textarea name="description_en" id="description_en" class="form-control" rows="8">{{ old('description_en') }}</textarea>
@@ -148,12 +138,52 @@
                     @enderror
                 </div>
 
-
-
+                <!-- Modified Tax Section -->
                 <div class="form-group col-md-6">
-                    <label for="tax"> {{ __('messages.tax') }} %</label>
-                    <input name="tax" id="tax" class="form-control" value="{{ old('tax') }}">
-                    @error('tax')
+                    <label for="has_tax"> {{ __('messages.has_tax') }}</label>
+                    <select name="has_tax" id="has_tax" class="form-control">
+                        <option value="0" @if(old('has_tax') == '0') selected @endif>No</option>
+                        <option value="1" @if(old('has_tax') == '1') selected @endif>Yes</option>
+                    </select>
+                    @error('has_tax')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group col-md-6" id="tax_dropdown" style="display: none;">
+                    <label for="tax_id"> {{ __('messages.select_tax') }}</label>
+                    <select name="tax_id" id="tax_id" class="form-control">
+                        <option value="">Select Tax</option>
+                        @foreach($taxes as $tax)
+                        <option value="{{ $tax->id }}">{{ $tax->name }} ({{ $tax->value }}%)</option>
+                        @endforeach
+                    </select>
+                    @error('tax_id')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <!-- Modified CRV Section -->
+                <div class="form-group col-md-6">
+                    <label for="has_crv"> {{ __('messages.has_crv') }}</label>
+                    <select name="has_crv" id="has_crv" class="form-control">
+                        <option value="0" @if(old('has_crv') == '0') selected @endif>No</option>
+                        <option value="1" @if(old('has_crv') == '1') selected @endif>Yes</option>
+                    </select>
+                    @error('has_crv')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group col-md-6" id="crv_dropdown" style="display: none;">
+                    <label for="crv_id"> {{ __('messages.select_crv') }}</label>
+                    <select name="crv_id" id="crv_id" class="form-control">
+                        <option value="">Select CRV</option>
+                        @foreach($crvs as $crv)
+                        <option value="{{ $crv->id }}">{{ $crv->name }} ({{ $crv->value }})</option>
+                        @endforeach
+                    </select>
+                    @error('crv_id')
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
@@ -206,34 +236,7 @@
                     @enderror
                 </div>
 
-                <div class="form-group col-md-6">
-                    <label for="has_variation"> {{ __('messages.has_variation') }}</label>
-                    <select name="has_variation" id="has_variation" class="form-control">
-                        <option value="">Select</option>
-                        <option @if(old('has_variation')==1 || old('has_variation')=="") selected="selected" @endif value="1">Active</option>
-                        <option @if(old('has_variation')==0 and old('has_variation')!="") selected="selected" @endif value="0">Inactive</option>
-                    </select>
-                    @error('has_variation')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div id="variationFields" class="form-group col-md-12">
-                    <div class="variation row">
-                        <div class="form-group col-md-4">
-                            <input type="text" name="attributes[]" class="form-control" placeholder="Attributes">
-                        </div>
-                        <div class="form-group col-md-4">
-                            <input type="text" name="variations[]" class="form-control" placeholder="Variations">
-                        </div>
-                        <div class="form-group col-md-4">
-                            <input type="number" name="available_quantities[]" class="form-control" placeholder="Available Quantity">
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group col-md-12">
-                    <button type="button" id="add-variation" class="btn btn-primary">Add Variation</button>
-                </div>
+         
 
                 <div class="form-group col-md-12">
                     <img src="" id="image-preview" alt="Selected Image" height="50px" width="50px" style="display: none;">
@@ -243,7 +246,6 @@
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
-
 
             </div>
 
@@ -292,32 +294,85 @@
 </div>
 
 @endsection
-
 @section('script')
 <script>
     // Function to toggle visibility of variation fields
     function toggleVariationFields() {
-        const hasVariation = document.getElementById('has_variation').value;
+        const hasVariationElement = document.getElementById('has_variation');
         const variationFields = document.getElementById('variationFields');
 
-        if (hasVariation === '1') {
-            variationFields.style.display = 'block';
-        } else {
-            variationFields.style.display = 'none';
+        if (hasVariationElement && variationFields) {
+            if (hasVariationElement.value === '1') {
+                variationFields.style.display = 'block';
+            } else {
+                variationFields.style.display = 'none';
+            }
         }
     }
 
-    // Initial state on page load
-    toggleVariationFields();
+    // Function to toggle tax dropdown
+    function toggleTaxDropdown() {
+        const hasTaxElement = document.getElementById('has_tax');
+        const taxDropdown = document.getElementById('tax_dropdown');
 
-    // Event listener to toggle fields when the selection changes
-    document.getElementById('has_variation').addEventListener('change', toggleVariationFields);
+        if (hasTaxElement && taxDropdown) {
+            if (hasTaxElement.value === '1') {
+                taxDropdown.style.display = 'block';
+            } else {
+                taxDropdown.style.display = 'none';
+            }
+        }
+    }
+
+    // Function to toggle crv dropdown
+    function toggleCrvDropdown() {
+        const hasCrvElement = document.getElementById('has_crv');
+        const crvDropdown = document.getElementById('crv_dropdown');
+
+        if (hasCrvElement && crvDropdown) {
+            if (hasCrvElement.value === '1') {
+                crvDropdown.style.display = 'block';
+            } else {
+                crvDropdown.style.display = 'none';
+            }
+        }
+    }
+
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initial state on page load
+        toggleVariationFields();
+        toggleTaxDropdown();
+        toggleCrvDropdown();
+
+        // Event listeners
+        const hasVariationElement = document.getElementById('has_variation');
+        const hasTaxElement = document.getElementById('has_tax');
+        const hasCrvElement = document.getElementById('has_crv');
+
+        if (hasVariationElement) {
+            hasVariationElement.addEventListener('change', toggleVariationFields);
+        }
+        
+        if (hasTaxElement) {
+            hasTaxElement.addEventListener('change', toggleTaxDropdown);
+        }
+        
+        if (hasCrvElement) {
+            hasCrvElement.addEventListener('change', toggleCrvDropdown);
+        }
+    });
 
     // Function to add new variation fields
     document.getElementById('add-variation').addEventListener('click', function () {
         const variationFields = document.getElementById('variationFields');
         const variation = document.querySelector('.variation');
         const clone = variation.cloneNode(true);
+        
+        // Clear the values in the cloned fields
+        const inputs = clone.querySelectorAll('input');
+        inputs.forEach(input => input.value = '');
+        
         variationFields.appendChild(clone);
     });
 
@@ -334,7 +389,7 @@
                         <label for="unit">{{ __('messages.unit') }}</label>
                         <select name="units[]" class="form-control" required>
                             @foreach ($units as $unit)
-                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                                <option value="{{ $unit->id }}">{{ $unit->name_en }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -348,7 +403,7 @@
                     </div>
                     <div class="form-group col-md-3">
                         <label for="selling_price">{{ __('messages.selling_price') }}</label>
-                        <input type="number" class="form-control" name="selling_prices[]">
+                        <input type="number" class="form-control" name="selling_prices[]" step="0.01" min="0">
                     </div>
                 </div>`;
             $('#product-units-container').append(unitTemplate);

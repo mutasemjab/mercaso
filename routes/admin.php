@@ -20,10 +20,12 @@ use App\Http\Controllers\Admin\ShopController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\CrvController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\NoteVoucherTypeController;
 use App\Http\Controllers\Admin\NoteVoucherController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\TaxController;
 use App\Http\Controllers\Reports\AllProductReportController;
 use App\Http\Controllers\Reports\InventoryReportController;
 use App\Http\Controllers\Reports\OrderReportController;
@@ -160,7 +162,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::resource('offers', OfferController::class);
         Route::resource('coupons', CouponController::class);
         Route::resource('products', ProductController::class);
-        Route::resource('shops', ShopController::class);
         Route::resource('categories', CategoryController::class);
         Route::resource('units', UnitController::class);
         Route::resource('orders', OrderController::class);
@@ -168,6 +169,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::resource('businessTypes', BusinessTypeController::class);
         Route::resource('brands', BrandController::class);
         Route::resource('banners', BannerController::class);
+        Route::resource('taxes', TaxController::class);
+        Route::resource('crvs', CrvController::class);
     });
 });
 

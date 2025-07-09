@@ -11,16 +11,7 @@
             <h1 class="h3 mb-3 text-gray-800">{{ __('messages.products') }}</h1>
             <form method="GET" action="{{ route('product_report') }}">
                 <div class="form-row align-items-end">
-                    <div class="form-group col-md-3">
-                        <label for="shop_id">{{ __('messages.shop') }}</label>
-                        <select id="shop_id" name="shop_id" class="form-control" required>
-                            <option value="">{{ __('messages.select_shop') }}</option>
-                            @foreach($shops as $shop)
-                                <option value="{{ $shop->id }}" {{ request('shop_id') == $shop->id ? 'selected' : '' }}>{{ $shop->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
+                 
                     <div class="form-group col-md-3">
                         <label for="to_date">{{ __('messages.to_date') }}</label>
                         <input type="date" id="to_date" name="to_date" class="form-control" value="{{ request('to_date', date('Y-m-t')) }}">

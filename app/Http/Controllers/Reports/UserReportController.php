@@ -12,18 +12,13 @@ class UserReportController extends Controller
 {
     public function index(Request $request)
     {
-        $shops = Shop::all();
-        $representatives = Representative::all();
-        $shopId = $request->input('shop_id');
-        $representativeId = $request->input('representative_id');
         $toDate = $request->input('to_date', date('Y-m-d')); // Default to today's date if not provided
 
         $reportData = [];
 
-        if ($shopId && $representativeId) {
-            $query = User::where('representative_id', $representativeId)
-                ->where('created_at', '<=', $toDate)
-                ->with(['addresses', 'wholeSales', 'representative']);
+      
+            $query = User::where('created_at', '<=', $toDate)
+                ->with(['addresses']);
 
             $users = $query->get();
 
@@ -35,9 +30,9 @@ class UserReportController extends Controller
                     'phone' => $user->phone,
                 ];
             }
-        }
+        
 
-        return view('reports.user_report', compact('shops','representatives', 'reportData', 'shopId', 'toDate', 'representativeId',));
+        return view('reports.user_report', compact( 'reportData', 'toDate'));
     }
 
 }

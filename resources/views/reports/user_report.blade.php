@@ -11,24 +11,6 @@
             <h1 class="h3 mb-3 text-gray-800">{{ __('messages.user_report') }}</h1>
             <form method="GET" action="{{ route('user_report') }}">
                 <div class="form-row align-items-end">
-                    <div class="form-group col-md-3">
-                        <label for="shop_id">{{ __('messages.shop') }}</label>
-                        <select id="shop_id" name="shop_id" class="form-control" required>
-                            <option value="">{{ __('messages.select_shop') }}</option>
-                            @foreach($shops as $shop)
-                                <option value="{{ $shop->id }}" {{ request('shop_id') == $shop->id ? 'selected' : '' }}>{{ $shop->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label for="representative_id">{{ __('messages.representatives') }}</label>
-                        <select id="representative_id" name="representative_id" class="form-control">
-                            <option value="">{{ __('messages.select_representative') }}</option>
-                            @foreach($representatives as $representative)
-                                <option value="{{ $representative->id }}" {{ request('representative_id') == $representative->id ? 'selected' : '' }}>{{ $representative->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
 
 
                     <div class="form-group col-md-3">

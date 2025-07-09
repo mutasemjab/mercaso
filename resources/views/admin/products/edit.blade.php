@@ -54,13 +54,10 @@
     <!-- /.card-header -->
     <div class="card-body">
 
-
         <form action="{{ route('products.update',$data['id']) }}" method="post" enctype='multipart/form-data'>
             <div class="row">
                 @csrf
                 @method('PUT')
-
-
 
                 <div class="form-group col-md-6">
                     <label for="category_id">Brand</label>
@@ -128,13 +125,6 @@
                         @enderror
                     </div>
                 </div>
-                <div class="form-group col-md-6">
-                    <label for="barcode"> {{ __('messages.crv') }}</label>
-                    <input name="crv" id="crv" class="form-control" value="{{ old('crv', $data->crv) }}">
-                    @error('crv')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
 
                 <div class="col-md-6">
                     <div class="form-group">
@@ -169,7 +159,6 @@
                     </div>
                 </div>
 
-               
                 <div class="col-md-6">
                     <div class="form-group">
                         <label> {{ __('messages.description_en') }}</label>
@@ -190,13 +179,90 @@
                         @enderror
                     </div>
                 </div>
-              
+
+                <!-- Modified Tax Section -->
+                @php
+                    $hasTax = $data->tax ? '1' : '0';
+                    $selectedTaxId = null;
+                    if ($data->tax) {
+                        foreach($taxes as $tax) {
+                            if ($tax->value == $data->tax) {
+                                $selectedTaxId = $tax->id;
+                                break;
+                            }
+                        }
+                    }
+                @endphp
 
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>{{ __('messages.tax') }} %</label>
-                        <input name="tax" id="tax" class="form-control" value="{{ old('tax', $data->tax) }}">
-                        @error('tax')
+                        <label>{{ __('messages.has_tax') }}</label>
+                        <select name="has_tax" id="has_tax" class="form-control">
+                            <option value="0" {{ $hasTax == '0' ? 'selected' : '' }}>No</option>
+                            <option value="1" {{ $hasTax == '1' ? 'selected' : '' }}>Yes</option>
+                        </select>
+                        @error('has_tax')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="col-md-6" id="tax_dropdown" style="{{ $hasTax == '1' ? 'display: block;' : 'display: none;' }}">
+                    <div class="form-group">
+                        <label>{{ __('messages.select_tax') }}</label>
+                        <select name="tax_id" id="tax_id" class="form-control">
+                            <option value="">Select Tax</option>
+                            @foreach($taxes as $tax)
+                            <option value="{{ $tax->id }}" {{ $selectedTaxId == $tax->id ? 'selected' : '' }}>
+                                {{ $tax->name }} ({{ $tax->value }}%)
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('tax_id')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Modified CRV Section -->
+                @php
+                    $hasCrv = $data->crv ? '1' : '0';
+                    $selectedCrvId = null;
+                    if ($data->crv) {
+                        foreach($crvs as $crv) {
+                            if ($crv->value == $data->crv) {
+                                $selectedCrvId = $crv->id;
+                                break;
+                            }
+                        }
+                    }
+                @endphp
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>{{ __('messages.has_crv') }}</label>
+                        <select name="has_crv" id="has_crv" class="form-control">
+                            <option value="0" {{ $hasCrv == '0' ? 'selected' : '' }}>No</option>
+                            <option value="1" {{ $hasCrv == '1' ? 'selected' : '' }}>Yes</option>
+                        </select>
+                        @error('has_crv')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="col-md-6" id="crv_dropdown" style="{{ $hasCrv == '1' ? 'display: block;' : 'display: none;' }}">
+                    <div class="form-group">
+                        <label>{{ __('messages.select_crv') }}</label>
+                        <select name="crv_id" id="crv_id" class="form-control">
+                            <option value="">Select CRV</option>
+                            @foreach($crvs as $crv)
+                            <option value="{{ $crv->id }}" {{ $selectedCrvId == $crv->id ? 'selected' : '' }}>
+                                {{ $crv->name }} ({{ $crv->value }})
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('crv_id')
                         <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
@@ -263,47 +329,7 @@
                     </div>
                 </div>
 
-
-
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>{{ __('messages.has_variation') }}</label>
-                        <select name="has_variation" id="has_variation" class="form-control">
-                            <option value="1" {{ $data->has_variation == 1 ? 'selected' : '' }}>Active</option>
-                            <option value="0" {{ $data->has_variation == 0 ? 'selected' : '' }}>Inactive</option>
-                        </select>
-                        @error('has_variation')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
-
-                <div id="variationFields">
-                    @if ($data->has_variation)
-                    @foreach ($data->variations as $variation)
-                    <div class="variation">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <input type="text" name="attributes[]" placeholder="Attributes"
-                                    value="{{ $variation->attributes }}">
-                                <br>
-                                <br>
-                                <input type="text" name="variations[]" placeholder="Variations"
-                                    value="{{ $variation->variation }}">
-                                <br>
-                                <br>
-                                <input type="number" name="available_quantities[]" placeholder="Available Quantity"
-                                    value="{{ $variation->available_quantity }}">
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                    @endif
-                </div>
-
-                <div class="col-md-6">
-                    <button type="button" id="add-variation">Add Variation</button>
-                </div>
+             
 
                 <div class="col-md-6">
                     <div class="form-group">
@@ -325,75 +351,108 @@
                     </div>
                 </div>
 
-
             </div>
 
+            <ul class="nav nav-tabs" id="productTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="tab1-tab" data-bs-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">{{ __('messages.another_units') }}</a>
+                </li>
+            </ul>
 
-       <ul class="nav nav-tabs" id="productTab" role="tablist">
-    <li class="nav-item">
-        <a class="nav-link active" id="tab1-tab" data-bs-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">{{ __('messages.another_units') }}</a>
-    </li>
-</ul>
+            <div class="tab-content" id="productTabContent">
+                <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+                    <div id="product-units-container" class="mt-3">
+                        @foreach ($data->units as $productUnit)
+                            <div class="row product-unit">
+                                <!-- Unit Selection -->
+                                <div class="form-group col-md-3">
+                                    <label for="unit">{{ __('messages.unit_for_wholeSale') }}</label>
+                                    <select name="units[]" class="form-control" required>
+                                        @foreach ($units as $unit)
+                                            <option value="{{ $unit->id }}" {{ $productUnit->id == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
 
-<div class="tab-content" id="productTabContent">
-    <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
-        <div id="product-units-container" class="mt-3">
-            @foreach ($data->units as $productUnit)
-                <div class="row product-unit">
-                    <!-- Unit Selection -->
-                    <div class="form-group col-md-3">
-                        <label for="unit">{{ __('messages.unit_for_wholeSale') }}</label>
-                        <select name="units[]" class="form-control" required>
-                            @foreach ($units as $unit)
-                                <option value="{{ $unit->id }}" {{ $productUnit->id == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
-                            @endforeach
-                        </select>
+                                <!-- Barcode Input -->
+                                <div class="form-group col-md-3">
+                                    <label for="barcode">{{ __('messages.barcode') }}</label>
+                                    <input type="number" class="form-control" name="barcodes[]" value="{{ $productUnit->pivot->barcode }}">
+                                </div>
+
+                                <!-- Releation Input -->
+                                <div class="form-group col-md-3">
+                                    <label for="releation">{{ __('messages.releation') }}</label>
+                                    <input type="number" class="form-control" name="releations[]" value="{{ $productUnit->pivot->releation }}">
+                                </div>
+
+                                <!-- Selling Price Input -->
+                                <div class="form-group col-md-3">
+                                    <label for="selling_price">{{ __('messages.selling_price') }}</label>
+                                    <input type="number" class="form-control" name="selling_prices[]" value="{{ $productUnit->pivot->selling_price }}" step="any">
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-
-                    <!-- Barcode Input -->
-                    <div class="form-group col-md-3">
-                        <label for="barcode">{{ __('messages.barcode') }}</label>
-                        <input type="number" class="form-control" name="barcodes[]" value="{{ $productUnit->pivot->barcode }}">
-                    </div>
-
-                    <!-- Releation Input -->
-                    <div class="form-group col-md-3">
-                        <label for="releation">{{ __('messages.releation') }}</label>
-                        <input type="number" class="form-control" name="releations[]" value="{{ $productUnit->pivot->releation }}">
-                    </div>
-
-                    <!-- Selling Price Input -->
-                    <div class="form-group col-md-3">
-                        <label for="selling_price">{{ __('messages.selling_price') }}</label>
-                        <input type="number" class="form-control" name="selling_prices[]" value="{{ $productUnit->pivot->selling_price }}" step="any">
-                    </div>
+                    <button type="button" class="btn btn-secondary mt-3" id="add-unit">Add Unit</button>
                 </div>
-            @endforeach
-        </div>
-        <button type="button" class="btn btn-secondary mt-3" id="add-unit">Add Unit</button>
-    </div>
-</div>
+            </div>
 
             <div class="col-md-12 text-center">
                 <button id="do_add_item_cardd" type="submit" class="btn btn-primary btn-sm">Update</button>
                 <a href="{{ route('products.index') }}" class="btn btn-sm btn-danger">Cancel</a>
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
-</div>
-
-</div>
-
-
-
-
-
 
 @endsection
 
 @section('script')
 <script>
+    // Function to toggle tax dropdown
+    function toggleTaxDropdown() {
+        const hasTaxElement = document.getElementById('has_tax');
+        const taxDropdown = document.getElementById('tax_dropdown');
+
+        if (hasTaxElement && taxDropdown) {
+            if (hasTaxElement.value === '1') {
+                taxDropdown.style.display = 'block';
+            } else {
+                taxDropdown.style.display = 'none';
+            }
+        }
+    }
+
+    // Function to toggle crv dropdown
+    function toggleCrvDropdown() {
+        const hasCrvElement = document.getElementById('has_crv');
+        const crvDropdown = document.getElementById('crv_dropdown');
+
+        if (hasCrvElement && crvDropdown) {
+            if (hasCrvElement.value === '1') {
+                crvDropdown.style.display = 'block';
+            } else {
+                crvDropdown.style.display = 'none';
+            }
+        }
+    }
+
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Event listeners
+        const hasTaxElement = document.getElementById('has_tax');
+        const hasCrvElement = document.getElementById('has_crv');
+
+        if (hasTaxElement) {
+            hasTaxElement.addEventListener('change', toggleTaxDropdown);
+        }
+        
+        if (hasCrvElement) {
+            hasCrvElement.addEventListener('change', toggleCrvDropdown);
+        }
+    });
+
     $(document).ready(function() {
         $('#productTab a').on('click', function (e) {
             e.preventDefault();

@@ -14,10 +14,6 @@ class OrderReportController extends Controller
 {
     public function index(Request $request)
     {
-        $shops = Shop::all();
-        $representatives = Representative::all();
-        $shopId = $request->input('shop_id');
-        $representativeId = $request->input('representative_id');
         $orderStatus = $request->input('order_status');
         $fromDate = $request->input('from_date');
         $toDate = $request->input('to_date', date('Y-m-d')); // Default to today's date if not provided
@@ -25,9 +21,8 @@ class OrderReportController extends Controller
 
         $reportData = [];
 
-        if ($shopId) {
-            $query = Order::where('shop_id', $shopId)
-                ->with(['user', 'shop', 'user.representative']);
+       
+            $query = Order::with(['user']);
 
             // Apply date filters
             if ($fromDate && $toDate) {
@@ -38,11 +33,6 @@ class OrderReportController extends Controller
                 $query->where('date', '>=', $fromDate);
             }
             
-            if ($representativeId) {
-                $query->whereHas('user.representative', function($q) use ($representativeId) {
-                    $q->where('id', $representativeId);
-                });
-            }
 
             if ($orderStatus) {
                 $query->where('order_status', $orderStatus);
@@ -59,15 +49,14 @@ class OrderReportController extends Controller
             foreach ($orders as $order) {
                 $reportData[] = [
                     'order_id' => $order->number ?? 'N/A',
-                    'representative' => $order->user->representative->name ?? 'N/A',
                     'user' => $order->user->name ?? 'N/A',
                     'total_prices' => $order->total_prices,
                     'order_status' => $this->getOrderStatusText($order->order_status),
                 ];
             }
-        }
+        
 
-        return view('reports.order_report', compact('shops','representatives', 'reportData', 'shopId', 'toDate', 'representativeId', 'orderStatus', 'userType'));
+        return view('reports.order_report', compact( 'reportData','toDate', 'orderStatus', 'userType'));
     }
 
     private function getOrderStatusText($status)

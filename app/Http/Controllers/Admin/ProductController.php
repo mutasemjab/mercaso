@@ -14,6 +14,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ProductsImport;
 use App\Exports\ProductsSampleExport;
 use App\Models\Brand;
+use App\Models\Crv;
+use App\Models\Tax;
 use Maatwebsite\Excel\Excel as ExcelWriter;
 
 class ProductController extends Controller
@@ -89,32 +91,32 @@ class ProductController extends Controller
 
 
     public function getPrices($id)
-{
-    // Find the product by ID and load its units relationship
-    $product = Product::with(['units' => function ($query) use ($id) {
-        $query->select('product_units.selling_price', 'product_units.product_id')
-              ->where('product_units.product_id', '=', $id);
-    }])->find($id);
+    {
+        // Find the product by ID and load its units relationship
+        $product = Product::with(['units' => function ($query) use ($id) {
+            $query->select('product_units.selling_price', 'product_units.product_id')
+                ->where('product_units.product_id', '=', $id);
+        }])->find($id);
 
-    // Check if product exists
-    if (!$product) {
+        // Check if product exists
+        if (!$product) {
+            return response()->json([
+                'selling_price' => null,
+                'selling_price_for_user' => null
+            ]);
+        }
+
+        // Get the selling price from the first unit if available
+        $sellingPrice = $product->units->first() ? $product->units->first()->pivot->selling_price : null;
+
+        // Get the selling_price_for_user directly from the product
+        $sellingPriceForUser = $product->selling_price_for_user ?? null;
+
         return response()->json([
-            'selling_price' => null,
-            'selling_price_for_user' => null
+            'selling_price' => $sellingPrice,
+            'selling_price_for_user' => $sellingPriceForUser
         ]);
     }
-
-    // Get the selling price from the first unit if available
-    $sellingPrice = $product->units->first() ? $product->units->first()->pivot->selling_price : null;
-
-    // Get the selling_price_for_user directly from the product
-    $sellingPriceForUser = $product->selling_price_for_user ?? null;
-
-    return response()->json([
-        'selling_price' => $sellingPrice,
-        'selling_price_for_user' => $sellingPriceForUser
-    ]);
-}
 
 
 
@@ -126,10 +128,10 @@ class ProductController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name_ar', 'LIKE', "%$search%")
-                  ->orWhere('number', 'LIKE', "%$search%")
-                  ->orWhere('barcode', 'LIKE', "%$search%");
+                    ->orWhere('number', 'LIKE', "%$search%")
+                    ->orWhere('barcode', 'LIKE', "%$search%");
             });
         }
 
@@ -138,33 +140,23 @@ class ProductController extends Controller
         return view('admin.products.index', compact('data'));
     }
 
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
         if (auth()->user()->can('product-add')) {
             $categories = Category::get();
             $units = Unit::get();
             $brands = Brand::get();
+            $taxes = Tax::get(); // Add this line
+            $crvs = Crv::get(); // Add this line
             $lastNumber = Product::latest('number')->value('number');
             $newNumber = $lastNumber ? $lastNumber + 1 : 1;
-            return view('admin.products.create', compact('categories', 'units','brands','newNumber'));
+            return view('admin.products.create', compact('categories', 'units', 'brands', 'newNumber', 'taxes', 'crvs'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
         try {
@@ -177,8 +169,23 @@ class ProductController extends Controller
             $product->name_ar = $request->input('name_ar');
             $product->description_en = $request->input('description_en');
             $product->description_ar = $request->input('description_ar');
-            $product->has_variation = $request->input('has_variation');
-            $product->tax = $request->input('tax');
+
+            // Modified tax handling
+            if ($request->input('has_tax') == '1' && $request->input('tax_id')) {
+                $tax = Tax::find($request->input('tax_id'));
+                $product->tax = $tax ? $tax->value : null;
+            } else {
+                $product->tax = null;
+            }
+
+            // Modified crv handling
+            if ($request->input('has_crv') == '1' && $request->input('crv_id')) {
+                $crv = Crv::find($request->input('crv_id'));
+                $product->crv = $crv ? $crv->value : null;
+            } else {
+                $product->crv = null;
+            }
+
             $product->points = $request->input('points');
             $product->selling_price_for_user = $request->input('selling_price_for_user');
             $product->min_order_for_user = $request->input('min_order_for_user');
@@ -190,77 +197,34 @@ class ProductController extends Controller
             $product->category_id = $request->input('category');
             $product->unit_id = $request->input('unit');
             $product->brand_id = $request->input('brand') ?? null;
-            $product->crv = $request->input('crv');
+            $product->save(); // Save the product without variations
 
-            if ($product->has_variation) {
-                $product->save(); // Save the product first to generate an ID
-                $variations = $request->input('variations');
-                $quantities = $request->input('available_quantities');
-                $attributes = $request->input('attributes');
+            if ($request->hasFile('photo')) {
+                $photos = $request->file('photo');
+                foreach ($photos as $photo) {
+                    $photoPath = uploadImage('assets/admin/uploads', $photo); // Use the uploadImage function
+                    if ($photoPath) {
+                        // Create a record in the product_images table for each image using the relationship
+                        $productImage = new ProductPhoto();
+                        $productImage->photo = $photoPath;
 
-                foreach ($variations as $key => $variation) {
-                    $product->variations()->create([
-                        'variation' => $variation,
-                        'available_quantity' => $quantities[$key],
-                        'attributes' => $attributes[$key],
-                    ]);
-                }
-
-                if ($request->hasFile('photo')) {
-                    $photos = $request->file('photo');
-                    foreach ($photos as $photo) {
-                        $photoPath = uploadImage('assets/admin/uploads', $photo); // Use the uploadImage function
-                        if ($photoPath) {
-                            // Create a record in the product_images table for each image using the relationship
-                            $productImage = new ProductPhoto();
-                            $productImage->photo = $photoPath;
-
-                            $product->productImages()->save($productImage); // Associate the image with the product
-                        }
-                    }
-                }
-
-                if ($request->has('units')) {
-                    foreach ($request->units as $index => $unit_id) {
-                        ProductUnit::create([
-                            'product_id' => $product->id,
-                            'unit_id' => $unit_id,
-                            'barcode' => $request->barcodes[$index],
-                            'releation' => $request->releations[$index],
-                            'selling_price' => $request->selling_prices[$index],
-                        ]);
-                    }
-                }
-
-            } else {
-                $product->save(); // Save the product without variations
-
-                if ($request->hasFile('photo')) {
-                    $photos = $request->file('photo');
-                    foreach ($photos as $photo) {
-                        $photoPath = uploadImage('assets/admin/uploads', $photo); // Use the uploadImage function
-                        if ($photoPath) {
-                            // Create a record in the product_images table for each image using the relationship
-                            $productImage = new ProductPhoto();
-                            $productImage->photo = $photoPath;
-
-                            $product->productImages()->save($productImage); // Associate the image with the product
-                        }
-                    }
-                }
-
-                if ($request->has('units')) {
-                    foreach ($request->units as $index => $unit_id) {
-                        ProductUnit::create([
-                            'product_id' => $product->id,
-                            'unit_id' => $unit_id,
-                            'barcode' => $request->barcodes[$index],
-                            'releation' => $request->releations[$index],
-                            'selling_price' => $request->selling_prices[$index],
-                        ]);
+                        $product->productImages()->save($productImage); // Associate the image with the product
                     }
                 }
             }
+
+            if ($request->has('units')) {
+                foreach ($request->units as $index => $unit_id) {
+                    ProductUnit::create([
+                        'product_id' => $product->id,
+                        'unit_id' => $unit_id,
+                        'barcode' => $request->barcodes[$index],
+                        'releation' => $request->releations[$index],
+                        'selling_price' => $request->selling_prices[$index],
+                    ]);
+                }
+            }
+
 
             return redirect()->route('products.index')->with(['success' => 'Product created']);
         } catch (\Exception $ex) {
@@ -278,20 +242,15 @@ class ProductController extends Controller
             $categories = Category::get();
             $brands = Brand::get();
             $units = Unit::all();
-            return view('admin.products.edit', ['units' => $units, 'categories' => $categories, 'brands' => $brands,'data' => $data]);
+            $taxes = Tax::get(); // Add this line
+            $crvs = Crv::get(); // Add this line
+            return view('admin.products.edit', ['units' => $units, 'categories' => $categories, 'brands' => $brands, 'data' => $data, 'taxes' => $taxes, 'crvs' => $crvs]);
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         try {
@@ -301,11 +260,25 @@ class ProductController extends Controller
             $product->barcode = $request->input('barcode');
             $product->name_en = $request->input('name_en');
             $product->name_ar = $request->input('name_ar');
-            $product->crv = $request->input('crv');
             $product->description_en = $request->input('description_en');
             $product->description_ar = $request->input('description_ar');
-            $product->has_variation = $request->input('has_variation');
-            $product->tax = $request->input('tax');
+
+            // Modified tax handling
+            if ($request->input('has_tax') == '1' && $request->input('tax_id')) {
+                $tax = Tax::find($request->input('tax_id'));
+                $product->tax = $tax ? $tax->value : null;
+            } else {
+                $product->tax = null;
+            }
+
+            // Modified crv handling
+            if ($request->input('has_crv') == '1' && $request->input('crv_id')) {
+                $crv = Crv::find($request->input('crv_id'));
+                $product->crv = $crv ? $crv->value : null;
+            } else {
+                $product->crv = null;
+            }
+
             $product->points = $request->input('points');
             $product->selling_price_for_user = $request->input('selling_price_for_user');
             $product->min_order_for_user = $request->input('min_order_for_user');
@@ -318,7 +291,7 @@ class ProductController extends Controller
             $product->unit_id = $request->input('unit');
             $product->brand_id = $request->input('brand') ?? null;
 
-           if ($request->hasFile('photo')) {
+            if ($request->hasFile('photo')) {
                 // Delete all previous photos associated with the product
                 $product->productImages()->delete();
 
@@ -335,30 +308,6 @@ class ProductController extends Controller
                     }
                 }
             }
-
-            if ($product->has_variation) {
-                // Handle variations update here
-                $variations = $request->input('variations');
-                $quantities = $request->input('available_quantities');
-                $attributes = $request->input('attributes');
-
-                $product->variations()->delete(); // Delete existing variations for the product
-
-                foreach ($variations as $key => $variation) {
-                    $product->variations()->create([
-                        'product_id' => $product->id,
-                        'variation' => $variation,
-                        'available_quantity' => $quantities[$key],
-                        'attributes' => $attributes[$key],
-                    ]);
-                }
-
-            } else {
-                // If has_variation is false, delete existing variations
-                $product->variations()->delete();
-            }
-
-
 
             if ($product->save()) {
                 // Handle product units

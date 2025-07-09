@@ -50,8 +50,7 @@ class WholeSaleController extends Controller
     public function index(Request $request)
     {
         // Get the logged-in admin's shop_id
-        $admin = auth()->user();
-        $shop = Shop::where('id', $admin->shop_id)->first();
+       
 
 
         // Check if there's a search query
@@ -106,7 +105,6 @@ class WholeSaleController extends Controller
             }
             $customer->email = $request->get('email');
             $customer->phone = $request->get('phone');
-            $customer->can_pay_with_receivable = $request->get('can_pay_with_receivable');
 
 
             if ($request->activate) {
