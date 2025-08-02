@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Models\DeliveryAvailability;
+use Illuminate\Support\Facades\DB;
 
 class DeliveryController extends Controller
 {
@@ -16,9 +18,8 @@ class DeliveryController extends Controller
      */
     public function index()
     {
-        $data= Delivery::paginate(PAGINATION_COUNT);
-
-        return view('admin.deliveries.index',compact('data'));
+        $data = Delivery::with('availabilities')->paginate(PAGINATION_COUNT);
+        return view('admin.deliveries.index', compact('data'));
     }
 
     /**
@@ -28,7 +29,17 @@ class DeliveryController extends Controller
      */
     public function create()
     {
-        return view('admin.deliveries.create');
+        $daysOfWeek = [
+            'monday' => 'Monday',
+            'tuesday' => 'Tuesday',
+            'wednesday' => 'Wednesday',
+            'thursday' => 'Thursday',
+            'friday' => 'Friday',
+            'saturday' => 'Saturday',
+            'sunday' => 'Sunday'
+        ];
+        
+        return view('admin.deliveries.create', compact('daysOfWeek'));
     }
 
     /**
@@ -39,34 +50,70 @@ class DeliveryController extends Controller
      */
     public function store(Request $request)
     {
-        try{
-            $delivery = new Delivery();
+        $request->validate([
+            'place' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'availabilities' => 'array',
+            'availabilities.*.day_of_week' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'availabilities.*.time_from' => 'required|date_format:H:i',
+            'availabilities.*.time_to' => 'required|date_format:H:i|after:availabilities.*.time_from',
+        ]);
 
+        try {
+            DB::beginTransaction();
+            
+            $delivery = new Delivery();
             $delivery->place = $request->get('place');
             $delivery->price = $request->get('price');
-
-
-            if($delivery->save()){
-                return redirect()->route('deliveries.index')->with(['success' => 'Delivery created']);
-
-            }else{
-                return redirect()->back()->with(['error' => 'Something wrong']);
+            
+            if ($delivery->save()) {
+                // Save availabilities if provided
+                if ($request->has('availabilities')) {
+                    foreach ($request->availabilities as $availability) {
+                        if (!empty($availability['day_of_week']) && 
+                            !empty($availability['time_from']) && 
+                            !empty($availability['time_to'])) {
+                            
+                            DeliveryAvailability::create([
+                                'delivery_id' => $delivery->id,
+                                'day_of_week' => $availability['day_of_week'],
+                                'time_from' => $availability['time_from'],
+                                'time_to' => $availability['time_to'],
+                                'is_active' => isset($availability['is_active']) ? true : false
+                            ]);
+                        }
+                    }
+                }
+                
+                DB::commit();
+                return redirect()->route('deliveries.index')->with(['success' => 'Delivery created successfully']);
+            } else {
+                DB::rollback();
+                return redirect()->back()->with(['error' => 'Something went wrong']);
             }
-
-        }catch(\Exception $ex){
-           Log::error($ex);
-           return redirect()->back()
-            ->with(['error' => 'An error occurred: ' . $ex->getMessage()])
-            ->withInput();
+        } catch (\Exception $ex) {
+            DB::rollback();
+            Log::error($ex);
+            return redirect()->back()
+                ->with(['error' => 'An error occurred: ' . $ex->getMessage()])
+                ->withInput();
         }
-
     }
-
 
     public function edit($id)
     {
-        $data = Delivery::findOrFail($id);
-        return view('admin.deliveries.edit', ['data' => $data]);
+        $data = Delivery::with('availabilities')->findOrFail($id);
+        $daysOfWeek = [
+            'monday' => 'Monday',
+            'tuesday' => 'Tuesday',
+            'wednesday' => 'Wednesday',
+            'thursday' => 'Thursday',
+            'friday' => 'Friday',
+            'saturday' => 'Saturday',
+            'sunday' => 'Sunday'
+        ];
+        
+        return view('admin.deliveries.edit', compact('data', 'daysOfWeek'));
     }
 
     /**
@@ -78,26 +125,58 @@ class DeliveryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        try {
-            $delivery = Delivery::findOrFail($id);
+        $request->validate([
+            'place' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'availabilities' => 'array',
+            'availabilities.*.day_of_week' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'availabilities.*.time_from' => 'required|date_format:H:i',
+            'availabilities.*.time_to' => 'required|date_format:H:i|after:availabilities.*.time_from',
+        ]);
 
+        try {
+            DB::beginTransaction();
+            
+            $delivery = Delivery::findOrFail($id);
             $delivery->place = $request->get('place');
             $delivery->price = $request->get('price');
 
             if ($delivery->save()) {
-                return redirect()->route('deliveries.index')->with(['success' => 'Delivery updated']);
+                // Delete existing availabilities
+                $delivery->availabilities()->delete();
+                
+                // Save new availabilities if provided
+                if ($request->has('availabilities')) {
+                    foreach ($request->availabilities as $availability) {
+                        if (!empty($availability['day_of_week']) && 
+                            !empty($availability['time_from']) && 
+                            !empty($availability['time_to'])) {
+                            
+                            DeliveryAvailability::create([
+                                'delivery_id' => $delivery->id,
+                                'day_of_week' => $availability['day_of_week'],
+                                'time_from' => $availability['time_from'],
+                                'time_to' => $availability['time_to'],
+                                'is_active' => isset($availability['is_active']) ? true : false
+                            ]);
+                        }
+                    }
+                }
+                
+                DB::commit();
+                return redirect()->route('deliveries.index')->with(['success' => 'Delivery updated successfully']);
             } else {
+                DB::rollback();
                 return redirect()->back()->with(['error' => 'Something went wrong']);
             }
         } catch (\Exception $ex) {
-            // Log the exception for debugging purposes
+            DB::rollback();
             Log::error($ex);
             return redirect()->back()
                 ->with(['error' => 'An error occurred: ' . $ex->getMessage()])
                 ->withInput();
         }
     }
-
 
     /**
      * Remove the specified resource from storage.
@@ -107,31 +186,35 @@ class DeliveryController extends Controller
      */
     public function destroy($id)
     {
-       try {
-
-            $item_row = Delivery::select("place")->where('id','=',$id)->first();
-
-            if (!empty($item_row)) {
-
-        $flag = Delivery::where('id','=',$id)->delete();
-
-        if ($flag) {
-            return redirect()->back()
-            ->with(['success' => '   Delete Succefully   ']);
+        try {
+            $delivery = Delivery::findOrFail($id);
+            
+            if ($delivery->delete()) {
+                return redirect()->back()->with(['success' => 'Delivery deleted successfully']);
             } else {
-            return redirect()->back()
-            ->with(['error' => '   Something Wrong']);
+                return redirect()->back()->with(['error' => 'Something went wrong']);
             }
-
-            } else {
-            return redirect()->back()
-            ->with(['error' => '   cant reach fo this data   ']);
-            }
-
-       } catch (\Exception $ex) {
-
-            return redirect()->back()
-            ->with(['error' => ' Something Wrong   ' . $ex->getMessage()]);
-            }
+        } catch (\Exception $ex) {
+            Log::error($ex);
+            return redirect()->back()->with(['error' => 'Something went wrong: ' . $ex->getMessage()]);
+        }
     }
+
+    public function manageAvailabilities($id)
+    {
+        $delivery = Delivery::with('availabilities')->findOrFail($id);
+        $daysOfWeek = [
+            'monday' => 'Monday',
+            'tuesday' => 'Tuesday', 
+            'wednesday' => 'Wednesday',
+            'thursday' => 'Thursday',
+            'friday' => 'Friday',
+            'saturday' => 'Saturday',
+            'sunday' => 'Sunday'
+        ];
+        
+        return view('admin.deliveries.availabilities', compact('delivery', 'daysOfWeek'));
+    }
+
+
 }

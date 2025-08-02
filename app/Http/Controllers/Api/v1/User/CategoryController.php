@@ -76,59 +76,85 @@ class CategoryController extends Controller
         return response()->json(['data' => $response]);
     }
 
-     public function getProducts($id, Request $request)
-    {
-        $token = $request->bearerToken();
-        $authenticatedUser = null;
+   
+public function getProducts($id, Request $request)
+{
+    $token = $request->bearerToken();
+    $authenticatedUser = null;
 
-        if ($token) {
-            $authenticatedUser = Auth::guard('user-api')->user();
-        }
-
-        // Load the category with its child categories and their products
-        $category = Category::with([
-            'childCategories.products.productImages',
-            'childCategories.products.productReviews',
-            'childCategories.products.variations',
-            'childCategories.products.units',
-            'childCategories.products.unit',
-            'childCategories.products.offers',
-            'products.productImages',
-            'products.productReviews',
-            'products.variations',
-            'products.units',
-            'products.unit',
-            'products.offers',
-        ])->find($id);
-
-        if (!$category) {
-            return response()->json(['message' => 'Category not found'], 404);
-        }
-
-        // Prepare the response data
-        $response = [
-            'category' => [
-                'name' => $category->name,
-                'photo' => $category->photo,
-            ],
-            'childCategories' => [],
-            'products' => $this->formatProducts($category->products, $authenticatedUser)
-        ];
-
-        foreach ($category->childCategories as $childCategory) {
-            $childData = [
-                'category' => [
-                    'name' => $childCategory->name,
-                    'photo' => $childCategory->photo,
-
-                ],
-                'products' => $this->formatProducts($childCategory->products, $authenticatedUser)
-            ];
-            $response['childCategories'][] = $childData;
-        }
-
-        return response()->json(['data' => $response]);
+    if ($token) {
+        $authenticatedUser = Auth::guard('user-api')->user();
     }
+
+    // Load the category with its child categories and their products (including brands)
+    $category = Category::with([
+        'childCategories.products.productImages',
+        'childCategories.products.productReviews',
+        'childCategories.products.variations',
+        'childCategories.products.units',
+        'childCategories.products.unit',
+        'childCategories.products.offers',
+        'childCategories.products.brand', // Add brand relationship
+        'products.productImages',
+        'products.productReviews',
+        'products.variations',
+        'products.units',
+        'products.unit',
+        'products.offers',
+        'products.brand', // Add brand relationship
+    ])->find($id);
+
+    if (!$category) {
+        return response()->json(['message' => 'Category not found'], 404);
+    }
+
+    // Collect all products from main category and child categories
+    $allProducts = collect($category->products);
+    
+    foreach ($category->childCategories as $childCategory) {
+        $allProducts = $allProducts->merge($childCategory->products);
+    }
+
+    // Extract unique brands from all products
+    $brands = $allProducts
+        ->pluck('brand')
+        ->filter() // Remove null values
+        ->unique('id')
+        ->map(function ($brand) {
+            return [
+                'id' => $brand->id,
+                'name' => $brand->name,
+                'photo' => $brand->photo ?? null, // Include logo if available
+            ];
+        })
+        ->values(); // Reset array keys
+
+    // Prepare the response data
+    $response = [
+        'category' => [
+            'id' => $category->id,
+            'name' => $category->name,
+            'photo' => $category->photo,
+        ],
+        'brands' => $brands, // Add brands list here
+        'childCategories' => [],
+        'products' => $this->formatProducts($category->products, $authenticatedUser)
+    ];
+
+    foreach ($category->childCategories as $childCategory) {
+        $childData = [
+            'category' => [
+                'id' => $childCategory->id,
+                'name' => $childCategory->name,
+                'photo' => $childCategory->photo,
+            ],
+            'products' => $this->formatProducts($childCategory->products, $authenticatedUser)
+        ];
+        $response['childCategories'][] = $childData;
+    }
+
+    return response()->json(['data' => $response]);
+}
 
     private function formatProducts($products, $authenticatedUser)
 {

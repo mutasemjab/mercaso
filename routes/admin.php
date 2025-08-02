@@ -171,6 +171,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::resource('banners', BannerController::class);
         Route::resource('taxes', TaxController::class);
         Route::resource('crvs', CrvController::class);
+
+        Route::get('deliveries/{delivery}/availabilities', [DeliveryController::class, 'manageAvailabilities'])
+        ->name('deliveries.availabilities');
     });
 });
 

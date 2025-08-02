@@ -16,7 +16,7 @@ class DeliveryController extends Controller
      */
     public function index()
     {
-        $data= Delivery::get();
+        $data= Delivery::with('activeAvailabilities')->get();
 
         return response()->json(['data'=>$data]);
     }
