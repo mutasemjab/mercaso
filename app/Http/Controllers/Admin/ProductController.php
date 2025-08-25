@@ -130,6 +130,7 @@ class ProductController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name_ar', 'LIKE', "%$search%")
+                    ->orwhere('name_en', 'LIKE', "%$search%")
                     ->orWhere('number', 'LIKE', "%$search%")
                     ->orWhere('barcode', 'LIKE', "%$search%");
             });

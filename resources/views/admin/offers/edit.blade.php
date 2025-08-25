@@ -128,7 +128,7 @@
         // Function to fetch and display prices
         function fetchPrices(productId) {
             $.ajax({
-                url: '/products/get-prices/' + productId, // Existing route
+                url: '{{ route("products.getPrices", ":id") }}'.replace(':id', productId),
                 method: 'GET',
                 success: function(response) {
                     $('#selling_price_display').text(response.selling_price ? response.selling_price : 'N/A');

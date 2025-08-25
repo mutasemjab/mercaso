@@ -3,34 +3,6 @@
 {{ __('messages.products') }}
 @endsection
 
-@section('css')
-<style>
-    /* Style for the "plus" button */
-    #add-variation {
-        display: block;
-        margin-top: 10px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        padding: 5px 10px;
-        cursor: pointer;
-    }
-
-    /* Style for the variation fields container */
-    #variationFields {
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin-top: 10px;
-    }
-
-    /* Style for individual variation fields */
-    .variation {
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin-top: 10px;
-    }
-</style>
-@endsection
 
 @section('content')
 
@@ -296,19 +268,7 @@
 @endsection
 @section('script')
 <script>
-    // Function to toggle visibility of variation fields
-    function toggleVariationFields() {
-        const hasVariationElement = document.getElementById('has_variation');
-        const variationFields = document.getElementById('variationFields');
-
-        if (hasVariationElement && variationFields) {
-            if (hasVariationElement.value === '1') {
-                variationFields.style.display = 'block';
-            } else {
-                variationFields.style.display = 'none';
-            }
-        }
-    }
+  
 
     // Function to toggle tax dropdown
     function toggleTaxDropdown() {
@@ -341,18 +301,13 @@
     // Wait for DOM to be fully loaded
     document.addEventListener('DOMContentLoaded', function() {
         // Initial state on page load
-        toggleVariationFields();
         toggleTaxDropdown();
         toggleCrvDropdown();
 
         // Event listeners
-        const hasVariationElement = document.getElementById('has_variation');
         const hasTaxElement = document.getElementById('has_tax');
         const hasCrvElement = document.getElementById('has_crv');
 
-        if (hasVariationElement) {
-            hasVariationElement.addEventListener('change', toggleVariationFields);
-        }
         
         if (hasTaxElement) {
             hasTaxElement.addEventListener('change', toggleTaxDropdown);
@@ -361,19 +316,6 @@
         if (hasCrvElement) {
             hasCrvElement.addEventListener('change', toggleCrvDropdown);
         }
-    });
-
-    // Function to add new variation fields
-    document.getElementById('add-variation').addEventListener('click', function () {
-        const variationFields = document.getElementById('variationFields');
-        const variation = document.querySelector('.variation');
-        const clone = variation.cloneNode(true);
-        
-        // Clear the values in the cloned fields
-        const inputs = clone.querySelectorAll('input');
-        inputs.forEach(input => input.value = '');
-        
-        variationFields.appendChild(clone);
     });
 
     $(document).ready(function() {

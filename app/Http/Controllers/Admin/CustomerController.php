@@ -97,7 +97,7 @@ class CustomerController extends Controller
              }
              $customer->email = $request->get('email');
              $customer->phone = $request->get('phone');
-             $customer->can_pay_with_receivable = $request->get('can_pay_with_receivable');
+             $customer->can_pay_with_receivable = $request->get('can_pay_with_receivable') ?? 2;
 
              if($request->activate){
                 $customer->activate = $request->get('activate');

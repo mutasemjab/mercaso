@@ -149,26 +149,36 @@
 
             // AJAX request to get selling prices for the selected product
             $.ajax({
-                url: '/products/get-prices/' + productId, // Create a new route for this purpose
+                url: '{{ route("products.getPrices", ":id") }}'.replace(':id', productId),
                 method: 'GET',
+                dataType: 'json', // Ensure we expect JSON response
                 success: function(response) {
-                    if (response.selling_price) {
-                        $('#selling_price_display').text(response.selling_price); // Display the selling price
+                    console.log('Response:', response); // Debug log
+                    
+                    if (response.selling_price !== undefined && response.selling_price !== null) {
+                        $('#selling_price_display').text(response.selling_price);
                     } else {
-                        $('#selling_price_display').text('N/A'); // Default if no selling price is found
+                        $('#selling_price_display').text('N/A');
                     }
 
-                    if (response.selling_price_for_user) {
-                        $('#selling_price_for_user_display').text(response.selling_price_for_user); // Display selling_price_for_user
+                    if (response.selling_price_for_user !== undefined && response.selling_price_for_user !== null) {
+                        $('#selling_price_for_user_display').text(response.selling_price_for_user);
                     } else {
-                        $('#selling_price_for_user_display').text('N/A'); // Default if no selling_price_for_user is found
+                        $('#selling_price_for_user_display').text('N/A');
                     }
                 },
-                error: function() {
-                    $('#selling_price_display').text('N/A'); // Handle error
-                    $('#selling_price_for_user_display').text('N/A'); // Handle error
+                error: function(xhr, status, error) {
+                    console.log('Error:', xhr.responseText); // Debug log
+                    $('#selling_price_display').text('N/A');
+                    $('#selling_price_for_user_display').text('N/A');
                 }
             });
+        });
+
+        // Clear display when selection is cleared
+        $('#product_id').on('select2:clear', function (e) {
+            $('#selling_price_display').text('N/A');
+            $('#selling_price_for_user_display').text('N/A');
         });
 
         // Initialize the display with N/A

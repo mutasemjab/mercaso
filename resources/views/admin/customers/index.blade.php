@@ -43,9 +43,9 @@
                         <table id="example2" class="table table-bordered table-hover">
                             <thead class="custom_thead">
 
-                                <th>{{ __('messages.Name') }}  </th>
-                                <th> {{ __('messages.Email') }}  </th>
-                                <th>{{ __('messages.Phone') }}  </th>
+                                <th>{{ __('messages.Name') }} </th>
+                                <th> {{ __('messages.Email') }} </th>
+                                <th>{{ __('messages.Phone') }} </th>
                                 <th></th>
 
                             </thead>
@@ -53,7 +53,7 @@
                                 @foreach ($data as $info)
                                     <tr>
 
-                                        <td>{{ $info->name  }}</td>
+                                        <td>{{ $info->name }}</td>
                                         <td>{{ $info->email }}</td>
                                         <td>{{ $info->phone }}</td>
 
@@ -65,8 +65,7 @@
                                                 <a href="{{ route('admin.customer.edit', $info->id) }}"
                                                     class="btn btn-sm  btn-primary"> {{ __('messages.Edit') }}</a>
                                             @endcan
-                                            <a href="{{ route('admin.customer.export', ['search' => $searchQuery]) }}"
-                                                class="btn btn-sm btn-success">Export to Excel</a>
+                                 
 
                                         </td>
 

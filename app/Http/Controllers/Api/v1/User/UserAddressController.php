@@ -20,7 +20,7 @@ class UserAddressController extends Controller
     {
 
         $user_id = $request->user()->id;
-        $address = UserAddress::with('delivery')->where('user_id', $user_id)->get();
+        $address = UserAddress::with('delivery','delivery.activeAvailabilities')->where('user_id', $user_id)->get();
         return response()->json(['data'=>$address ]);
     }
 
