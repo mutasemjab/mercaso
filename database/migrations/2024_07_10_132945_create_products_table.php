@@ -39,6 +39,9 @@ return new class extends Migration
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
             $table->unsignedBigInteger('brand_id')->nullable();
             $table->foreign('brand_id')->references('id')->on('brands')->onDelete('cascade');
+
+            $table->tinyInteger('product_type')->default(3); // 1 retail // 2 whole sale // 3 both
+
             $table->timestamps();
         });
     }

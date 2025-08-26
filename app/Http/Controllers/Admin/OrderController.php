@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\NoteVoucher;
 use App\Models\Order;
 use App\Models\OrderProduct;
+use App\Models\PointTransaction;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\UserAddress;
@@ -16,11 +17,6 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
 
     public function index(Request $request)
     {
@@ -54,179 +50,179 @@ class OrderController extends Controller
 
 
 
-public function store(Request $request)
-{
+    public function store(Request $request)
+    {
 
-    // Validate the request data
-    $validatedData = $request->validate([
-        'order_type' => 'required|integer',
-        'date' => 'required|date',
-        'payment_type' => 'required|string',
-        'address' => 'required|integer|exists:user_addresses,id',
-        'products' => 'required|array',
-        'products.*.name' => 'required|string',
-        'products.*.unit' => 'required|integer|exists:units,id',
-        'products.*.quantity' => 'required|integer|min:1',
-        'products.*.selling_price_without_tax' => 'required|numeric',
-        'products.*.selling_price_with_tax' => 'required|numeric',
-        'products.*.tax' => 'required|numeric',
-        'products.*.discount_fixed' => 'nullable|numeric',
-        'products.*.discount_percentage' => 'nullable|numeric',
-        'coupon_discount' => 'nullable|numeric|min:0|max:100'
-    ]);
-
-    // Start a transaction to prevent duplicates
-    DB::beginTransaction();
-
-    try {
-        // Lock the order table for update to avoid race conditions
-       $lastOrder = Order::where('order_type', $request->order_type)
-                  ->orderByRaw('CAST(number AS UNSIGNED) DESC')
-                  ->lockForUpdate()
-                  ->first();
-
-
-        // Generate the unique order number
-        $newOrderNumber = $lastOrder ? $lastOrder->number + 1 : 1;
-      //  return $newOrderNumber;
-        // Check for existing order with the same number and order type
-        $existingOrder = Order::where('order_type', $request->order_type)
-                              ->where('number', $newOrderNumber)
-                              ->first();
-
-        if ($existingOrder) {
-            DB::rollBack();
-            return response()->json(['message' => 'Duplicate order detected.'], 409);
-        }
-
-        // Define the order status
-        $orderStatus = $request->order_type == 2 ? 6 : 1;
-        $address = UserAddress::find($request->address);
-        $deliveryFee = doubleval($address->delivery->price ?? 0);
-
-        $user = User::where('name', $request->user)->first();
-
-        // Create the order
-        $order = Order::create([
-            'number' => $newOrderNumber,
-            'order_status' => $orderStatus,
-            'total_taxes' => 0,
-            'delivery_fee' => $deliveryFee,
-            'total_prices' => 0,
-            'total_discounts' => 0,
-            'payment_type' => $request->payment_type,
-            'payment_status' => 2,
-            'order_type' => $request->order_type,
-            'date' => Carbon::parse($request->date),
-            'user_id' => $user->id,
-            'address_id' => $request->address,
-            'coupon_discount' => $request->coupon_discount ?? 0,
+        // Validate the request data
+        $validatedData = $request->validate([
+            'order_type' => 'required|integer',
+            'date' => 'required|date',
+            'payment_type' => 'required|string',
+            'address' => 'required|integer|exists:user_addresses,id',
+            'products' => 'required|array',
+            'products.*.name' => 'required|string',
+            'products.*.unit' => 'required|integer|exists:units,id',
+            'products.*.quantity' => 'required|integer|min:1',
+            'products.*.selling_price_without_tax' => 'required|numeric',
+            'products.*.selling_price_with_tax' => 'required|numeric',
+            'products.*.tax' => 'required|numeric',
+            'products.*.discount_fixed' => 'nullable|numeric',
+            'products.*.discount_percentage' => 'nullable|numeric',
+            'coupon_discount' => 'nullable|numeric|min:0|max:100'
         ]);
 
-        // Initialize totals
-        $totalTaxes = 0;
-        $totalPrices = 0;
-        $totalDiscounts = 0;
-        $couponDiscountPercentage = $request->coupon_discount ?? 0;
+        // Start a transaction to prevent duplicates
+        DB::beginTransaction();
 
-        // Process each product in the order
-        foreach ($request->products as $productData) {
-            $product = Product::where('name_ar', $productData['name'])->first();
+        try {
+            // Lock the order table for update to avoid race conditions
+        $lastOrder = Order::where('order_type', $request->order_type)
+                    ->orderByRaw('CAST(number AS UNSIGNED) DESC')
+                    ->lockForUpdate()
+                    ->first();
 
-            if ($product) {
-                $quantity = $productData['quantity'];
-                $unitPriceWithoutTax = $productData['selling_price_without_tax'];
-                $taxPercentage = $productData['tax'];
-                $unitPriceWithTax = $unitPriceWithoutTax * (1 + $taxPercentage / 100);
 
-                $totalPriceBeforeTax = $unitPriceWithoutTax * $quantity;
-                $totalPriceAfterTax = $unitPriceWithTax * $quantity;
+            // Generate the unique order number
+            $newOrderNumber = $lastOrder ? $lastOrder->number + 1 : 1;
+        //  return $newOrderNumber;
+            // Check for existing order with the same number and order type
+            $existingOrder = Order::where('order_type', $request->order_type)
+                                ->where('number', $newOrderNumber)
+                                ->first();
 
-                $lineDiscountFixed = $productData['discount_fixed'] ?? 0;
-                $lineDiscountPercentage = $productData['discount_percentage'] ?? 0;
-                $lineDiscountValue = ($totalPriceBeforeTax * $lineDiscountPercentage / 100) + $lineDiscountFixed;
-                $totalPriceAfterLineDiscount = $totalPriceBeforeTax - $lineDiscountValue;
-
-                $couponDiscountValue = $totalPriceAfterLineDiscount * ($couponDiscountPercentage / 100);
-                $totalPriceAfterAllDiscounts = $totalPriceAfterLineDiscount - $couponDiscountValue;
-
-                $totalRowTax = $totalPriceAfterAllDiscounts * ($taxPercentage / 100);
-
-                OrderProduct::create([
-                    'unit_id' => $productData['unit'],
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'variation_id' => null,
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPriceWithTax,
-                    'total_price_after_tax' => $totalPriceAfterAllDiscounts + $totalRowTax,
-                    'tax_percentage' => $taxPercentage,
-                    'tax_value' => $totalRowTax,
-                    'total_price_before_tax' => $totalPriceBeforeTax,
-                    'line_discount_percentage' => $lineDiscountPercentage,
-                    'line_discount_value' => $lineDiscountValue,
-                    'discount_value' => $couponDiscountValue,
-                ]);
-
-                // Accumulate totals
-                $totalTaxes += $totalRowTax;
-                $totalPrices += $totalPriceAfterAllDiscounts + $totalRowTax;
-                $totalDiscounts += $lineDiscountValue + $couponDiscountValue;
+            if ($existingOrder) {
+                DB::rollBack();
+                return response()->json(['message' => 'Duplicate order detected.'], 409);
             }
-        }
 
-        // Update the order with the calculated totals
-        $order->update([
-            'total_taxes' => $totalTaxes,
-            'total_prices' => $totalPrices + $deliveryFee,
-            'total_discounts' => $totalDiscounts,
-        ]);
+            // Define the order status
+            $orderStatus = $request->order_type == 2 ? 6 : 1;
+            $address = UserAddress::find($request->address);
+            $deliveryFee = doubleval($address->delivery->price ?? 0);
 
-        // Handle refund logic
-        if ($order->order_type == 2) {
-            $lastNoteVoucher = NoteVoucher::orderBy('id', 'desc')->first();
-            $newVoucherNumber = $lastNoteVoucher ? $lastNoteVoucher->id + 1 : 1;
+            $user = User::where('name', $request->user)->first();
 
-            // Create the note voucher
-            $noteVoucher = NoteVoucher::create([
-                'note_voucher_type_id' => 1,
-                'date_note_voucher' => $order->date,
-                'number' => $newVoucherNumber,
-                'from_warehouse_id' => $order->warehouse->id ?? 1,
-                'to_warehouse_id' => $request['toWarehouse'] ?? null,
-                'order_id' => $order->id,
-                'note' => "فاتورة مرتجع رقم " . (string)$order->number,
+            // Create the order
+            $order = Order::create([
+                'number' => $newOrderNumber,
+                'order_status' => $orderStatus,
+                'total_taxes' => 0,
+                'delivery_fee' => $deliveryFee,
+                'total_prices' => 0,
+                'total_discounts' => 0,
+                'payment_type' => $request->payment_type,
+                'payment_status' => 2,
+                'order_type' => $request->order_type,
+                'date' => Carbon::parse($request->date),
+                'user_id' => $user->id,
+                'address_id' => $request->address,
+                'coupon_discount' => $request->coupon_discount ?? 0,
             ]);
 
-            // Attach products to the voucher
-            foreach ($request['products'] as $productData) {
-                $product = Product::where('name_ar', $productData['name'])->firstOrFail();
+            // Initialize totals
+            $totalTaxes = 0;
+            $totalPrices = 0;
+            $totalDiscounts = 0;
+            $couponDiscountPercentage = $request->coupon_discount ?? 0;
 
-                $noteVoucher->voucherProducts()->attach($product->id, [
-                    'unit_id' => $productData['unit'],
-                    'quantity' => $productData['quantity'],
-                    'purchasing_price' => $productData['purchasing_price'] ?? null,
-                    'note' => $productData['note'] ?? null,
-                ]);
+            // Process each product in the order
+            foreach ($request->products as $productData) {
+                $product = Product::where('name_ar', $productData['name'])->first();
+
+                if ($product) {
+                    $quantity = $productData['quantity'];
+                    $unitPriceWithoutTax = $productData['selling_price_without_tax'];
+                    $taxPercentage = $productData['tax'];
+                    $unitPriceWithTax = $unitPriceWithoutTax * (1 + $taxPercentage / 100);
+
+                    $totalPriceBeforeTax = $unitPriceWithoutTax * $quantity;
+                    $totalPriceAfterTax = $unitPriceWithTax * $quantity;
+
+                    $lineDiscountFixed = $productData['discount_fixed'] ?? 0;
+                    $lineDiscountPercentage = $productData['discount_percentage'] ?? 0;
+                    $lineDiscountValue = ($totalPriceBeforeTax * $lineDiscountPercentage / 100) + $lineDiscountFixed;
+                    $totalPriceAfterLineDiscount = $totalPriceBeforeTax - $lineDiscountValue;
+
+                    $couponDiscountValue = $totalPriceAfterLineDiscount * ($couponDiscountPercentage / 100);
+                    $totalPriceAfterAllDiscounts = $totalPriceAfterLineDiscount - $couponDiscountValue;
+
+                    $totalRowTax = $totalPriceAfterAllDiscounts * ($taxPercentage / 100);
+
+                    OrderProduct::create([
+                        'unit_id' => $productData['unit'],
+                        'order_id' => $order->id,
+                        'product_id' => $product->id,
+                        'variation_id' => null,
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPriceWithTax,
+                        'total_price_after_tax' => $totalPriceAfterAllDiscounts + $totalRowTax,
+                        'tax_percentage' => $taxPercentage,
+                        'tax_value' => $totalRowTax,
+                        'total_price_before_tax' => $totalPriceBeforeTax,
+                        'line_discount_percentage' => $lineDiscountPercentage,
+                        'line_discount_value' => $lineDiscountValue,
+                        'discount_value' => $couponDiscountValue,
+                    ]);
+
+                    // Accumulate totals
+                    $totalTaxes += $totalRowTax;
+                    $totalPrices += $totalPriceAfterAllDiscounts + $totalRowTax;
+                    $totalDiscounts += $lineDiscountValue + $couponDiscountValue;
+                }
             }
+
+            // Update the order with the calculated totals
+            $order->update([
+                'total_taxes' => $totalTaxes,
+                'total_prices' => $totalPrices + $deliveryFee,
+                'total_discounts' => $totalDiscounts,
+            ]);
+
+            // Handle refund logic
+            if ($order->order_type == 2) {
+                $lastNoteVoucher = NoteVoucher::orderBy('id', 'desc')->first();
+                $newVoucherNumber = $lastNoteVoucher ? $lastNoteVoucher->id + 1 : 1;
+
+                // Create the note voucher
+                $noteVoucher = NoteVoucher::create([
+                    'note_voucher_type_id' => 1,
+                    'date_note_voucher' => $order->date,
+                    'number' => $newVoucherNumber,
+                    'from_warehouse_id' => $order->warehouse->id ?? 1,
+                    'to_warehouse_id' => $request['toWarehouse'] ?? null,
+                    'order_id' => $order->id,
+                    'note' => "فاتورة مرتجع رقم " . (string)$order->number,
+                ]);
+
+                // Attach products to the voucher
+                foreach ($request['products'] as $productData) {
+                    $product = Product::where('name_ar', $productData['name'])->firstOrFail();
+
+                    $noteVoucher->voucherProducts()->attach($product->id, [
+                        'unit_id' => $productData['unit'],
+                        'quantity' => $productData['quantity'],
+                        'purchasing_price' => $productData['purchasing_price'] ?? null,
+                        'note' => $productData['note'] ?? null,
+                    ]);
+                }
+            }
+
+            // Commit the transaction
+            DB::commit();
+
+            // Redirect to the appropriate page
+            if ($request->redirect_to == 'index') {
+                return redirect()->route('orders.index')->with('success', 'Order created successfully.');
+            } else {
+                return redirect()->route('orders.show', $order->id)->with('success', 'Order created successfully.');
+            }
+
+        } catch (\Exception $e) {
+            // Rollback in case of an error
+            DB::rollBack();
+            return response()->json(['message' => 'Order creation failed', 'error' => $e->getMessage()], 500);
         }
-
-        // Commit the transaction
-        DB::commit();
-
-        // Redirect to the appropriate page
-        if ($request->redirect_to == 'index') {
-            return redirect()->route('orders.index')->with('success', 'Order created successfully.');
-        } else {
-            return redirect()->route('orders.show', $order->id)->with('success', 'Order created successfully.');
-        }
-
-    } catch (\Exception $e) {
-        // Rollback in case of an error
-        DB::rollBack();
-        return response()->json(['message' => 'Order creation failed', 'error' => $e->getMessage()], 500);
     }
-}
 
 
 
@@ -249,7 +245,7 @@ public function store(Request $request)
         return view('admin.orders.edit', compact('order'));
     }
 
- public function update(Request $request, $id)
+    public function update(Request $request, $id)
 {
     $validatedData = $request->validate([
         'date' => 'required|date',
@@ -267,10 +263,14 @@ public function store(Request $request)
     ]);
 
     $order = Order::findOrFail($id);
+    
+    // Store the old status to check if it changed
+    $oldStatus = $order->order_status;
+    $newStatus = $request->order_status;
+    
     $order->update([
         'order_status' => $request->order_status,
         'date' => Carbon::parse($request->date),
-
         'payment_type' => $request->payment_type,
         'address_id' => $request->address,
         'user_id' => User::where('name', $request->user)->first()->id,
@@ -286,6 +286,9 @@ public function store(Request $request)
 
     // Detach old products
     $order->products()->detach();
+
+    // Variable to store total points for this order
+    $totalOrderPoints = 0;
 
     // Attach new products
     foreach ($request->products as $productData) {
@@ -328,13 +331,17 @@ public function store(Request $request)
                 'variation_id' => null,
                 'quantity' => $quantity,
                 'unit_price' => $unitPriceWithTax,
-                'total_price_after_tax' => $totalPriceAfterTax,  // Corrected line
-                'tax_percentage' => $taxPercentage,  // Corrected line
-                'tax_value' => $totalRowTax,  // Corrected line
+                'total_price_after_tax' => $totalPriceAfterTax,
+                'tax_percentage' => $taxPercentage,
+                'tax_value' => $totalRowTax,
                 'total_price_before_tax' => $totalPriceBeforeTax,
-                'line_discount_percentage' => $lineDiscountPercentage,  // Save the updated percentage
-                'line_discount_value' => $lineDiscountValue,  // Save the updated or manually entered discount value
+                'line_discount_percentage' => $lineDiscountPercentage,
+                'line_discount_value' => $lineDiscountValue,
             ]);
+
+            // Calculate points for this product (points * quantity)
+            $productPoints = ($product->points ?? 0) * $quantity;
+            $totalOrderPoints += $productPoints;
 
             // Accumulate totals
             $totalTaxes += $totalRowTax;
@@ -343,10 +350,6 @@ public function store(Request $request)
         }
     }
 
-
-
-
-
     // Update order totals
     $order->update([
         'total_taxes' => $totalTaxes,
@@ -354,65 +357,85 @@ public function store(Request $request)
         'total_discounts' => $totalDiscounts,
     ]);
 
-     if ($order->order_type == 1 && $order->order_status == 4) {
-         $lastNoteVoucher = NoteVoucher::orderBy('id', 'desc')->first();
-         $newNumber = $lastNoteVoucher ? $lastNoteVoucher->id + 1 : 1;
+    // Handle points transaction when order status changes to delivered (4)
+    if ($newStatus == 4 && $oldStatus != 4 && $totalOrderPoints > 0) {
+        $user = $order->user;
+        
+        if ($user) {
+            // Create point transaction record
+            PointTransaction::create([
+                'user_id' => $user->id,
+                'admin_id' => auth()->user()->id ?? null, // Assuming admin is making this update
+                'points' => $totalOrderPoints,
+                'type_of_transaction' => 1, // 1 for add points
+                'note' => 'Points earned from order #' . $order->number . ' - Delivered',
+            ]);
 
-         // Create the note voucher
-         $noteVoucher = NoteVoucher::create([
-             'note_voucher_type_id' => 2,
-             'date_note_voucher' => $order->date,
-             'number' => $newNumber,
-             'from_warehouse_id' => $order->warehouse->id ?? 1,
-             'to_warehouse_id' => $request['toWarehouse'] ?? null,
+            // Update user's total points (assuming you have a points column in users table)
+            $user->increment('points', $totalOrderPoints);
+            
+            // Optional: You can also log this action
+            \Log::info("Points awarded: User {$user->id} received {$totalOrderPoints} points from order {$order->id}");
+        }
+    }
 
-             'order_id' =>  $order->id,
-             'note' => "فاتورة بيع رقم " . (string)$order->number,
-         ]);
+    if ($order->order_type == 1 && $order->order_status == 4) {
+        $lastNoteVoucher = NoteVoucher::orderBy('id', 'desc')->first();
+        $newNumber = $lastNoteVoucher ? $lastNoteVoucher->id + 1 : 1;
 
-         // Save the products and update quantities
-         foreach ($request['products'] as $productData) {
+        // Create the note voucher
+        $noteVoucher = NoteVoucher::create([
+            'note_voucher_type_id' => 2,
+            'date_note_voucher' => $order->date,
+            'number' => $newNumber,
+            'from_warehouse_id' => $order->warehouse->id ?? 1,
+            'to_warehouse_id' => $request['toWarehouse'] ?? null,
+            'order_id' =>  $order->id,
+            'note' => "فاتورة بيع رقم " . (string)$order->number,
+        ]);
+
+        // Save the products and update quantities
+        foreach ($request['products'] as $productData) {
             $product = Product::where('name_ar', $productData['name'])->firstOrFail();
 
-             // Attach product to voucher
-             $noteVoucher->voucherProducts()->attach($product->id, [
-                 'unit_id' => $productData['unit'],
-                 'quantity' => $productData['quantity'],
-                 'purchasing_price' => $productData['purchasing_price'] ?? null,
-                 'note' => $productData['note'] ?? null,
-             ]);
-         }
+            // Attach product to voucher
+            $noteVoucher->voucherProducts()->attach($product->id, [
+                'unit_id' => $productData['unit'],
+                'quantity' => $productData['quantity'],
+                'purchasing_price' => $productData['purchasing_price'] ?? null,
+                'note' => $productData['note'] ?? null,
+            ]);
+        }
 
-     } elseif ($order->order_type == 2) {
-         // كمرتجع
-         $lastNoteVoucher = NoteVoucher::orderBy('id', 'desc')->first();
-         $newNumber = $lastNoteVoucher ? $lastNoteVoucher->id + 1 : 1;
+    } elseif ($order->order_type == 2) {
+        // كمرتجع
+        $lastNoteVoucher = NoteVoucher::orderBy('id', 'desc')->first();
+        $newNumber = $lastNoteVoucher ? $lastNoteVoucher->id + 1 : 1;
 
-         // Create the note voucher
-         $noteVoucher = NoteVoucher::create([
-             'note_voucher_type_id' => 1,
-             'date_note_voucher' => $order->date,
-             'number' => $newNumber,
-             'from_warehouse_id' => $order->warehouse->id ?? 1,
-             'to_warehouse_id' => $request['toWarehouse'] ?? null,
+        // Create the note voucher
+        $noteVoucher = NoteVoucher::create([
+            'note_voucher_type_id' => 1,
+            'date_note_voucher' => $order->date,
+            'number' => $newNumber,
+            'from_warehouse_id' => $order->warehouse->id ?? 1,
+            'to_warehouse_id' => $request['toWarehouse'] ?? null,
+            'order_id' =>  $order->id,
+            'note' => "فاتورة مرتجع رقم " . (string)$order->number,
+        ]);
 
-             'order_id' =>  $order->id,
-             'note' => "فاتورة مرتجع رقم " . (string)$order->number,
-         ]);
+        // Save the products and update quantities
+        foreach ($request['products'] as $productData) {
+            $product = Product::where('name_ar', $productData['name'])->firstOrFail();
 
-         // Save the products and update quantities
-         foreach ($request['products'] as $productData) {
-             $product = Product::where('name_ar', $productData['name'])->firstOrFail();
-
-             // Attach product to voucher
-             $noteVoucher->voucherProducts()->attach($product->id, [
-                 'unit_id' => $productData['unit'],
-                 'quantity' => $productData['quantity'],
-                 'purchasing_price' => $productData['purchasing_price'] ?? null,
-                 'note' => $productData['note'] ?? null,
-             ]);
-         }
-     }
+            // Attach product to voucher
+            $noteVoucher->voucherProducts()->attach($product->id, [
+                'unit_id' => $productData['unit'],
+                'quantity' => $productData['quantity'],
+                'purchasing_price' => $productData['purchasing_price'] ?? null,
+                'note' => $productData['note'] ?? null,
+            ]);
+        }
+    }
 
     return redirect()->route('orders.index')->with('success', 'Order updated successfully.');
 }

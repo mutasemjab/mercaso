@@ -25,6 +25,7 @@ return new class extends Migration
             $table->text('fcm_token')->nullable();
             $table->tinyInteger('activate')->default(1); // 1 yes //2 no
             $table->tinyInteger('is_verified')->default(2); // 1 yes //2 no
+            $table->double('points')->default(0); // 1 yes //2 no
             $table->timestamp('email_verified_at')->nullable();
             $table->unsignedBigInteger('business_type_id')->nullable();
             $table->foreign('business_type_id')->references('id')->on('business_types')->onDelete('cascade');

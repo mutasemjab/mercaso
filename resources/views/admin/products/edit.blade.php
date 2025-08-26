@@ -1,10 +1,7 @@
 @extends('layouts.admin')
 @section('title')
-
 {{ __('messages.Edit') }} {{ __('messages.products') }}
 @endsection
-
-
 
 @section('contentheaderlink')
 <a href="{{ route('products.index') }}"> {{ __('messages.products') }} </a>
@@ -12,36 +9,6 @@
 
 @section('contentheaderactive')
 {{ __('messages.Edit') }}
-@endsection
-
-
-@section('css')
-<style>
-    /* Style for the "plus" button */
-    #add-variation {
-        display: block;
-        margin-top: 10px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        padding: 5px 10px;
-        cursor: pointer;
-    }
-
-    /* Style for the variation fields container */
-    #variationFields {
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin-top: 10px;
-    }
-
-    /* Style for individual variation fields */
-    .variation {
-        border: 1px solid #ccc;
-        padding: 10px;
-        margin-top: 10px;
-    }
-</style>
 @endsection
 
 
@@ -59,8 +26,21 @@
                 @csrf
                 @method('PUT')
 
+                <!-- Product Type Field -->
                 <div class="form-group col-md-6">
-                    <label for="category_id">Brand</label>
+                    <label for="product_type"> {{ __('messages.product_type') }}</label>
+                    <select class="form-control" name="product_type" id="product_type">
+                        <option value="3" {{ ($data->product_type ?? 3) == 3 ? 'selected' : '' }}>Both (Retail & Wholesale)</option>
+                        <option value="1" {{ ($data->product_type ?? 3) == 1 ? 'selected' : '' }}>Retail Only</option>
+                        <option value="2" {{ ($data->product_type ?? 3) == 2 ? 'selected' : '' }}>Wholesale Only</option>
+                    </select>
+                    @error('product_type')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group col-md-6">
+                    <label for="brand_id">Brand</label>
                     <select class="form-control" name="brand" id="brand_id">
                         <option value="">Select Brand</option>
                         @foreach($brands as $brand)
@@ -104,80 +84,65 @@
                     @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.number') }}</label>
-                        <input name="number" id="number" class="form-control"
-                            value="{{ old('number', $data->number) }}">
-                        @error('number')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="number"> {{ __('messages.number') }}</label>
+                    <input name="number" id="number" class="form-control"
+                        value="{{ old('number', $data->number) }}">
+                    @error('number')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.barcode') }}</label>
-                        <input name="barcode" id="barcode" class="form-control"
-                            value="{{ old('barcode', $data->barcode) }}">
-                        @error('barcode')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="barcode"> {{ __('messages.barcode') }}</label>
+                    <input name="barcode" id="barcode" class="form-control"
+                        value="{{ old('barcode', $data->barcode) }}">
+                    @error('barcode')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.points') }}</label>
-                        <input name="points" id="points" class="form-control"
-                            value="{{ old('points', $data->points) }}">
-                        @error('points')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="points"> {{ __('messages.points') }}</label>
+                    <input name="points" id="points" class="form-control"
+                        value="{{ old('points', $data->points) }}">
+                    @error('points')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.Name_ar') }}</label>
-                        <input name="name_ar" id="name_ar" class="form-control"
-                            value="{{ old('name_ar', $data->name_ar) }}">
-                        @error('name_ar')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="name_ar"> {{ __('messages.Name_ar') }}</label>
+                    <input name="name_ar" id="name_ar" class="form-control"
+                        value="{{ old('name_ar', $data->name_ar) }}">
+                    @error('name_ar')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.Name_en') }}</label>
-                        <input name="name_en" id="name_en" class="form-control"
-                            value="{{ old('name_en', $data->name_en) }}">
-                        @error('name_en')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="name_en"> {{ __('messages.Name_en') }}</label>
+                    <input name="name_en" id="name_en" class="form-control"
+                        value="{{ old('name_en', $data->name_en) }}">
+                    @error('name_en')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.description_en') }}</label>
-                        <textarea name="description_en" id="description_en" class="form-control"
-                            value="{{ old('description_en') }}" rows="8">{{$data->description_en}}</textarea>
-                        @error('description_en')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="description_en"> {{ __('messages.description_en') }}</label>
+                    <textarea name="description_en" id="description_en" class="form-control" rows="8">{{ old('description_en', $data->description_en) }}</textarea>
+                    @error('description_en')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.description_ar') }}</label>
-                        <textarea name="description_ar" id="description_ar" class="form-control"
-                            value="{{ old('description_ar') }}" rows="8">{{$data->description_ar}}</textarea>
-                        @error('description_ar')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+
+                <div class="form-group col-md-6">
+                    <label for="description_ar"> {{ __('messages.description_ar') }}</label>
+                    <textarea name="description_ar" id="description_ar" class="form-control" rows="8">{{ old('description_ar', $data->description_ar) }}</textarea>
+                    @error('description_ar')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <!-- Modified Tax Section -->
@@ -194,34 +159,30 @@
                     }
                 @endphp
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>{{ __('messages.has_tax') }}</label>
-                        <select name="has_tax" id="has_tax" class="form-control">
-                            <option value="0" {{ $hasTax == '0' ? 'selected' : '' }}>No</option>
-                            <option value="1" {{ $hasTax == '1' ? 'selected' : '' }}>Yes</option>
-                        </select>
-                        @error('has_tax')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="has_tax">{{ __('messages.has_tax') }}</label>
+                    <select name="has_tax" id="has_tax" class="form-control">
+                        <option value="0" {{ $hasTax == '0' ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ $hasTax == '1' ? 'selected' : '' }}>Yes</option>
+                    </select>
+                    @error('has_tax')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6" id="tax_dropdown" style="{{ $hasTax == '1' ? 'display: block;' : 'display: none;' }}">
-                    <div class="form-group">
-                        <label>{{ __('messages.select_tax') }}</label>
-                        <select name="tax_id" id="tax_id" class="form-control">
-                            <option value="">Select Tax</option>
-                            @foreach($taxes as $tax)
-                            <option value="{{ $tax->id }}" {{ $selectedTaxId == $tax->id ? 'selected' : '' }}>
-                                {{ $tax->name }} ({{ $tax->value }}%)
-                            </option>
-                            @endforeach
-                        </select>
-                        @error('tax_id')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6" id="tax_dropdown" style="{{ $hasTax == '1' ? 'display: block;' : 'display: none;' }}">
+                    <label for="tax_id">{{ __('messages.select_tax') }}</label>
+                    <select name="tax_id" id="tax_id" class="form-control">
+                        <option value="">Select Tax</option>
+                        @foreach($taxes as $tax)
+                        <option value="{{ $tax->id }}" {{ $selectedTaxId == $tax->id ? 'selected' : '' }}>
+                            {{ $tax->name }} ({{ $tax->value }}%)
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('tax_id')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <!-- Modified CRV Section -->
@@ -238,100 +199,86 @@
                     }
                 @endphp
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>{{ __('messages.has_crv') }}</label>
-                        <select name="has_crv" id="has_crv" class="form-control">
-                            <option value="0" {{ $hasCrv == '0' ? 'selected' : '' }}>No</option>
-                            <option value="1" {{ $hasCrv == '1' ? 'selected' : '' }}>Yes</option>
-                        </select>
-                        @error('has_crv')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="has_crv">{{ __('messages.has_crv') }}</label>
+                    <select name="has_crv" id="has_crv" class="form-control">
+                        <option value="0" {{ $hasCrv == '0' ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ $hasCrv == '1' ? 'selected' : '' }}>Yes</option>
+                    </select>
+                    @error('has_crv')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6" id="crv_dropdown" style="{{ $hasCrv == '1' ? 'display: block;' : 'display: none;' }}">
-                    <div class="form-group">
-                        <label>{{ __('messages.select_crv') }}</label>
-                        <select name="crv_id" id="crv_id" class="form-control">
-                            <option value="">Select CRV</option>
-                            @foreach($crvs as $crv)
-                            <option value="{{ $crv->id }}" {{ $selectedCrvId == $crv->id ? 'selected' : '' }}>
-                                {{ $crv->name }} ({{ $crv->value }})
-                            </option>
-                            @endforeach
-                        </select>
-                        @error('crv_id')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6" id="crv_dropdown" style="{{ $hasCrv == '1' ? 'display: block;' : 'display: none;' }}">
+                    <label for="crv_id">{{ __('messages.select_crv') }}</label>
+                    <select name="crv_id" id="crv_id" class="form-control">
+                        <option value="">Select CRV</option>
+                        @foreach($crvs as $crv)
+                        <option value="{{ $crv->id }}" {{ $selectedCrvId == $crv->id ? 'selected' : '' }}>
+                            {{ $crv->name }} ({{ $crv->value }})
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('crv_id')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>{{ __('messages.selling_price_for_user') }}</label>
-                        <input name="selling_price_for_user" id="selling_price_for_user" class="form-control"
-                            value="{{ old('selling_price_for_user', $data->selling_price_for_user) }}">
-                        @error('selling_price_for_user')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <!-- Retail Fields - Hidden/Shown based on product type -->
+                <div class="form-group col-md-6" id="retail_price_field">
+                    <label for="selling_price_for_user">{{ __('messages.selling_price_for_user') }}</label>
+                    <input name="selling_price_for_user" id="selling_price_for_user" class="form-control"
+                        value="{{ old('selling_price_for_user', $data->selling_price_for_user) }}">
+                    @error('selling_price_for_user')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>{{ __('messages.min_order_for_user') }}</label>
-                        <input name="min_order_for_user" id="min_order_for_user" class="form-control"
-                            value="{{ old('min_order_for_user', $data->min_order_for_user) }}">
-                        @error('min_order_for_user')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6" id="retail_min_order_field">
+                    <label for="min_order_for_user">{{ __('messages.min_order_for_user') }}</label>
+                    <input name="min_order_for_user" id="min_order_for_user" class="form-control"
+                        value="{{ old('min_order_for_user', $data->min_order_for_user) }}">
+                    @error('min_order_for_user')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>{{ __('messages.min_order_for_wholesale') }}</label>
-                        <input name="min_order_for_wholesale" id="min_order_for_wholesale" class="form-control"
-                            value="{{ old('min_order_for_wholesale', $data->min_order_for_wholesale) }}">
-                        @error('min_order_for_wholesale')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <!-- Wholesale Fields - Hidden/Shown based on product type -->
+                <div class="form-group col-md-6" id="wholesale_min_order_field">
+                    <label for="min_order_for_wholesale">{{ __('messages.min_order_for_wholesale') }}</label>
+                    <input name="min_order_for_wholesale" id="min_order_for_wholesale" class="form-control"
+                        value="{{ old('min_order_for_wholesale', $data->min_order_for_wholesale) }}">
+                    @error('min_order_for_wholesale')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.Status') }}</label>
-                        <select name="status" id="status" class="form-control">
-                            <option value="">Select</option>
-                            <option value="1" {{ $data->status == 1 ? 'selected' : '' }}>Active</option>
-                            <option value="2" {{ $data->status == 2 ? 'selected' : '' }}>Inactive</option>
-                        </select>
-                        @error('status')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="status"> {{ __('messages.Status') }}</label>
+                    <select name="status" id="status" class="form-control">
+                        <option value="">Select</option>
+                        <option value="1" {{ $data->status == 1 ? 'selected' : '' }}>Active</option>
+                        <option value="2" {{ $data->status == 2 ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                    @error('status')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label> {{ __('messages.in_stock') }}</label>
-                        <select name="in_stock" id="in_stock" class="form-control">
-                            <option value="">Select</option>
-                            <option value="1" {{ $data->in_stock == 1 ? 'selected' : '' }}>Yes</option>
-                            <option value="2" {{ $data->in_stock == 2 ? 'selected' : '' }}>No</option>
-                        </select>
-                        @error('in_stock')
-                        <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
+                <div class="form-group col-md-6">
+                    <label for="in_stock"> {{ __('messages.in_stock') }}</label>
+                    <select name="in_stock" id="in_stock" class="form-control">
+                        <option value="">Select</option>
+                        <option value="1" {{ $data->in_stock == 1 ? 'selected' : '' }}>Yes</option>
+                        <option value="2" {{ $data->in_stock == 2 ? 'selected' : '' }}>No</option>
+                    </select>
+                    @error('in_stock')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
                 </div>
 
-             
-
-                <div class="col-md-6">
+                <div class="form-group col-md-6">
                     <div class="form-group">
                         @if($data->productImages->count() > 0)
                         @foreach($data->productImages as $image)
@@ -344,61 +291,63 @@
                     </div>
                 </div>
 
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label>Product Images</label>
-                        <input type="file" name="photo[]" class="form-control" multiple>
-                    </div>
+                <div class="form-group col-md-6">
+                    <label>Product Images</label>
+                    <input type="file" name="photo[]" class="form-control" multiple>
                 </div>
 
             </div>
 
-            <ul class="nav nav-tabs" id="productTab" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="tab1-tab" data-bs-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">{{ __('messages.another_units') }}</a>
-                </li>
-            </ul>
+            <!-- Wholesale Units Tab - Only show if product type is wholesale or both -->
+            <div id="wholesale_units_section">
+                <ul class="nav nav-tabs" id="productTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab1-tab" data-bs-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">{{ __('messages.another_units') }}</a>
+                    </li>
+                </ul>
 
-            <div class="tab-content" id="productTabContent">
-                <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
-                    <div id="product-units-container" class="mt-3">
-                        @foreach ($data->units as $productUnit)
-                            <div class="row product-unit">
-                                <!-- Unit Selection -->
-                                <div class="form-group col-md-3">
-                                    <label for="unit">{{ __('messages.unit_for_wholeSale') }}</label>
-                                    <select name="units[]" class="form-control" required>
-                                        @foreach ($units as $unit)
-                                            <option value="{{ $unit->id }}" {{ $productUnit->id == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
+                <div class="tab-content" id="productTabContent">
+                    <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+                        <div id="product-units-container" class="mt-3">
+                            @foreach ($data->units as $productUnit)
+                                <div class="row product-unit">
+                                    <!-- Unit Selection -->
+                                    <div class="form-group col-md-3">
+                                        <label for="unit">{{ __('messages.unit_for_wholeSale') }}</label>
+                                        <select name="units[]" class="form-control">
+                                            <option value="">Select Unit</option>
+                                            @foreach ($units as $unit)
+                                                <option value="{{ $unit->id }}" {{ $productUnit->id == $unit->id ? 'selected' : '' }}>{{ $unit->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
 
-                                <!-- Barcode Input -->
-                                <div class="form-group col-md-3">
-                                    <label for="barcode">{{ __('messages.barcode') }}</label>
-                                    <input type="number" class="form-control" name="barcodes[]" value="{{ $productUnit->pivot->barcode }}">
-                                </div>
+                                    <!-- Barcode Input -->
+                                    <div class="form-group col-md-3">
+                                        <label for="barcode">{{ __('messages.barcode') }}</label>
+                                        <input type="number" class="form-control" name="barcodes[]" value="{{ $productUnit->pivot->barcode }}">
+                                    </div>
 
-                                <!-- Releation Input -->
-                                <div class="form-group col-md-3">
-                                    <label for="releation">{{ __('messages.releation') }}</label>
-                                    <input type="number" class="form-control" name="releations[]" value="{{ $productUnit->pivot->releation }}">
-                                </div>
+                                    <!-- Releation Input -->
+                                    <div class="form-group col-md-3">
+                                        <label for="releation">{{ __('messages.releation') }}</label>
+                                        <input type="number" class="form-control" name="releations[]" value="{{ $productUnit->pivot->releation }}">
+                                    </div>
 
-                                <!-- Selling Price Input -->
-                                <div class="form-group col-md-3">
-                                    <label for="selling_price">{{ __('messages.selling_price') }}</label>
-                                    <input type="number" class="form-control" name="selling_prices[]" value="{{ $productUnit->pivot->selling_price }}" step="any">
+                                    <!-- Selling Price Input -->
+                                    <div class="form-group col-md-3">
+                                        <label for="selling_price">{{ __('messages.selling_price') }}</label>
+                                        <input type="number" class="form-control" name="selling_prices[]" value="{{ $productUnit->pivot->selling_price }}" step="any">
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
+                        <button type="button" class="btn btn-secondary mt-3" id="add-unit">Add Unit</button>
                     </div>
-                    <button type="button" class="btn btn-secondary mt-3" id="add-unit">Add Unit</button>
                 </div>
             </div>
 
-            <div class="col-md-12 text-center">
+            <div class="form-group col-md-12 text-center">
                 <button id="do_add_item_cardd" type="submit" class="btn btn-primary btn-sm">Update</button>
                 <a href="{{ route('products.index') }}" class="btn btn-sm btn-danger">Cancel</a>
             </div>
@@ -410,6 +359,49 @@
 
 @section('script')
 <script>
+    // Function to toggle fields based on product type
+    function toggleProductTypeFields() {
+        const productType = document.getElementById('product_type').value;
+        const retailPriceField = document.getElementById('retail_price_field');
+        const retailMinOrderField = document.getElementById('retail_min_order_field');
+        const wholesaleMinOrderField = document.getElementById('wholesale_min_order_field');
+        const wholesaleUnitsSection = document.getElementById('wholesale_units_section');
+
+        // Clear required attributes first
+        document.getElementById('selling_price_for_user').removeAttribute('required');
+        document.getElementById('min_order_for_user').removeAttribute('required');
+        document.getElementById('min_order_for_wholesale').removeAttribute('required');
+
+        if (productType === '1') { // Retail only
+            retailPriceField.style.display = 'block';
+            retailMinOrderField.style.display = 'block';
+            wholesaleMinOrderField.style.display = 'none';
+            wholesaleUnitsSection.style.display = 'none';
+            
+            // Set required for retail fields
+            document.getElementById('selling_price_for_user').setAttribute('required', 'required');
+            document.getElementById('min_order_for_user').setAttribute('required', 'required');
+        } else if (productType === '2') { // Wholesale only
+            retailPriceField.style.display = 'none';
+            retailMinOrderField.style.display = 'none';
+            wholesaleMinOrderField.style.display = 'block';
+            wholesaleUnitsSection.style.display = 'block';
+            
+            // Set required for wholesale fields
+            document.getElementById('min_order_for_wholesale').setAttribute('required', 'required');
+        } else { // Both (3)
+            retailPriceField.style.display = 'block';
+            retailMinOrderField.style.display = 'block';
+            wholesaleMinOrderField.style.display = 'block';
+            wholesaleUnitsSection.style.display = 'block';
+            
+            // Set required for all fields
+            document.getElementById('selling_price_for_user').setAttribute('required', 'required');
+            document.getElementById('min_order_for_user').setAttribute('required', 'required');
+            document.getElementById('min_order_for_wholesale').setAttribute('required', 'required');
+        }
+    }
+
     // Function to toggle tax dropdown
     function toggleTaxDropdown() {
         const hasTaxElement = document.getElementById('has_tax');
@@ -440,10 +432,18 @@
 
     // Wait for DOM to be fully loaded
     document.addEventListener('DOMContentLoaded', function() {
+        // Initial state on page load
+        toggleProductTypeFields();
+
         // Event listeners
+        const productTypeElement = document.getElementById('product_type');
         const hasTaxElement = document.getElementById('has_tax');
         const hasCrvElement = document.getElementById('has_crv');
 
+        if (productTypeElement) {
+            productTypeElement.addEventListener('change', toggleProductTypeFields);
+        }
+        
         if (hasTaxElement) {
             hasTaxElement.addEventListener('change', toggleTaxDropdown);
         }
@@ -462,33 +462,26 @@
         $('#add-unit').on('click', function() {
             const unitTemplate = `
                 <div class="row product-unit">
-                    <div class="col-md-3">
-                        <div class="form-group mt-3">
-                            <label for="unit">{{ __('messages.unit') }}</label>
-                            <select name="units[]" class="form-control" required>
-                                @foreach ($units as $unit)
-                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div class="form-group col-md-3">
+                        <label for="unit">{{ __('messages.unit') }}</label>
+                        <select name="units[]" class="form-control">
+                            <option value="">Select Unit</option>
+                            @foreach ($units as $unit)
+                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group mt-3">
-                            <label for="barcode">{{ __('messages.barcode') }}</label>
-                            <input type="number" class="form-control" name="barcodes[]">
-                        </div>
+                    <div class="form-group col-md-3">
+                        <label for="barcode">{{ __('messages.barcode') }}</label>
+                        <input type="number" class="form-control" name="barcodes[]">
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group mt-3">
-                            <label for="releation">{{ __('messages.releation') }}</label>
-                            <input type="number" class="form-control" name="releations[]">
-                        </div>
+                    <div class="form-group col-md-3">
+                        <label for="releation">{{ __('messages.releation') }}</label>
+                        <input type="number" class="form-control" name="releations[]">
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label for="selling_price">{{ __('messages.selling_price') }}</label>
-                            <input type="number" class="form-control" name="selling_prices[]" step="any">
-                        </div>
+                    <div class="form-group col-md-3">
+                        <label for="selling_price">{{ __('messages.selling_price') }}</label>
+                        <input type="number" class="form-control" name="selling_prices[]" step="any">
                     </div>
                 </div>`;
             $('#product-units-container').append(unitTemplate);

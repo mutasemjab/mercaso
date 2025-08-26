@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\NoteVoucherTypeController;
 use App\Http\Controllers\Admin\NoteVoucherController;
 use App\Http\Controllers\Admin\PageController;
+use App\Http\Controllers\Admin\PointTransactionController;
 use App\Http\Controllers\Admin\TaxController;
 use App\Http\Controllers\Reports\AllProductReportController;
 use App\Http\Controllers\Reports\InventoryReportController;
@@ -171,7 +172,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::resource('banners', BannerController::class);
         Route::resource('taxes', TaxController::class);
         Route::resource('crvs', CrvController::class);
-
+         Route::resource('point-transactions', PointTransactionController::class);
+    
+    // AJAX Route for getting user points
+         Route::get('/ajax/user-points', [PointTransactionController::class, 'getUserPoints'])
+         ->name('point-transactions.get-user-points');
         Route::get('deliveries/{delivery}/availabilities', [DeliveryController::class, 'manageAvailabilities'])
         ->name('deliveries.availabilities');
     });

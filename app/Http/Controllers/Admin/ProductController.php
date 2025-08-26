@@ -119,9 +119,6 @@ class ProductController extends Controller
     }
 
 
-
-
-
     public function index(Request $request)
     {
         $query = Product::query();
@@ -158,12 +155,39 @@ class ProductController extends Controller
         }
     }
 
+
     public function store(Request $request)
     {
         try {
-            // Create a new product without saving it to the database yet
+            // Validate product type specific fields
+            $rules = [
+                'product_type' => 'required|in:1,2,3',
+                'number' => 'required',
+                'barcode' => 'required|unique:products,barcode',
+                'name_en' => 'required|string|max:255',
+                'name_ar' => 'required|string|max:255',
+                'category' => 'required|exists:categories,id',
+                'unit' => 'required|exists:units,id',
+            ];
+
+            // Add conditional validation based on product type
+            $productType = $request->input('product_type');
+            
+            if ($productType == '1' || $productType == '3') { // Retail or Both
+                $rules['selling_price_for_user'] = 'required|numeric|min:0';
+                $rules['min_order_for_user'] = 'required|numeric|min:0';
+            }
+            
+            if ($productType == '2' || $productType == '3') { // Wholesale or Both
+                $rules['min_order_for_wholesale'] = 'required|numeric|min:0';
+            }
+
+            $request->validate($rules);
+
+            // Create a new product
             $product = new Product();
 
+            $product->product_type = $request->input('product_type');
             $product->number = $request->input('number');
             $product->barcode = $request->input('barcode');
             $product->name_en = $request->input('name_en');
@@ -188,9 +212,22 @@ class ProductController extends Controller
             }
 
             $product->points = $request->input('points');
-            $product->selling_price_for_user = $request->input('selling_price_for_user');
-            $product->min_order_for_user = $request->input('min_order_for_user');
-            $product->min_order_for_wholesale = $request->input('min_order_for_wholesale');
+            
+            // Set values based on product type
+            if ($productType == '1' || $productType == '3') { // Retail or Both
+                $product->selling_price_for_user = $request->input('selling_price_for_user');
+                $product->min_order_for_user = $request->input('min_order_for_user');
+            } else {
+                $product->selling_price_for_user = 0;
+                $product->min_order_for_user = 0;
+            }
+            
+            if ($productType == '2' || $productType == '3') { // Wholesale or Both
+                $product->min_order_for_wholesale = $request->input('min_order_for_wholesale');
+            } else {
+                $product->min_order_for_wholesale = 0;
+            }
+
             $product->rating = $request->input('rating');
             $product->total_rating = $request->input('total_rating');
             $product->in_stock = $request->input('in_stock');
@@ -198,34 +235,35 @@ class ProductController extends Controller
             $product->category_id = $request->input('category');
             $product->unit_id = $request->input('unit');
             $product->brand_id = $request->input('brand') ?? null;
-            $product->save(); // Save the product without variations
+            $product->save();
 
+            // Handle product images
             if ($request->hasFile('photo')) {
                 $photos = $request->file('photo');
                 foreach ($photos as $photo) {
-                    $photoPath = uploadImage('assets/admin/uploads', $photo); // Use the uploadImage function
+                    $photoPath = uploadImage('assets/admin/uploads', $photo);
                     if ($photoPath) {
-                        // Create a record in the product_images table for each image using the relationship
                         $productImage = new ProductPhoto();
                         $productImage->photo = $photoPath;
-
-                        $product->productImages()->save($productImage); // Associate the image with the product
+                        $product->productImages()->save($productImage);
                     }
                 }
             }
 
-            if ($request->has('units')) {
+            // Handle product units - only for wholesale or both types
+            if (($productType == '2' || $productType == '3') && $request->has('units')) {
                 foreach ($request->units as $index => $unit_id) {
-                    ProductUnit::create([
-                        'product_id' => $product->id,
-                        'unit_id' => $unit_id,
-                        'barcode' => $request->barcodes[$index],
-                        'releation' => $request->releations[$index],
-                        'selling_price' => $request->selling_prices[$index],
-                    ]);
+                    if (!empty($unit_id)) { // Only create if unit is selected
+                        ProductUnit::create([
+                            'product_id' => $product->id,
+                            'unit_id' => $unit_id,
+                            'barcode' => $request->barcodes[$index] ?? null,
+                            'releation' => $request->releations[$index] ?? 1,
+                            'selling_price' => $request->selling_prices[$index] ?? 0,
+                        ]);
+                    }
                 }
             }
-
 
             return redirect()->route('products.index')->with(['success' => 'Product created']);
         } catch (\Exception $ex) {
@@ -235,6 +273,8 @@ class ProductController extends Controller
                 ->withInput();
         }
     }
+
+
 
     public function edit($id)
     {
@@ -255,8 +295,34 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         try {
+            // Validate product type specific fields
+            $rules = [
+                'product_type' => 'required|in:1,2,3',
+                'number' => 'required',
+                'barcode' => 'required|unique:products,barcode,' . $id,
+                'name_en' => 'required|string|max:255',
+                'name_ar' => 'required|string|max:255',
+                'category' => 'required|exists:categories,id',
+                'unit' => 'required|exists:units,id',
+            ];
+
+            // Add conditional validation based on product type
+            $productType = $request->input('product_type');
+            
+            if ($productType == '1' || $productType == '3') { // Retail or Both
+                $rules['selling_price_for_user'] = 'required|numeric|min:0';
+                $rules['min_order_for_user'] = 'required|numeric|min:0';
+            }
+            
+            if ($productType == '2' || $productType == '3') { // Wholesale or Both
+                $rules['min_order_for_wholesale'] = 'required|numeric|min:0';
+            }
+
+            $request->validate($rules);
+
             $product = Product::findOrFail($id);
 
+            $product->product_type = $request->input('product_type');
             $product->number = $request->input('number');
             $product->barcode = $request->input('barcode');
             $product->name_en = $request->input('name_en');
@@ -281,9 +347,22 @@ class ProductController extends Controller
             }
 
             $product->points = $request->input('points');
-            $product->selling_price_for_user = $request->input('selling_price_for_user');
-            $product->min_order_for_user = $request->input('min_order_for_user');
-            $product->min_order_for_wholesale = $request->input('min_order_for_wholesale');
+            
+            // Set values based on product type
+            if ($productType == '1' || $productType == '3') { // Retail or Both
+                $product->selling_price_for_user = $request->input('selling_price_for_user');
+                $product->min_order_for_user = $request->input('min_order_for_user');
+            } else {
+                $product->selling_price_for_user = 0;
+                $product->min_order_for_user = 0;
+            }
+            
+            if ($productType == '2' || $productType == '3') { // Wholesale or Both
+                $product->min_order_for_wholesale = $request->input('min_order_for_wholesale');
+            } else {
+                $product->min_order_for_wholesale = 0;
+            }
+
             $product->rating = $request->input('rating');
             $product->total_rating = $request->input('total_rating');
             $product->in_stock = $request->input('in_stock');
@@ -292,6 +371,7 @@ class ProductController extends Controller
             $product->unit_id = $request->input('unit');
             $product->brand_id = $request->input('brand') ?? null;
 
+            // Handle product images
             if ($request->hasFile('photo')) {
                 // Delete all previous photos associated with the product
                 $product->productImages()->delete();
@@ -299,31 +379,33 @@ class ProductController extends Controller
                 // Upload and insert new photos
                 $photos = $request->file('photo');
                 foreach ($photos as $photo) {
-                    $photoPath = uploadImage('assets/admin/uploads', $photo); // Use the uploadImage function
+                    $photoPath = uploadImage('assets/admin/uploads', $photo);
                     if ($photoPath) {
-                        // Create a record in the product_images table for each image using the relationship
                         $productImage = new ProductPhoto();
                         $productImage->photo = $photoPath;
-
-                        $product->productImages()->save($productImage); // Associate the image with the product
+                        $product->productImages()->save($productImage);
                     }
                 }
             }
 
             if ($product->save()) {
-                // Handle product units
+                // Handle product units - only for wholesale or both types
                 ProductUnit::where('product_id', $id)->delete();
-                if ($request->has('units')) {
+                
+                if (($productType == '2' || $productType == '3') && $request->has('units')) {
                     foreach ($request->units as $index => $unit_id) {
-                        ProductUnit::create([
-                            'product_id' => $product->id,
-                            'unit_id' => $unit_id,
-                            'barcode' => $request->barcodes[$index],
-                            'releation' => $request->releations[$index],
-                            'selling_price' => $request->selling_prices[$index],
-                        ]);
+                        if (!empty($unit_id)) { // Only create if unit is selected
+                            ProductUnit::create([
+                                'product_id' => $product->id,
+                                'unit_id' => $unit_id,
+                                'barcode' => $request->barcodes[$index] ?? null,
+                                'releation' => $request->releations[$index] ?? 1,
+                                'selling_price' => $request->selling_prices[$index] ?? 0,
+                            ]);
+                        }
                     }
                 }
+                
                 return redirect()->route('products.index')->with(['success' => 'Product updated']);
             } else {
                 return redirect()->back()->with(['error' => 'Something went wrong while updating the product']);

@@ -248,6 +248,19 @@
                             </a>
                         </li>
                     @endif
+           
+                    @if (
+                        $user->can('point-transaction-table') ||
+                            $user->can('point-transaction-add') ||
+                            $user->can('point-transaction-edit') ||
+                            $user->can('point-transaction-delete'))
+                        <li class="nav-item">
+                            <a href="{{ route('point-transactions.index') }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p> {{ __('messages.Point_Transactions') }} </p>
+                            </a>
+                        </li>
+                    @endif
 
 
 

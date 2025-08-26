@@ -189,6 +189,100 @@ return [
     "has_tax"=>"Has Tax",
     "select_tax"=>"Select Tax",
     "select_crv"=>"Select Crv",
+'product_type' => 'Product Type',
+'retail_only' => 'Retail Only',
+'wholesale_only' => 'Wholesale Only',
+'both_retail_wholesale' => 'Both (Retail & Wholesale)',
+// Point Transactions
+    'Point_Transactions' => 'Point Transactions',
+    'Add_Point_Transaction' => 'Add Point Transaction',
+    'Edit_Point_Transaction' => 'Edit Point Transaction',
+    'View_Point_Transaction' => 'View Point Transaction',
+    'Point_Transaction_Details' => 'Point Transaction Details',
+    'Add_New' => 'Add New',
+    'Back' => 'Back',
+    'Save' => 'Save',
+    'Update' => 'Update',
+    'Cancel' => 'Cancel',
+    'Edit' => 'Edit',
+    'View' => 'View',
+    'Delete' => 'Delete',
+    'Actions' => 'Actions',
+    'Search' => 'Search',
+    'Clear' => 'Clear',
+
+    // Form Fields
+    'User' => 'User',
+    'Admin' => 'Admin',
+    'Points' => 'Points',
+    'Current_Points' => 'Current Points',
+    'Points_Amount' => 'Points Amount',
+    'Transaction_Type' => 'Transaction Type',
+    'Type' => 'Type',
+    'Note' => 'Note',
+    'Date' => 'Date',
+    'Date_From' => 'Date From',
+    'Date_To' => 'Date To',
+    'Created_At' => 'Created At',
+    'Updated_At' => 'Updated At',
+    'Transaction_ID' => 'Transaction ID',
+    
+    // Transaction Types
+    'Add_Points' => 'Add Points',
+    'Withdraw_Points' => 'Withdraw Points',
+    'All_Types' => 'All Types',
+
+    // User Related
+    'All_Users' => 'All Users',
+    'Select_User' => 'Select User',
+    'Unknown_User' => 'Unknown User',
+    'User_Name' => 'User Name',
+    'User_Email' => 'User Email',
+    'Current_Total_Points' => 'Current Total Points',
+    'User_Registered' => 'User Registered',
+    'User_Information' => 'User Information',
+
+    // Select Options
+    'Select_Type' => 'Select Type',
+    'Select_user_to_view_points' => 'Select user to view points',
+
+    // Messages
+    'No_point_transactions_found' => 'No point transactions found',
+    'No_Note' => 'No Note',
+    'Enter_note' => 'Enter note here...',
+    'System' => 'System',
+    'Error_loading_points' => 'Error loading points',
+    'Insufficient_points_warning' => 'User does not have enough points for withdrawal',
+    'insufficient_points' => 'User does not have sufficient points for this withdrawal.',
+
+    // Success Messages
+    'point_transaction_created_successfully' => 'Point transaction created successfully.',
+    'point_transaction_updated_successfully' => 'Point transaction updated successfully.',
+    'point_transaction_deleted_successfully' => 'Point transaction deleted successfully.',
+
+    // Confirmations
+    'Are_you_sure' => 'Are you sure you want to delete this transaction?',
+    'Are_you_sure_delete' => 'Are you sure you want to delete this point transaction? This action cannot be undone.',
+
+    // Information Messages
+    'Point_transaction_note' => 'This transaction will automatically update the user\'s point balance.',
+    'Edit_point_transaction_warning' => 'Editing this transaction will reverse the original transaction and apply the new values to the user\'s balance.',
+
+    // General
+    'ID' => 'ID',
+    'Warning' => 'Warning',
+    'Transaction_Information' => 'Transaction Information',
+    'Transaction_Details' => 'Transaction Details',
+    'Original_User' => 'Original User',
+    'Original_Points' => 'Original Points',
+    'Created_By' => 'Created By',
+    'Back_to_List' => 'Back to List',
+
+    // Filter
+    'Filters' => 'Filters',
+    'Filter_by' => 'Filter by',
+    'Show_all' => 'Show all',
+    'Results' => 'Results',
     ""=>"",
     ""=>"",
     ""=>"",

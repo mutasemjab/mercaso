@@ -3,7 +3,6 @@
 {{ __('messages.products') }}
 @endsection
 
-
 @section('content')
 
 <div class="card">
@@ -15,6 +14,20 @@
         <form action="{{ route('products.store') }}" method="post" enctype='multipart/form-data'>
             <div class="row">
                 @csrf
+                
+                <!-- Product Type Field -->
+                <div class="form-group col-md-6">
+                    <label for="product_type"> {{ __('messages.product_type') }}</label>
+                    <select class="form-control" name="product_type" id="product_type">
+                        <option value="3" @if(old('product_type') == '3' || old('product_type') == '') selected @endif>Both (Retail & Wholesale)</option>
+                        <option value="1" @if(old('product_type') == '1') selected @endif>Retail Only</option>
+                        <option value="2" @if(old('product_type') == '2') selected @endif>Wholesale Only</option>
+                    </select>
+                    @error('product_type')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
                 <div class="form-group col-md-6">
                     <label for="category_id"> {{ __('messages.brands') }}</label>
                     <select class="form-control" name="brand" id="brand_id">
@@ -160,7 +173,8 @@
                     @enderror
                 </div>
 
-                <div class="form-group col-md-6">
+                <!-- Retail Fields - Hidden/Shown based on product type -->
+                <div class="form-group col-md-6" id="retail_price_field">
                     <label for="selling_price_for_user"> {{ __('messages.selling_price_for_user') }}</label>
                     <input name="selling_price_for_user" id="selling_price_for_user" class="form-control" value="{{ old('selling_price_for_user') }}">
                     @error('selling_price_for_user')
@@ -168,7 +182,7 @@
                     @enderror
                 </div>
 
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-6" id="retail_min_order_field">
                     <label for="min_order_for_user"> {{ __('messages.min_order_for_user') }}</label>
                     <input name="min_order_for_user" id="min_order_for_user" class="form-control" value="{{ old('min_order_for_user') }}">
                     @error('min_order_for_user')
@@ -176,7 +190,8 @@
                     @enderror
                 </div>
 
-                <div class="form-group col-md-6">
+                <!-- Wholesale Fields - Hidden/Shown based on product type -->
+                <div class="form-group col-md-6" id="wholesale_min_order_field">
                     <label for="min_order_for_wholesale"> {{ __('messages.min_order_for_wholesale') }}</label>
                     <input name="min_order_for_wholesale" id="min_order_for_wholesale" class="form-control" value="{{ old('min_order_for_wholesale') }}">
                     @error('min_order_for_wholesale')
@@ -208,8 +223,6 @@
                     @enderror
                 </div>
 
-         
-
                 <div class="form-group col-md-12">
                     <img src="" id="image-preview" alt="Selected Image" height="50px" width="50px" style="display: none;">
                     <button class="btn"> Photo</button>
@@ -221,39 +234,43 @@
 
             </div>
 
-            <ul class="nav nav-tabs" id="productTab" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="tab1-tab" data-bs-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">{{ __('messages.another_units') }}</a>
-                </li>
-            </ul>
+            <!-- Wholesale Units Tab - Only show if product type is wholesale or both -->
+            <div id="wholesale_units_section">
+                <ul class="nav nav-tabs" id="productTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab1-tab" data-bs-toggle="tab" href="#tab1" role="tab" aria-controls="tab1" aria-selected="true">{{ __('messages.another_units') }}</a>
+                    </li>
+                </ul>
 
-            <div class="tab-content" id="productTabContent">
-                <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
-                    <div id="product-units-container" class="mt-3">
-                        <div class="row product-unit">
-                            <div class="form-group col-md-3">
-                                <label for="unit">{{ __('messages.unit_for_wholeSale') }}</label>
-                                <select name="units[]" class="form-control" required>
-                                    @foreach ($units as $unit)
-                                        <option value="{{ $unit->id }}">{{ $unit->name_en }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group col-md-3">
-                                <label for="barcode">{{ __('messages.barcode') }}</label>
-                                <input type="number" class="form-control" name="barcodes[]">
-                            </div>
-                            <div class="form-group col-md-3">
-                                <label for="releation">{{ __('messages.releation') }}</label>
-                                <input type="number" class="form-control" name="releations[]">
-                            </div>
-                            <div class="form-group col-md-3">
-                                <label for="selling_price">{{ __('messages.selling_price') }}</label>
-                                <input type="number" class="form-control" name="selling_prices[]" step="0.01" min="0">
+                <div class="tab-content" id="productTabContent">
+                    <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
+                        <div id="product-units-container" class="mt-3">
+                            <div class="row product-unit">
+                                <div class="form-group col-md-3">
+                                    <label for="unit">{{ __('messages.unit_for_wholeSale') }}</label>
+                                    <select name="units[]" class="form-control">
+                                        <option value="">Select Unit</option>
+                                        @foreach ($units as $unit)
+                                            <option value="{{ $unit->id }}">{{ $unit->name_en }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="barcode">{{ __('messages.barcode') }}</label>
+                                    <input type="number" class="form-control" name="barcodes[]">
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="releation">{{ __('messages.releation') }}</label>
+                                    <input type="number" class="form-control" name="releations[]">
+                                </div>
+                                <div class="form-group col-md-3">
+                                    <label for="selling_price">{{ __('messages.selling_price') }}</label>
+                                    <input type="number" class="form-control" name="selling_prices[]" step="0.01" min="0">
+                                </div>
                             </div>
                         </div>
+                        <button type="button" class="btn btn-secondary mt-3" id="add-unit">Add Unit</button>
                     </div>
-                    <button type="button" class="btn btn-secondary mt-3" id="add-unit">Add Unit</button>
                 </div>
             </div>
 
@@ -268,7 +285,48 @@
 @endsection
 @section('script')
 <script>
-  
+    // Function to toggle fields based on product type
+    function toggleProductTypeFields() {
+        const productType = document.getElementById('product_type').value;
+        const retailPriceField = document.getElementById('retail_price_field');
+        const retailMinOrderField = document.getElementById('retail_min_order_field');
+        const wholesaleMinOrderField = document.getElementById('wholesale_min_order_field');
+        const wholesaleUnitsSection = document.getElementById('wholesale_units_section');
+
+        // Clear required attributes first
+        document.getElementById('selling_price_for_user').removeAttribute('required');
+        document.getElementById('min_order_for_user').removeAttribute('required');
+        document.getElementById('min_order_for_wholesale').removeAttribute('required');
+
+        if (productType === '1') { // Retail only
+            retailPriceField.style.display = 'block';
+            retailMinOrderField.style.display = 'block';
+            wholesaleMinOrderField.style.display = 'none';
+            wholesaleUnitsSection.style.display = 'none';
+            
+            // Set required for retail fields
+            document.getElementById('selling_price_for_user').setAttribute('required', 'required');
+            document.getElementById('min_order_for_user').setAttribute('required', 'required');
+        } else if (productType === '2') { // Wholesale only
+            retailPriceField.style.display = 'none';
+            retailMinOrderField.style.display = 'none';
+            wholesaleMinOrderField.style.display = 'block';
+            wholesaleUnitsSection.style.display = 'block';
+            
+            // Set required for wholesale fields
+            document.getElementById('min_order_for_wholesale').setAttribute('required', 'required');
+        } else { // Both (3)
+            retailPriceField.style.display = 'block';
+            retailMinOrderField.style.display = 'block';
+            wholesaleMinOrderField.style.display = 'block';
+            wholesaleUnitsSection.style.display = 'block';
+            
+            // Set required for all fields
+            document.getElementById('selling_price_for_user').setAttribute('required', 'required');
+            document.getElementById('min_order_for_user').setAttribute('required', 'required');
+            document.getElementById('min_order_for_wholesale').setAttribute('required', 'required');
+        }
+    }
 
     // Function to toggle tax dropdown
     function toggleTaxDropdown() {
@@ -301,13 +359,18 @@
     // Wait for DOM to be fully loaded
     document.addEventListener('DOMContentLoaded', function() {
         // Initial state on page load
+        toggleProductTypeFields();
         toggleTaxDropdown();
         toggleCrvDropdown();
 
         // Event listeners
+        const productTypeElement = document.getElementById('product_type');
         const hasTaxElement = document.getElementById('has_tax');
         const hasCrvElement = document.getElementById('has_crv');
 
+        if (productTypeElement) {
+            productTypeElement.addEventListener('change', toggleProductTypeFields);
+        }
         
         if (hasTaxElement) {
             hasTaxElement.addEventListener('change', toggleTaxDropdown);
@@ -329,7 +392,8 @@
                 <div class="row product-unit">
                     <div class="form-group col-md-3">
                         <label for="unit">{{ __('messages.unit') }}</label>
-                        <select name="units[]" class="form-control" required>
+                        <select name="units[]" class="form-control">
+                            <option value="">Select Unit</option>
                             @foreach ($units as $unit)
                                 <option value="{{ $unit->id }}">{{ $unit->name_en }}</option>
                             @endforeach
