@@ -17,6 +17,7 @@
         <div class="clearfix"></div>
 
         <div class="col-md-12">
+              @can('page-table')
             @if(isset($pages) && !empty($pages) && count($pages) > 0)
                 <table id="example2" class="table table-bordered table-hover">
                     <thead class="custom_thead">
@@ -40,12 +41,16 @@
                                 <td>{{ $page->title }}</td>
                                 <td>{{ $page->content }}</td>
                                 <td>
+                                      @can('page-edit')
                                     <a href="{{ route('pages.edit', [ 'id' => $page->id]) }}" class="btn btn-sm btn-primary">{{ __('messages.Edit') }}</a>
+                                    @endcan
+                                    @can('page-delete')
                                     <form action="{{ route('pages.destroy', ['id' => $page->id]) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.Delete') }}</button>
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @endforeach
@@ -54,6 +59,7 @@
             @else
                 <div class="alert alert-danger">{{ __('messages.No_data') }}</div>
             @endif
+            @endcan
         </div>
     </div>
 </div>

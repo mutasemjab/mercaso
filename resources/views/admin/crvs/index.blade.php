@@ -13,6 +13,7 @@
                
 
                     <div class="table-responsive">
+                           @can('crv-table')
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
@@ -31,12 +32,16 @@
                                         <td>{{ $crv->value }}</td>
                                         <td>{{ $crv->created_at->format('Y-m-d H:i') }}</td>
                                         <td>
+                                            @can('crv-edit')
                                             <a href="{{ route('crvs.edit', $crv) }}" class="btn btn-sm btn-warning">Edit</a>
+                                             @endcan  
+                                            @can('crv-delete')
                                             <form action="{{ route('crvs.destroy', $crv) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this CRV?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                             </form>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @empty
@@ -46,6 +51,7 @@
                                 @endforelse
                             </tbody>
                         </table>
+                        @endcan
                     </div>
                 </div>
             </div>

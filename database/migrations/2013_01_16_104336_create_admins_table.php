@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -19,21 +20,22 @@ return new class extends Migration
             $table->string('email', 100)->nullable();
             $table->string('username', 100);
             $table->string('password', 225);
-            $table->boolean('is_super')->default(true);
+            $table->boolean('is_super_admin')->default(false); 
            $table->timestamps();
         });
 
-        DB::table('admins')->insert([
+       DB::table('admins')->insert([
             [
-                'name' => "Admin",
-                'username'=>"admin",
+                'name' => "Super Admin",
+                'username' => "admin",
                 'email' => "admin@demo.com",
+                'mobile' => null,
                 'password' => bcrypt('admin'), // password
-                'is_super' => true, // لكل المتاجر
+                'is_super_admin' => true, 
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
-
-        ]
-        );
+        ]);
     }
 
     /**

@@ -1,99 +1,140 @@
 @extends('layouts.admin')
 
-@section('css')
-@endsection
+@section('title', __('messages.employee_management'))
 
 @section('content')
-    <!-- Start Content-->
-    <div class="container-fluid">
-
-
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box">
-                    <div class="page-title-right">
-                        <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{ env('APP_NAME') }}</a></li>
-
-                        </ol>
-                    </div>
-                    <h4 class="page-title">Employee</h4>
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">{{ __('messages.employee_management') }}</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('messages.dashboard') }}</a></li>
+                        <li class="breadcrumb-item active">{{ __('messages.employees') }}</li>
+                    </ol>
                 </div>
             </div>
         </div>
+    </div>
 
-
-        <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row mb-2">
-                            <div class="col-md-12">
-
-                            </div>
-                            <div class="col-sm-4">
-
-                                {{ $data->links() }}
-
-                            </div>
-                            @can('employee-add')
-                                <div class="col-sm-8">
-                                    <div class="text-sm-right">
-                                        <a type="button" href="{{ route("admin.employee.create") }}"
-                                            class="btn btn-primary waves-effect waves-light mb-2 text-white">New Employee
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h3 class="card-title">{{ __('messages.employees') }}</h3>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    @can('employee-add')
+                                        <a href="{{ route('admin.employee.create') }}" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> {{ __('messages.create') }}
                                         </a>
-                                    </div>
-                                </div><!-- end col-->
-                            @endcan
+                                    @endcan
+                                </div>
+                            </div>
                         </div>
 
-                        @can('employee-table')
+                        <div class="card-body">
+                            <!-- Search Form -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <form method="GET" action="{{ route('admin.employee.index') }}">
+                                        <div class="input-group">
+                                            <input type="text" name="search" class="form-control" 
+                                                   placeholder="{{ __('messages.search') }}..." 
+                                                   value="{{ request('search') }}">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="submit">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Employees Table -->
                             <div class="table-responsive">
-                                <table class="table table-centered table-nowrap table-hover mb-0">
-                                    <thead class="thead-light">
-
+                                <table class="table table-bordered table-striped">
+                                    <thead>
                                         <tr>
-
-                                            <th>Name</th>
-                                            <th>User name</th>
-                                            <th style="width: 82px;">Action</th>
+                                            <th>{{ __('messages.no') }}</th>
+                                            <th>{{ __('messages.name') }}</th>
+                                            <th>{{ __('messages.email') }}</th>
+                                            <th>{{ __('messages.username') }}</th>
+                                            <th>{{ __('messages.mobile') }}</th>
+                                            <th>{{ __('messages.roles') }}</th>
+                                            <th>{{ __('messages.created_at') }}</th>
+                                            <th>{{ __('messages.actions') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($data as $value)
+                                        @forelse($data as $key => $employee)
                                             <tr>
-
-                                                <td><span class="font-weight-bold">{{ $value->name }}</span></td>
-                                                <td><span class="font-weight-bold">{{ $value->username }}</span></td>
+                                                <td>{{ $data->firstItem() + $key }}</td>
+                                                <td>
+                                                    <strong>{{ $employee->name }}</strong>
+                                                </td>
+                                                <td>{{ $employee->email }}</td>
+                                                <td>{{ $employee->username ?? '-' }}</td>
+                                                <td>{{ $employee->phone ?? '-' }}</td>
+                                                <td>
+                                                    @foreach($employee->roles as $role)
+                                                        <span class="badge badge-primary">{{ $role->name }}</span>
+                                                    @endforeach
+                                                </td>
+                                                <td>{{ $employee->created_at->format('Y-m-d H:i') }}</td>
                                                 <td>
                                                     @can('employee-edit')
-                                                        <a class="btn btn-sm btn-outline-info"
-                                                            href="{{ route("admin.employee.edit", $value->id) }}"><i
-                                                                class="mdi mdi-pencil-box"></i>Edit</a>
+                                                        <a href="{{ route('admin.employee.edit', $employee->id) }}" 
+                                                           class="btn btn-sm btn-info">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
                                                     @endcan
+                                                    
                                                     @can('employee-delete')
-                                                        <a class="btn btn-sm btn-outline-danger"
-                                                            href="{{ route("admin.employee.destroy", $value->id) }}"><i
-                                                                class="mdi mdi-trash-can"></i>Delete</a>
+                                                        <form action="{{ route('admin.employee.destroy', $employee->id) }}" 
+                                                              method="POST" class="d-inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" 
+                                                                    class="btn btn-sm btn-danger"
+                                                                    onclick="return confirm('{{ __('messages.confirm_delete') }}')">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
                                                     @endcan
-
                                                 </td>
                                             </tr>
-                                        @endforeach
-
+                                        @empty
+                                            <tr>
+                                                <td colspan="8" class="text-center">{{ __('messages.no_data_found') }}</td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
-                        @endcan
 
-                    </div> <!-- end card-body-->
-                </div> <!-- end card-->
+                            <!-- Pagination -->
+                            <div class="row">
+                                <div class="col-sm-12 col-md-5">
+                                    <div class="dataTables_info">
+                                        {{ __('messages.showing') }} {{ $data->firstItem() }} {{ __('messages.to') }} {{ $data->lastItem() }} {{ __('messages.of') }} {{ $data->total() }} {{ __('messages.entries') }}
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-7">
+                                    {{ $data->appends(request()->query())->links() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div> <!-- container -->
-@endsection
-
-@section('script')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.3/dist/sweetalert2.min.js"></script>
-    <script src="{{ asset('assets/js/category.js') }}"></script>
+    </section>
 @endsection

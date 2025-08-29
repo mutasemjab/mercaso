@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 @section('title')
-{{ __('messages.orders') }}
+    {{ __('messages.orders') }}
 @endsection
 
 
 @section('contentheaderactive')
-{{ __('messages.Show') }}
+    {{ __('messages.Show') }}
 @endsection
 
 
@@ -23,10 +23,10 @@
             <a href="{{ route('orders.create') }}" class="btn btn-sm btn-success"> {{ __('messages.New') }}
                 {{ __('messages.orders') }}</a>
 
-                <form action="{{ route('orders.index') }}" method="GET" class="form-inline float-right">
-                    <input type="text" name="search" class="form-control mr-sm-2" placeholder="{{ __('messages.Search') }}">
-                    <button type="submit" class="btn btn-primary">{{ __('messages.Search') }}</button>
-                </form>
+            <form action="{{ route('orders.index') }}" method="GET" class="form-inline float-right">
+                <input type="text" name="search" class="form-control mr-sm-2" placeholder="{{ __('messages.Search') }}">
+                <button type="submit" class="btn btn-primary">{{ __('messages.Search') }}</button>
+            </form>
         </div>
         <!-- /.card-header -->
         <div class="card-body">
@@ -45,6 +45,7 @@
             <div id="ajax_responce_serarchDiv" class="col-md-12">
 
                 @if (isset($data) && !$data->isEmpty())
+                  @can('order-table')
                     <table id="example2" class="table table-bordered table-hover">
                         <thead class="custom_thead">
                             <th>#{{ __('messages.ID') }}</th>
@@ -71,23 +72,23 @@
                                     <td>
 
                                         @if ($info->order_status == 1)
-                                        {{ __('messages.Pending') }}
+                                            {{ __('messages.Pending') }}
                                         @elseif($info->order_status == 2)
-                                        {{ __('messages.Accepted') }}
+                                            {{ __('messages.Accepted') }}
                                         @elseif($info->order_status == 3)
-                                        {{ __('messages.OnTheWay') }}
+                                            {{ __('messages.OnTheWay') }}
                                         @elseif($info->order_status == 4)
-                                        {{ __('messages.Delivered') }}
+                                            {{ __('messages.Delivered') }}
                                         @elseif($info->order_status == 5)
-                                        {{ __('messages.Canceled') }}
+                                            {{ __('messages.Canceled') }}
                                         @else
-                                        {{ __('messages.Refund') }}
+                                            {{ __('messages.Refund') }}
                                         @endif
                                     </td>
                                     <td>{{ $info->delivery_fee }}</td>
                                     <td>{{ $info->total_prices }}</td>
                                     <td>{{ $info->total_discounts }}</td>
-                                    <td>{{ $info->payment_type == 1 ?  'cash' : 'visa' }}</td>
+                                    <td>{{ $info->payment_type == 1 ? 'cash' : 'visa' }}</td>
                                     <td>
                                         @if ($info->payment_status == 1)
                                             Paid
@@ -98,20 +99,20 @@
 
 
                                     <td>
-                                        <a href="{{ route('orders.edit', $info->id) }}"
-                                            class="btn btn-sm btn-primary"> {{ __('messages.Edit') }}</a>
-                                        <a href="{{ route('orders.show', $info->id) }}"
-                                            class="btn btn-sm btn-primary"> {{ __('messages.Show') }}</a>
-                                 <!--       <form action="{{ route('orders.destroy', $info->id) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger"> {{ __('messages.Delete') }}</button>
-                                        </form>-->
+                                         @can('order-edit')
+                                        <a href="{{ route('orders.edit', $info->id) }}" class="btn btn-sm btn-primary">
+                                            {{ __('messages.Edit') }}</a>
+                                            @endcan
+                                             @can('order-table')
+                                        <a href="{{ route('orders.show', $info->id) }}" class="btn btn-sm btn-primary">
+                                            {{ __('messages.Show') }}</a>
+                                      @endcan
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
+                    @endcan
                     <br>
                     {{ $data->links() }}
                 @else

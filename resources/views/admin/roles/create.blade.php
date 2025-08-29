@@ -1,97 +1,224 @@
-@extends("layouts.admin")
+@extends('layouts.admin')
 
+@section('title', __('messages.create') . ' ' . __('messages.role'))
 
 @section('css')
+<style>
+    .permission-group {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+        background: #f8f9fa;
+    }
+    
+    .permission-group-header {
+        background: #e9ecef;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #dee2e6;
+        font-weight: bold;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+    }
+    
+    .permission-items {
+        padding: 1rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .permission-item {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0;
+    }
+    
+    .permission-item input[type="checkbox"] {
+        margin-right: 0.5rem;
+        transform: scale(1.1);
+    }
+    
+    .module-checkbox {
+        margin-left: auto;
+    }
+    
+    .action-table { color: #28a745; }
+    .action-add { color: #007bff; }
+    .action-edit { color: #ffc107; }
+    .action-delete { color: #dc3545; }
+    .action-report { color: #17a2b8; }
+</style>
 @endsection
 
 @section('content')
-    <div class="container-fluid">
-
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box">
-                    <div class="page-title-right">
-                        <ol class="breadcrumb m-0">
-
-                            <li class="breadcrumb-item"><a
-                                    href="{{ route('admin.role.index') }}">Role</a>
-                            </li>
-                            <li class="breadcrumb-item active">Create</li>
-                        </ol>
-                    </div>
-                    <h4 class="page-title">Create Role</h4>
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">{{ __('messages.create') }} {{ __('messages.role') }}</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('messages.dashboard') }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.role.index') }}">{{ __('messages.roles') }}</a></li>
+                        <li class="breadcrumb-item active">{{ __('messages.create') }}</li>
+                    </ol>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="row justify-content-center">
-            <div class="col-6">
-                <div class="card">
-                    <div class="card-body">
-                        <form action="{{ route('admin.role.store') }}" method="post">
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">{{ __('messages.create') }} {{ __('messages.role') }}</h3>
+                        </div>
+                        
+                        <form action="{{ route('admin.role.store') }}" method="POST">
                             @csrf
-                            <div class="my-3">
-                                <input type="text"
-                                    class="form-control @if ($errors->has('name')) is-invalid @endif" id="name"
-                                    placeholder=" Name" value="{{ old('name') }}" name="name">
-                                @error('name')
-                                    <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                                <span class="emsg text-danger"></span>
+                            <div class="card-body">
+                                <!-- Role Name -->
+                                <div class="form-group">
+                                    <label for="name">{{ __('messages.name') }} <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                           id="name" name="name" value="{{ old('name') }}" required>
+                                    @error('name')
+                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <!-- Permissions Section -->
+                                <div class="form-group">
+                                    <label>{{ __('messages.permissions') }} <span class="text-danger">*</span></label>
+                                    
+                                    <!-- Select All Options -->
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-sm btn-success" id="selectAll">
+                                            {{ __('messages.select_all') }}
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-warning" id="deselectAll">
+                                            {{ __('messages.deselect_all') }}
+                                        </button>
+                                    </div>
+
+                                    @error('perms')
+                                        <div class="alert alert-danger">{{ $message }}</div>
+                                    @enderror
+
+                                    <!-- Grouped Permissions -->
+                                    @foreach($permissions as $module => $modulePermissions)
+                                        <div class="permission-group">
+                                            <div class="permission-group-header">
+                                                <span>
+                                                    <i class="fas fa-cog"></i>
+                                                    {{ __('permissions.modules.' . $module) }}
+                                                </span>
+                                                <div class="module-checkbox">
+                                                    <input type="checkbox" class="module-select" data-module="{{ $module }}">
+                                                    <small class="text-muted">{{ __('messages.select_all') }}</small>
+                                                </div>
+                                            </div>
+                                            <div class="permission-items">
+                                                @foreach($modulePermissions as $permission)
+                                                    <div class="permission-item">
+                                                        <input type="checkbox" 
+                                                               class="permission-checkbox" 
+                                                               data-module="{{ $module }}"
+                                                               name="perms[]" 
+                                                               value="{{ $permission['id'] }}" 
+                                                               id="perm_{{ $permission['id'] }}"
+                                                               {{ in_array($permission['id'], old('perms', [])) ? 'checked' : '' }}>
+                                                        <label for="perm_{{ $permission['id'] }}" class="mb-0">
+                                                            <span class="action-{{ $permission['action'] }}">
+                                                                @switch($permission['action'])
+                                                                    @case('table')
+                                                                        <i class="fas fa-table"></i>
+                                                                        @break
+                                                                    @case('add')
+                                                                        <i class="fas fa-plus"></i>
+                                                                        @break
+                                                                    @case('edit')
+                                                                        <i class="fas fa-edit"></i>
+                                                                        @break
+                                                                    @case('delete')
+                                                                        <i class="fas fa-trash"></i>
+                                                                        @break
+                                                                    @case('report')
+                                                                        <i class="fas fa-chart-bar"></i>
+                                                                        @break
+                                                                    @default
+                                                                        <i class="fas fa-cog"></i>
+                                                                @endswitch
+                                                            </span>
+                                                            {{ $permission['display_name'] }}
+                                                        </label>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
-                            <h1>Permission</h1>
-                            <div class="my-3">
-                                @foreach($data as $value)
-                                    <br>
-                                    <input {{in_array( $value->id,old('perms')? old('perms'): []) ? 'checked':''}} class="ml-5" type="checkbox" name="perms[]" id="perm_{{$value->id}}" value="{{ $value->id }}">
-                                    <label for="perm_{{$value->id}}"> {{ $value->name }}. </label>
-                                    <br>
-                                @endforeach
-                            </div>
-                            <div class="row" id="permissions">
-                                @error('perms')
-                                    <span class="text-danger">{{ $message }}</span>
-                                @enderror
-                                <span class="emsg text-danger"></span>
-                            </div>
 
-
-
-
-                            <div class="text-right">
-                                <button type="submit"
-                                    class="btn btn-success waves-effect waves-light">Save</button>
-                                <a type="button" href="{{ route('admin.role.index') }}"
-                                    class="btn btn-danger waves-effect waves-light m-l-10">Cancel
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> {{ __('messages.save') }}
+                                </button>
+                                <a href="{{ route('admin.role.index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> {{ __('messages.back') }}
                                 </a>
                             </div>
-
-
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-@endsection
+    </section>
 
-@section('script')
-    <script>
-        $('#guard_name').change(function(e) {
-            guard_name = $('#guard_name').val();
-            e.preventDefault();
-            $.ajax({
-                type: "GET",
-                url: "/admin" + '/permissions/' + guard_name,
-                success: function(response) {
-                    $('#permissions').empty();
-                    $.each(response, function(i, val) {
-                        $('#permissions').append(
-                            '<div class="col-8"><input type="checkbox" class="mx-2" name="permissions[]" value=' +
-                            val.id + '>' + val.name + '</div>');
-                    });
-                }
-            });
-        });
-    </script>
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Select All functionality
+    $('#selectAll').click(function() {
+        $('.permission-checkbox').prop('checked', true);
+        $('.module-select').prop('checked', true);
+    });
+    
+    // Deselect All functionality
+    $('#deselectAll').click(function() {
+        $('.permission-checkbox').prop('checked', false);
+        $('.module-select').prop('checked', false);
+    });
+    
+    // Module select functionality
+    $('.module-select').change(function() {
+        const module = $(this).data('module');
+        const isChecked = $(this).is(':checked');
+        $(`.permission-checkbox[data-module="${module}"]`).prop('checked', isChecked);
+    });
+    
+    // Individual permission change
+    $('.permission-checkbox').change(function() {
+        const module = $(this).data('module');
+        const totalInModule = $(`.permission-checkbox[data-module="${module}"]`).length;
+        const checkedInModule = $(`.permission-checkbox[data-module="${module}"]:checked`).length;
+        
+        $(`.module-select[data-module="${module}"]`).prop('checked', totalInModule === checkedInModule);
+    });
+    
+    // Initialize module checkboxes
+    $('.module-select').each(function() {
+        const module = $(this).data('module');
+        const totalInModule = $(`.permission-checkbox[data-module="${module}"]`).length;
+        const checkedInModule = $(`.permission-checkbox[data-module="${module}"]:checked`).length;
+        
+        $(this).prop('checked', totalInModule === checkedInModule);
+    });
+});
+</script>
+@endpush
 @endsection

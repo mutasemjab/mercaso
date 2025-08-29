@@ -29,7 +29,7 @@ class AuthServiceProvider extends ServiceProvider
     {
         $gate->before(function ($user, $ability) {
             if (Auth::guard('admin')->check()) {
-               if(auth()->user()->is_super){
+               if(auth()->user()->is_super_admin){
                    return true;
                }
            }else{

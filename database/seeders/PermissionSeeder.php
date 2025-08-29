@@ -12,121 +12,159 @@ class PermissionSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+   public function run()
     {
-
         $permissions_admin = [
-
-
+            // Role Management
             'role-table',
             'role-add',
             'role-edit',
             'role-delete',
 
+            // Employee Management
             'employee-table',
             'employee-add',
             'employee-edit',
             'employee-delete',
 
+            // Customer Management
             'customer-table',
             'customer-add',
             'customer-edit',
             'customer-delete',
-
-
-            'order-table',
-            'order-add',
-            'order-edit',
-            'order-delete',
-
-
-
-            'delivery-table',
-            'delivery-add',
-            'delivery-edit',
-            'delivery-delete',
-
-            'notification-table',
-            'notification-add',
-            'notification-edit',
-            'notification-delete',
-
-            'setting-table',
-            'setting-add',
-            'setting-edit',
-            'setting-delete',
-
-            'category-table',
-            'category-add',
-            'category-edit',
-            'category-delete',
-
-            'unit-table',
-            'unit-add',
-            'unit-edit',
-            'unit-delete',
-
-            'representative-table',
-            'representative-add',
-            'representative-edit',
-            'representative-delete',
-
-            'country-table',
-            'country-add',
-            'country-edit',
-            'country-delete',
-
+         
+            // Wholesale Management
             'wholeSale-table',
             'wholeSale-add',
             'wholeSale-edit',
             'wholeSale-delete',
 
-            'shop-table',
-            'shop-add',
-            'shop-edit',
-            'shop-delete',
+            // Business Type Management (if needed)
+            'businessType-table',
+            'businessType-add',
+            'businessType-edit',
+            'businessType-delete',
 
+            // Order Management
+            'order-table',
+            'order-add',
+            'order-edit',
+            'order-delete',
+
+            // Banner Management
+            'banner-table',
+            'banner-add',
+            'banner-edit',
+            'banner-delete',
+      
+            // Point Management
+            'point-table',
+            'point-add',
+            'point-edit',
+            'point-delete',
+
+            // Point Transaction Management
+            'point-transaction-table',
+            'point-transaction-add',
+            'point-transaction-edit',
+            'point-transaction-delete',
+
+            // Delivery Management
+            'delivery-table',
+            'delivery-add',
+            'delivery-edit',
+            'delivery-delete',
+
+            // Notification Management
+            'notification-table',
+            'notification-add',
+            'notification-edit',
+            'notification-delete',
+
+            // Setting Management
+            'setting-table',
+            'setting-add',
+            'setting-edit',
+            'setting-delete',
+
+            // Category Management
+            'category-table',
+            'category-add',
+            'category-edit',
+            'category-delete',
+
+            // Unit Management
+            'unit-table',
+            'unit-add',
+            'unit-edit',
+            'unit-delete',
+
+            // Brand Management
+            'brand-table',
+            'brand-add',
+            'brand-edit',
+            'brand-delete',
+
+            // Product Management
             'product-table',
             'product-add',
             'product-edit',
             'product-delete',
 
+            // Offer Management
             'offer-table',
             'offer-add',
             'offer-edit',
             'offer-delete',
 
+            // Coupon Management
             'coupon-table',
             'coupon-add',
             'coupon-edit',
             'coupon-delete',
 
+            // Warehouse Management
             'warehouse-table',
             'warehouse-add',
             'warehouse-edit',
             'warehouse-delete',
 
+            // Note Voucher Type Management
             'noteVoucherType-table',
             'noteVoucherType-add',
             'noteVoucherType-edit',
             'noteVoucherType-delete',
 
+            // Note Voucher Management
             'noteVoucher-table',
             'noteVoucher-add',
             'noteVoucher-edit',
             'noteVoucher-delete',
-
-            'city-table',
-            'city-add',
-            'city-edit',
-            'city-delete',
        
+            // Page Management
             'page-table',
             'page-add',
             'page-edit',
             'page-delete',
 
+            // Tax Management
+            'tax-table',
+            'tax-add',
+            'tax-edit',
+            'tax-delete',
+
+            // CRV Management
+            'crv-table',
+            'crv-add',
+            'crv-edit',
+            'crv-delete',
+            
+            // Reports
+            'order-report',
+            'products-report',
+            'users-report',
         ];
+
 
          foreach ($permissions_admin as $permission_ad) {
             Permission::create(['name' => $permission_ad, 'guard_name' => 'admin']);

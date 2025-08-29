@@ -11,7 +11,7 @@
                 </div>
                 <div class="card-body">
                    
-
+                    @can('tax-table')
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead>
@@ -31,12 +31,16 @@
                                         <td>{{ $tax->value }}%</td>
                                         <td>{{ $tax->created_at->format('Y-m-d H:i') }}</td>
                                         <td>
+                                              @can('tax-edit')
                                             <a href="{{ route('taxes.edit', $tax) }}" class="btn btn-sm btn-warning">Edit</a>
+                                            @endcan  
+                                            @can('tax-delete')
                                             <form action="{{ route('taxes.destroy', $tax) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this tax?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                             </form>
+                                            @endcan
                                         </td>
                                     </tr>
                                 @empty
@@ -47,6 +51,7 @@
                             </tbody>
                         </table>
                     </div>
+                    @endcan
                 </div>
             </div>
         </div>

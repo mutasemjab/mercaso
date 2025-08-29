@@ -13,7 +13,7 @@
                         <i class="fas fa-plus"></i> {{ __('messages.Add_New') }}
                     </a>
                 </div>
-
+                 @can('point-transaction-table')
                 <!-- Filter Form -->
                 <div class="card-body">
                     <form method="GET" action="{{ route('point-transactions.index') }}" class="mb-4">
@@ -130,11 +130,13 @@
                                         <td>{{ $transaction->created_at->format('Y-m-d H:i') }}</td>
                                         <td>
                                             <div class="btn-group">
-                                              
+                                                @can('point-transaction-edit')
                                                 <a href="{{ route('point-transactions.edit', $transaction) }}" 
                                                    class="btn btn-sm btn-warning" title="{{ __('messages.Edit') }}">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
+                                                @endcan
+                                                @can('point-transaction-delete')
                                                 <form method="POST" action="{{ route('point-transactions.destroy', $transaction) }}" 
                                                       style="display: inline-block;"
                                                       onsubmit="return confirm('{{ __('messages.Are_you_sure') }}')">
@@ -144,6 +146,7 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
+                                                @endcan
                                             </div>
                                         </td>
                                     </tr>
@@ -163,6 +166,7 @@
                         {{ $pointTransactions->appends(request()->query())->links() }}
                     </div>
                 </div>
+                @endcan
             </div>
         </div>
     </div>

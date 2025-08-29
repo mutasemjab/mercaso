@@ -1,92 +1,188 @@
-@extends("layouts.admin")
+@extends('layouts.admin')
 
-@section('css')
-@endsection
+@section('title', __('messages.role_management'))
 
 @section('content')
-    <!-- Start Content-->
-    <div class="container-fluid">
-
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box">
-                    <div class="page-title-right">
-                        <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="javascript: void(0);">{{ env('APP_NAME') }}</a></li>
-                            <li class="breadcrumb-item active">Role</li>
-                        </ol>
-                    </div>
-                    <h4 class="page-title">Role</h4>
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">{{ __('messages.role_management') }}</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('messages.dashboard') }}</a></li>
+                        <li class="breadcrumb-item active">{{ __('messages.roles') }}</li>
+                    </ol>
                 </div>
             </div>
         </div>
+    </div>
 
-
-        <div class="row">
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row mb-2">
-                                <div class="col-md-12">
-
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h3 class="card-title">{{ __('messages.roles') }}</h3>
                                 </div>
-                            <div class="col-sm-4">
-
-                                {{ $data->links() }}
-
+                                <div class="col-md-6 text-right">
+                                    @can('role-add')
+                                        <a href="{{ route('admin.role.create') }}" class="btn btn-primary">
+                                            <i class="fas fa-plus"></i> {{ __('messages.create') }}
+                                        </a>
+                                    @endcan
+                                </div>
                             </div>
-                            <div class="col-sm-8">
-                                <div class="text-sm-right">
-                                    <a type="button" href="{{ route("admin.role.create") }}"
-                                        class="btn btn-primary waves-effect waves-light mb-2 text-white">New Role
-                                    </a>
+                        </div>
+
+                        <div class="card-body">
+                            <!-- Search Form -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <form method="GET" action="{{ route('admin.role.index') }}">
+                                        <div class="input-group">
+                                            <input type="text" name="search" class="form-control" 
+                                                   placeholder="{{ __('messages.search') }}..." 
+                                                   value="{{ request('search') }}">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="submit">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
                                 </div>
-                            </div><!-- end col-->
-                        </div>
+                            </div>
 
-                        <div class="table-responsive">
-                            <table class="table table-centered table-nowrap table-hover mb-0">
-                                <thead class="thead-light">
-
-                                    <tr>
-                                         <th>Name</th>
-                                        <th>Permissions</th>
-                                         <th style="width: 82px;">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($data as $value)
+                            <!-- Roles Table -->
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped">
+                                    <thead>
                                         <tr>
-                                            <td><span class="font-weight-bold">{{ $value->name }}</span></td>
-                                            <td>
-                                                @foreach ($value->permissions as $permission)
-                                                    {{ $permission->name }}<br>
-                                                @endforeach
-                                            </td>
-                                             <td>
-                                                <a class="btn btn-sm btn-outline-info"
-                                                    href="{{ route("admin.role.edit",  $value->id) }}"><i
-                                                        class="mdi mdi-pencil-box"></i> Edit</a>
-                                              <a class="btn btn-sm btn-outline-danger" href="javascript:void(0)"
-                                                   @if (env('Environment') == 'sendbox') onclick="myFunction()" @else onclick="Delete('{{ $value->id }}','{{ route('admin.role.delete') }}')" @endif><i
-                                                        class="mdi mdi-trash-can"></i>Delete</a>
-
-                                            </td>
+                                            <th>{{ __('messages.no') }}</th>
+                                            <th>{{ __('messages.name') }}</th>
+                                            <th>{{ __('messages.permissions') }}</th>
+                                            <th>{{ __('messages.created_at') }}</th>
+                                            <th>{{ __('messages.actions') }}</th>
                                         </tr>
-                                    @endforeach
+                                    </thead>
+                                    <tbody>
+                                        @forelse($data as $key => $role)
+                                            <tr>
+                                                <td>{{ $data->firstItem() + $key }}</td>
+                                                <td>
+                                                    <strong>{{ $role->name }}</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-info">
+                                                        {{ $role->permissions->count() }} {{ __('messages.permissions') }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $role->created_at->format('Y-m-d H:i') }}</td>
+                                                <td>
+                                                    @can('role-edit')
+                                                        <a href="{{ route('admin.role.edit', $role->id) }}" 
+                                                           class="btn btn-sm btn-info">
+                                                            <i class="fas fa-edit"></i> {{ __('messages.edit') }}
+                                                        </a>
+                                                    @endcan
+                                                    
+                                                    @can('role-delete')
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-danger delete-btn" 
+                                                                data-id="{{ $role->id }}">
+                                                            <i class="fas fa-trash"></i> {{ __('messages.delete') }}
+                                                        </button>
+                                                    @endcan
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center">{{ __('messages.no_data_found') }}</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
 
-                                </tbody>
-                            </table>
+                            <!-- Pagination -->
+                            <div class="row">
+                                <div class="col-sm-12 col-md-5">
+                                    <div class="dataTables_info">
+                                        {{ __('messages.showing') }} {{ $data->firstItem() }} {{ __('messages.to') }} {{ $data->lastItem() }} {{ __('messages.of') }} {{ $data->total() }} {{ __('messages.entries') }}
+                                    </div>
+                                </div>
+                                <div class="col-sm-12 col-md-7">
+                                    {{ $data->appends(request()->query())->links() }}
+                                </div>
+                            </div>
                         </div>
-
-                    </div> <!-- end card-body-->
-                </div> <!-- end card-->
+                    </div>
+                </div>
             </div>
         </div>
-    </div> <!-- container -->
-@endsection
+    </section>
 
-@section('script')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.3/dist/sweetalert2.min.js"></script>
-    <script src="{{ asset('assets/js/category.js') }}"></script>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">{{ __('messages.confirm_delete') }}</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {{ __('messages.confirm_delete') }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    {{ __('messages.cancel') }}
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">
+                    {{ __('messages.delete') }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        let deleteId = null;
+        
+        $('.delete-btn').click(function() {
+            deleteId = $(this).data('id');
+            $('#deleteModal').modal('show');
+        });
+        
+        $('#confirmDelete').click(function() {
+            if (deleteId) {
+                $.ajax({
+                    url: '{{ route("admin.role.delete") }}',
+                    type: 'POST',
+                    data: {
+                        id: deleteId,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        $('#deleteModal').modal('hide');
+                        location.reload();
+                    },
+                    error: function() {
+                        alert('{{ __("messages.error_occurred") }}');
+                        $('#deleteModal').modal('hide');
+                    }
+                });
+            }
+        });
+    });
+</script>
+@endpush
 @endsection

@@ -12,8 +12,13 @@ class Admin extends Authenticatable
     use HasFactory, HasRoles;
 
     protected $table="admins";
-    protected $fillable=[
-    'name','email','username','password','created_at','updated_at','added_by','updated_by','shop_id','is_super'
+    protected $fillable = [
+        'name',
+        'email',
+        'username',
+        'mobile',
+        'password',
+        'is_super_admin',
     ];
 
 }

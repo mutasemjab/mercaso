@@ -21,11 +21,13 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\CrvController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\NoteVoucherTypeController;
 use App\Http\Controllers\Admin\NoteVoucherController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PointTransactionController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\TaxController;
 use App\Http\Controllers\Reports\AllProductReportController;
 use App\Http\Controllers\Reports\InventoryReportController;
@@ -98,7 +100,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         /*         end  wholeSale                */
 
 
-
+        Route::name('admin.')->group(function() {
+            Route::resource('role', RoleController::class);
+            Route::post('role/delete', [RoleController::class, 'delete'])->name('role.delete');
+            Route::resource('employee', EmployeeController::class);
+        });
 
 
         /*         start  update login admin                 */
@@ -106,14 +112,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::post('/admin/update/{id}', [LoginController::class, 'updatelogin'])->name('admin.login.update');
         /*         end  update login admin                */
 
-        /// Role and permission
-        Route::resource('employee', 'App\Http\Controllers\Admin\EmployeeController', ['as' => 'admin']);
-        Route::get('role', 'App\Http\Controllers\Admin\RoleController@index')->name('admin.role.index');
-        Route::get('role/create', 'App\Http\Controllers\Admin\RoleController@create')->name('admin.role.create');
-        Route::get('role/{id}/edit', 'App\Http\Controllers\Admin\RoleController@edit')->name('admin.role.edit');
-        Route::patch('role/{id}', 'App\Http\Controllers\Admin\RoleController@update')->name('admin.role.update');
-        Route::post('role', 'App\Http\Controllers\Admin\RoleController@store')->name('admin.role.store');
-        Route::post('admin/role/delete', 'App\Http\Controllers\Admin\RoleController@delete')->name('admin.role.delete');
 
         Route::get('/permissions/{guard_name}', function ($guard_name) {
             return response()->json(Permission::where('guard_name', $guard_name)->get());
@@ -144,16 +142,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         });
 
         //Reports
-        Route::get('/inventory_report', [InventoryReportController::class, 'index'])->name('inventory_report');
         Route::get('/order_report', [OrderReportController::class, 'index'])->name('order_report');
-        Route::get('/product_move', [ProductReportController::class, 'index'])->name('product_move');
-        Route::get('/tax_report', [TaxReportController::class, 'index'])->name('tax_report');
         Route::get('/user_report', [UserReportController::class, 'index'])->name('user_report');
         Route::get('/product_report', [ProductReportController::class, 'allProducts'])->name('product_report');
-        Route::get('/product_move_all', [AllProductReportController::class, 'index'])->name('product_move_all');
 
-        //Export Reports
-        Route::get('inventory_report/export', [InventoryReportController::class, 'export'])->name('inventory_report.export');
 
 
         // Resource Route

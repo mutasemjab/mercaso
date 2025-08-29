@@ -1,93 +1,144 @@
-@extends("layouts.admin")
+@extends('layouts.admin')
 
-@section('css')
-    <link href="{{ asset('assets/libs/dropzone/dropzone.min.css') }}" rel="stylesheet" type="text/css" />
-    <link href="{{ asset('assets/libs/dropify/dropify.min.css') }}" rel="stylesheet" type="text/css" />
-@endsection
+@section('title', __('messages.edit') . ' ' . __('messages.employee'))
 
 @section('content')
-    <div class="container-fluid">
-
-        <div class="row">
-            <div class="col-12">
-                <div class="page-title-box">
-                    <div class="page-title-right">
-                        <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a
-                                    href="{{ route('admin.employee.index') }}">Employee</a></li>
-                            <li class="breadcrumb-item active">Edit</li>
-                        </ol>
-                    </div>
-                    <h4 class="page-title">Edit Employee</h4>
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">{{ __('messages.edit') }} {{ __('messages.employee') }}</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">{{ __('messages.dashboard') }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('admin.employee.index') }}">{{ __('messages.employees') }}</a></li>
+                        <li class="breadcrumb-item active">{{ __('messages.edit') }}</li>
+                    </ol>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="row justify-content-center">
-            <div class="col-6">
-                <div class="card">
-                    <div class="card-body">
-                        <form action="{{ route('admin.employee.update',$admin->id) }}" method="post" enctype="multipart/form-data">
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">{{ __('messages.edit') }} {{ __('messages.employee') }}: {{ $admin->name }}</h3>
+                        </div>
+                        
+                        <form action="{{ route('admin.employee.update', $admin->id) }}" method="POST">
                             @csrf
-                            {{ method_field('PATCH') }}
-                            <div class="form-group">
-                                <label for="name">Name <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input type="text"
-                                        class="form-control @if ($errors->has('name')) is-invalid @endif"
-                                        id="name" placeholder="Name" value="{{ $admin->name }}" name="name">
-                                    @if ($errors->has('name'))
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $errors->first('name') }}</strong>
-                                        </span>
-                                    @endif
+                            @method('PUT')
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- Name -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="name">{{ __('messages.name') }} <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                                                   id="name" name="name" value="{{ old('name', $admin->name) }}" required>
+                                            @error('name')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="email">{{ __('messages.email') }} <span class="text-danger">*</span></label>
+                                            <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                                                   id="email" name="email" value="{{ old('email', $admin->email) }}" required>
+                                            @error('email')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Username -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="username">{{ __('messages.username') }}</label>
+                                            <input type="text" class="form-control @error('username') is-invalid @enderror" 
+                                                   id="username" name="username" value="{{ old('username', $admin->username) }}">
+                                            @error('username')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Mobile -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="mobile">{{ __('messages.mobile') }}</label>
+                                            <input type="text" class="form-control @error('mobile') is-invalid @enderror" 
+                                                   id="mobile" name="mobile" value="{{ old('mobile', $admin->mobile) }}">
+                                            @error('mobile')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Password -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="password">{{ __('messages.password') }}</label>
+                                            <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                                                   id="password" name="password">
+                                            <small class="form-text text-muted">{{ __('messages.leave_blank_to_keep_current') }}</small>
+                                            @error('password')
+                                                <span class="invalid-feedback">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Confirm Password -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="password_confirmation">{{ __('messages.confirm_password') }}</label>
+                                            <input type="password" class="form-control" 
+                                                   id="password_confirmation" name="password_confirmation">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="username">username <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input type="username"
-                                        class="form-control @if ($errors->has('username')) is-invalid @endif"
-                                        id="username" placeholder="username" value="{{ $admin->username }}" name="username">
-                                    @if ($errors->has('username'))
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $errors->first('username') }}</strong>
-                                        </span>
-                                    @endif
+
+                                <!-- Roles Section -->
+                                <div class="form-group">
+                                    <label>{{ __('messages.roles') }} <span class="text-danger">*</span></label>
+                                    @error('roles')
+                                        <div class="alert alert-danger">{{ $message }}</div>
+                                    @enderror
+                                    
+                                    <div class="row">
+                                        @foreach($roles as $role)
+                                            <div class="col-md-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           name="roles[]" value="{{ $role->id }}" 
+                                                           id="role_{{ $role->id }}"
+                                                           {{ in_array($role->id, old('roles', $adminRoles)) ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="role_{{ $role->id }}">
+                                                        <strong>{{ $role->name }}</strong>
+                                                        <small class="d-block text-muted">
+                                                            {{ $role->permissions->count() }} {{ __('messages.permissions') }}
+                                                        </small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="password">Password <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input type="password"
-                                        class="form-control @if ($errors->has('password')) is-invalid @endif"
-                                        id="password" placeholder="password" value="" name="password">
-                                    @if ($errors->has('password'))
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $errors->first('password') }}</strong>
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="image">{{ __('admin.roles') }} :</label>
-                                @foreach ($roles as $role)
-                                    <br>
-                                    <input {{ in_array($role->id, old('roles') ? old('roles') : []) ? 'checked' : '' }}
-                                        class="ml-5" type="checkbox" name="roles[]" id="role_{{ $role->id }}"
-                                        value="{{ $role->id }}" {{in_array($role->id,$adminRole)? 'checked' : ''}}>
-                                    <label for="role_{{ $role->id }}"> {{ $role->name }}. </label>
-                                    <br>
-                                @endforeach
-                            </div>
-                            <hr>
-
-                            <div class="text-right">
-                                <button type="submit"
-                                    class="btn btn-success waves-effect waves-light">Save</button>
-                                <a type="button" href="{{ route('admin.employee.index') }}"
-                                    class="btn btn-danger waves-effect waves-light m-l-10">Cancel
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> {{ __('messages.save') }}
+                                </button>
+                                <a href="{{ route('admin.employee.index') }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> {{ __('messages.back') }}
                                 </a>
                             </div>
                         </form>
@@ -95,10 +146,6 @@
                 </div>
             </div>
         </div>
-    </div>
-@endsection
-@section('script')
-    <script src="{{ asset('assets/libs/dropzone/dropzone.min.js') }}"></script>
-    <script src="{{ asset('assets/libs/dropify/dropify.min.js') }}"></script>
-    <script src="{{ asset('assets/js/pages/form-fileuploads.init.js') }}"></script>
+    </section>
+
 @endsection
