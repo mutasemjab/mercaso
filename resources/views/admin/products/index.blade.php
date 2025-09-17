@@ -38,6 +38,9 @@
                     <table id="example2" class="table table-bordered table-hover">
                         <thead class="custom_thead">
                             <th>{{ __('messages.Name') }}</th>
+                            <th>{{ __('messages.Price') }}</th>
+                            <th>{{ __('messages.barcode') }}</th>
+                            <th>{{ __('messages.Number') }}</th>
                             <th>{{ __('messages.Categories') }}</th>
                             <th>{{ __('messages.Status') }}</th>
                             <th>{{ __('messages.Photo') }}</th>
@@ -47,6 +50,9 @@
                             @foreach ($data as $info)
                                 <tr>
                                     <td>{{ $info->name_ar }}</td>
+                                    <td>{{ $info->selling_price_for_user }}</td>
+                                    <td>{{ $info->barcode }}</td>
+                                    <td>{{ $info->number }}</td>
                                     <td>
                                         @if ($info->category)
                                             <a href="{{ route('categories.index', ['id' => $info->category->id]) }}">{{ $info->category->name_ar }}</a>

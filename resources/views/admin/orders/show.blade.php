@@ -189,7 +189,7 @@ Orders
 <div id="invoice">
     <div id="header">
         <img id="logo" src="{{asset('assets/admin/imgs/logo.png')}}" alt="Company Logo">
-        <div id="company-name">Kertas Company</div>
+        <div id="company-name">California Cash & Carry</div>
     </div>
     <br>
     <br>
@@ -278,11 +278,11 @@ Orders
             return $product->pivot->total_price_before_tax;
         });
         @endphp
-        <div>Total Before Tax: {{ round($totalPriceBeforeTax, 3) }} JD</div>
+        <div>Total Before Tax: {{ round($totalPriceBeforeTax, 3) }} $</div>
 
         <div>
             @if ($order->total_discounts)
-            <p class="total-label" style="color: red">Discount: - {{ round($order->total_discounts,3) }} JD</p>
+            <p class="total-label" style="color: red">Discount: - {{ round($order->total_discounts,3) }} $</p>
             @endif
         </div>
 
@@ -293,12 +293,12 @@ Orders
         @endphp
 
         @foreach ($taxGroups as $taxPercentage => $taxValue)
-        <div>Tax ({{ $taxPercentage }}%): {{ round($taxValue, 3) }} JD</div>
+        <div>Tax ({{ $taxPercentage }}%): {{ round($taxValue, 3) }} $</div>
         @endforeach
 
-        <div>Delivery Fee: {{ $order->delivery_fee }} JD</div>
+        <div>Delivery Fee: {{ $order->delivery_fee }} $</div>
 
-        <div>Total: {{ round($order->total_prices, 3) }} JD</div>
+        <div>Total: {{ round($order->total_prices, 3) }} $</div>
     </div>
 </div>
 @endsection

@@ -11,9 +11,6 @@ class Order extends Model
 
     protected $guarded=[];
 
-
-
-
     public function products()
     {
         return $this->belongsToMany(Product::class, 'order_products')
@@ -34,9 +31,6 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function shop()
-    {
-        return $this->belongsTo(Shop::class);
-    }
+ 
 
 }
