@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', __('messages.Edit_Point_Transaction'))
 
@@ -205,9 +205,7 @@
                         <button type="submit" class="btn btn-primary" id="save-btn">
                             <i class="fas fa-save"></i> {{ __('messages.Update') }}
                         </button>
-                        <a href="{{ route('point-transactions.show', $pointTransaction) }}" class="btn btn-info">
-                            <i class="fas fa-eye"></i> {{ __('messages.View_Details') }}
-                        </a>
+                    
                         <a href="{{ route('point-transactions.index') }}" class="btn btn-secondary">
                             <i class="fas fa-times"></i> {{ __('messages.Cancel') }}
                         </a>
