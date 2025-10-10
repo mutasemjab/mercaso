@@ -205,6 +205,8 @@ Orders
         </div>
         <div id="details-right">
             <p>Client: {{$order->user->name}}</p>
+            <p>Client Number: {{$order->user->phone}}</p>
+            <p>Client Other Number: {{$order->phone_in_order}}</p>
             <p class="inoice-d-address">Address: {{$order->address->address}} / Street: {{$order->address->street}} <br> Building Number: {{$order->address->building_number}}</p>
         </div>
     </div>
@@ -278,11 +280,11 @@ Orders
             return $product->pivot->total_price_before_tax;
         });
         @endphp
-        <div>Total Before Tax: {{ round($totalPriceBeforeTax, 3) }} $</div>
+        <div>Total Before Tax: $ {{ round($totalPriceBeforeTax, 3) }} </div>
 
         <div>
             @if ($order->total_discounts)
-            <p class="total-label" style="color: red">Discount: - {{ round($order->total_discounts,3) }} $</p>
+            <p class="total-label" style="color: red">Discount: - $ {{ round($order->total_discounts,3) }} </p>
             @endif
         </div>
 
@@ -293,12 +295,12 @@ Orders
         @endphp
 
         @foreach ($taxGroups as $taxPercentage => $taxValue)
-        <div>Tax ({{ $taxPercentage }}%): {{ round($taxValue, 3) }} $</div>
+        <div>Tax ({{ $taxPercentage }}%): $ {{ round($taxValue, 3) }} </div>
         @endforeach
 
-        <div>Delivery Fee: {{ $order->delivery_fee }} $</div>
+        <div>Delivery Fee: $ {{ $order->delivery_fee }} </div>
 
-        <div>Total: {{ round($order->total_prices, 3) }} $</div>
+        <div>Total: $ {{ round($order->total_prices, 3) }} </div>
     </div>
 </div>
 @endsection

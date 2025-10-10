@@ -448,6 +448,8 @@ return [
     "Please_fill_required_fields"=> "Please fill in all required fields",
     "Cannot_proceed_insufficient_points"=> "Cannot proceed=> User has insufficient points",
     "Confirm_update_transaction"=> "Are you sure you want to update this transaction? This will affect the user's point balance.",
+    'Are_you_sure_delete' => 'Are you sure you want to delete this item?',
+
 
     "" => "",
     "" => "",

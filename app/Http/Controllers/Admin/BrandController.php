@@ -102,8 +102,8 @@ class BrandController extends Controller
 
     public function edit($id)
     {
-        $data = Brand::findOrFail($id);
-        return view('admin.brands.edit', ['data' => $data]);
+        $brand = Brand::findOrFail($id);
+        return view('admin.brands.edit', ['brand' => $brand]);
     }
 
     /**
@@ -124,7 +124,7 @@ class BrandController extends Controller
                 $brand->photo = $the_file_path;
             }
             if ($brand->save()) {
-                return redirect()->route('deliveries.index')->with(['success' => 'brand updated']);
+                return redirect()->route('brands.index')->with(['success' => 'brand updated']);
             } else {
                 return redirect()->back()->with(['error' => 'Something went wrong']);
             }
@@ -148,7 +148,7 @@ class BrandController extends Controller
     {
        try {
 
-            $item_row = Brand::select("place")->where('id','=',$id)->first();
+            $item_row = Brand::select("id")->where('id','=',$id)->first();
 
             if (!empty($item_row)) {
 

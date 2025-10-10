@@ -54,7 +54,7 @@
                                     <tr>
 
 
-                                        <td>{{ $info->product->name_ar }}</td>
+                                        <td>{{ $info->product->name_ar ?? null }}</td>
 
                                         <td>
                                             {{ $info->price }}

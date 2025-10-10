@@ -74,13 +74,7 @@
                                         @can('product-edit')
                                             <a href="{{ route('products.edit', $info->id) }}" class="btn btn-sm btn-primary">{{ __('messages.Edit') }}</a>
                                         @endcan
-                                        @can('product-delete')
-                                            <form action="{{ route('products.destroy', $info->id) }}" method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.Delete') }}</button>
-                                            </form>
-                                        @endcan
+                                       
                                     </td>
                                 </tr>
                             @endforeach

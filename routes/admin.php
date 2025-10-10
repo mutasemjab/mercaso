@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\UnitController;
+use App\Http\Controllers\Admin\PointProductController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\DeliveryController;
@@ -165,6 +166,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::resource('taxes', TaxController::class);
         Route::resource('crvs', CrvController::class);
          Route::resource('point-transactions', PointTransactionController::class);
+         Route::resource('point-products', PointProductController::class);
+         Route::get('/pointProducts/purchases', [PointProductController::class, 'purchases'])->name('pointProducts.purchases');
+
     
     // AJAX Route for getting user points
          Route::get('/ajax/user-points', [PointTransactionController::class, 'getUserPoints'])

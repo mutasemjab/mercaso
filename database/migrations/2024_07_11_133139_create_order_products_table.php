@@ -26,8 +26,8 @@ return new class extends Migration
             $table->integer('quantity');
             $table->double('unit_price');
             $table->double('total_price_after_tax');
-            $table->double('tax_percentage');
-            $table->double('tax_value');
+            $table->double('tax_percentage')->default(0);
+            $table->double('tax_value')->default(0);
             $table->double('total_price_before_tax');
             $table->double('discount_percentage')->nullable();
             $table->double('discount_value')->nullable();

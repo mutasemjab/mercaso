@@ -59,12 +59,14 @@
                                 __('messages.Edit') }}</a>
                             @endcan
                             @can('brand-delete')
-                            <form action="{{ route('brands.destroy', $info->id) }}" method="POST">
+                          @can('brand-delete')
+                            <form action="{{ route('brands.destroy', $info->id) }}" method="POST" class="d-inline delete-form">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger">{{ __('messages.Delete') }}</button>
+                                <button type="button" class="btn btn-sm btn-danger btn-delete">{{ __('messages.Delete') }}</button>
                             </form>
                             @endcan
+
 
                         </td>
 
@@ -97,5 +99,20 @@
 @endsection
 
 @section('script')
-<script src="{{ asset('assets/admin/js/sliderss.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Handle delete confirmation
+    document.querySelectorAll('.btn-delete').forEach(button => {
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            const form = this.closest('form');
+
+            // Show native confirm dialog
+            if (confirm("{{ __('messages.Are_you_sure_delete') }}")) {
+                form.submit();
+            }
+        });
+    });
+});
+</script>
 @endsection

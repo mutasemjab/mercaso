@@ -16,6 +16,7 @@ use App\Models\UserAddress;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+
 class OrderController extends Controller
 {
     public function buyAgain(Request $request)
@@ -25,16 +26,18 @@ class OrderController extends Controller
 
         // Find the latest order for this user
         $latestOrder = Order::where('user_id', $user->id)
-                            ->where('order_type', 1) // Only "Sell" type orders
-                            ->latest() // Order by created_at desc
-                            ->with(['orderProducts.product.category',
-                                    'orderProducts.product.variations',
-                                    'orderProducts.product.productImages',
-                                    'orderProducts.product.units',
-                                    'orderProducts.product.unit',
-                                    'orderProducts.variation',
-                                    'orderProducts.unit'])
-                            ->first();
+            ->where('order_type', 1) // Only "Sell" type orders
+            ->latest() // Order by created_at desc
+            ->with([
+                'orderProducts.product.category',
+                'orderProducts.product.variations',
+                'orderProducts.product.productImages',
+                'orderProducts.product.units',
+                'orderProducts.product.unit',
+                'orderProducts.variation',
+                'orderProducts.unit'
+            ])
+            ->first();
 
         if (!$latestOrder) {
             return response()->json([
@@ -78,7 +81,7 @@ class OrderController extends Controller
         return response()->json(['data' => $itemlist]);
     }
 
-        public function index()
+    public function index()
     {
         $user_id = auth()->user()->id;
 
@@ -115,12 +118,14 @@ class OrderController extends Controller
         // Validate the request data
         $request->validate([
             'payment_type' => 'required',
-            'address_id' => 'required|exists:user_addresses,id',
+            'address_id'     => 'required_unless:type_delivery,1|nullable|exists:user_addresses,id',
             'note' => 'nullable',
             'date' => 'nullable',
             'from_time' => 'nullable',
             'to_time' => 'nullable',
             'photo_note' => 'nullable',
+            'phone_in_order' => 'required',
+            'type_delivery' => 'required',
         ]);
 
         // Find all the cart items with status 1 for the current user
@@ -141,8 +146,12 @@ class OrderController extends Controller
             $totalPriceBeforeTaxSum = 0;
 
             // Get address and delivery fee
-            $address = UserAddress::with('delivery')->findOrFail($request->input('address_id'));
-            $delivery_fee = $address->delivery->price ?? 0;
+            $delivery_fee = 0;
+
+            if ($request->type_delivery != 1) {
+                $address = UserAddress::with('delivery')->findOrFail($request->input('address_id'));
+                $delivery_fee = $address->delivery->price ?? 0;
+            }
 
             // Calculate totals from cart items
             foreach ($cartItems as $cartItem) {
@@ -181,6 +190,8 @@ class OrderController extends Controller
                 'delivery_fee' => $delivery_fee,
                 'total_taxes' => $total_taxes,
                 'total_prices' => $total_prices + $delivery_fee,
+                'phone_in_order' => $request->phone_in_order,
+                'type_delivery' => $request->type_delivery,
                 'date' => $request->date,
                 'from_time' => $request->from_time,
                 'to_time' => $request->to_time,
@@ -219,7 +230,7 @@ class OrderController extends Controller
                     'unit_id' => $unit_id,
                     'total_price_after_tax' => $total_price_after_tax,
                     'total_price_before_tax' => $total_price_before_tax,
-                    'tax_percentage' => $cartItem->product->tax,
+                    'tax_percentage' => $cartItem->product->tax ?? 0,
                     'discount_percentage' => $discount_percentage,
                     'discount_value' => $discount_percentage * $total_price_before_tax,
                     'line_discount_percentage' => null,
@@ -246,7 +257,6 @@ class OrderController extends Controller
             $response = response()->json($order, 200);
             Log::info('Order Response', ['response' => $response->getContent()]);
             return $response;
-
         } catch (\Exception $e) {
             // Rollback the transaction in case of an error
             DB::rollBack();
@@ -257,29 +267,25 @@ class OrderController extends Controller
 
 
 
-      public function cancel_order($id)
-      {
-          // Find the order by ID
-          $order = Order::find($id);
+    public function cancel_order($id)
+    {
+        // Find the order by ID
+        $order = Order::find($id);
 
-          // Check if the order exists
-          if (!$order) {
-              return response()->json(['message' => 'Order not found'], 404);
-          }
+        // Check if the order exists
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
 
-          // Check if the order is cancellable (you may need to add additional logic here)
-          if ($order->order_status == 1 ) {
-              // Update the order status to cancelled
-              $order->update(['order_status' => 5]);
-
-
-              return response()->json(['message' => 'Order cancelled successfully'], 200);
-          } else {
-              return response()->json(['message' => 'Order is already cancelled'], 422);
-          }
-      }
+        // Check if the order is cancellable (you may need to add additional logic here)
+        if ($order->order_status == 1) {
+            // Update the order status to cancelled
+            $order->update(['order_status' => 5]);
 
 
-
-
+            return response()->json(['message' => 'Order cancelled successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Order is already cancelled'], 422);
+        }
+    }
 }

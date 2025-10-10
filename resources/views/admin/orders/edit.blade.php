@@ -133,17 +133,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
                     <td><input type="number" class="form-control total_one_item" name="products[{{ $index }}][total_one_item]" step="any" value="{{ $orderProduct->pivot->total_one_item }}" /></td>
                     <td><button type="button" class="btn btn-danger remove-row">{{ __('messages.Delete') }}</button></td>
                 </tr>
@@ -160,15 +149,15 @@
                 <tbody>
                     <tr>
                         <td>{{ __('messages.total_selling_price') }}</td>
-                        <td><span id="total_selling_price">{{ $order->total_prices - $order->delivery_fee }} $</span></td>
+                        <td><span id="total_selling_price">$ {{ $order->total_prices - $order->delivery_fee }} </span></td>
                     </tr>
                     <tr>
                         <td>{{ __('messages.total_discount') }}</td>
-                        <td><span id="total_discount">{{ $order->total_discounts }} $</span></td>
+                        <td><span id="total_discount">$ {{ $order->total_discounts }} </span></td>
                     </tr>
                     <tr>
                         <td>{{ __('messages.coupon_discount') }}</td>
-                        <td><span id="coupon_discount">{{ $order->coupon_discount }} $</span></td>
+                        <td><span id="coupon_discount">$ {{ $order->coupon_discount }} </span></td>
                     </tr>
 
                     @php
@@ -180,17 +169,17 @@
                     @foreach ($taxGroups as $taxPercentage => $taxValue)
                     <tr>
                         <td>{{ __('messages.total_tax') }} ({{ $taxPercentage }}%)</td>
-                        <td><span id="total_tax_{{ $taxPercentage }}">{{ round($taxValue, 3) }} $</span></td>
+                        <td><span id="total_tax_{{ $taxPercentage }}"> $ {{ round($taxValue, 3) }} </span></td>
                     </tr>
                     @endforeach
 
                     <tr>
                         <td>{{ __('messages.delivery_fee') }}</td>
-                        <td><span id="delivery_fee">{{ $order->delivery_fee }} $</span></td>
+                        <td><span id="delivery_fee">$ {{ $order->delivery_fee }} </span></td>
                     </tr>
                     <tr>
                         <td>{{ __('messages.total_amount') }}</td>
-                        <td><span id="total_amount">{{ $order->total_prices }} $</span></td>
+                        <td><span id="total_amount">$ {{ $order->total_prices }} </span></td>
                     </tr>
                 </tbody>
             </table>

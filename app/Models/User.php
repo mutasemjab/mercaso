@@ -73,5 +73,34 @@ class User extends Authenticatable
     }
 
 
+public function pointProductPurchases()
+{
+    return $this->hasMany(PointProductPurchase::class);
+}
+
+/**
+ * Check if user has enough points for a purchase.
+ */
+public function hasEnoughPoints(int $requiredPoints): bool
+{
+    return $this->points >= $requiredPoints;
+}
+
+/**
+ * Get total points spent on point products.
+ */
+public function getTotalPointsSpentAttribute(): int
+{
+    return $this->pointProductPurchases()->sum('points_spent');
+}
+
+/**
+ * Get count of point product purchases.
+ */
+public function getPointProductPurchasesCountAttribute(): int
+{
+    return $this->pointProductPurchases()->count();
+}
+
 
 }

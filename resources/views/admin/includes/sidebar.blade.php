@@ -128,6 +128,14 @@
                                     </a>
                                 </li>
                             @endif
+                            @if(auth()->user()->can('product-table'))
+                                <li class="nav-item">
+                                    <a href="{{ route('point-products.index') }}" class="nav-link {{ request()->routeIs('point-products.*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Products buy by points</p>
+                                    </a>
+                                </li>
+                            @endif
                         </ul>
                     </li>
                 @endif
@@ -138,6 +146,15 @@
                         <a href="{{ route('orders.index') }}" class="nav-link {{ request()->routeIs('orders.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-shopping-cart"></i>
                             <p>{{ __('messages.orders') }}</p>
+                        </a>
+                    </li>
+                @endif
+            
+                @if(auth()->user()->can('order-table'))
+                    <li class="nav-item">
+                        <a href="{{ route('pointProducts.purchases') }}" class="nav-link {{ request()->routeIs('pointProducts.purchases.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-shopping-cart"></i>
+                            <p>Orders For Product Points</p>
                         </a>
                     </li>
                 @endif

@@ -60,14 +60,18 @@
                                                 <a href="{{ route('coupons.edit', $info->id) }}"
                                                     class="btn btn-sm btn-primary">{{ __('messages.Edit') }}</a>
                                             @endcan
-                                            @can('coupon-delete')
-                                                <form action="{{ route('coupons.destroy', $info->id) }}" method="POST">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                        class="btn btn-sm btn-danger">{{ __('messages.Delete') }}</button>
-                                                </form>
-                                            @endcan
+                                        @can('coupon-delete')
+                                            <form action="{{ route('coupons.destroy', $info->id) }}" method="POST" style="display:inline-block;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                    class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Are you sure you want to delete this coupon?')">
+                                                    {{ __('messages.Delete') }}
+                                                </button>
+                                            </form>
+                                        @endcan
+
                                         </td>
                                     </tr>
                                 @endforeach

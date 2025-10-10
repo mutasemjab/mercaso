@@ -62,13 +62,15 @@
                                                     class="btn btn-sm  btn-primary">{{ __('messages.Edit') }}</a>
                                             @endcan
                                             @can('category-delete')
-                                                <form action="{{ route('categories.destroy', $info->id) }}" method="POST">
+                                                <form action="{{ route('categories.destroy', $info->id) }}" method="POST"
+                                                    class="d-inline delete-form">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                        class="btn btn-sm btn-danger">{{ __('messages.Delete') }}</button>
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-danger btn-delete">{{ __('messages.Delete') }}</button>
                                                 </form>
                                             @endcan
+
 
                                         </td>
 
@@ -101,5 +103,18 @@
 @endsection
 
 @section('script')
-    <script src="{{ asset('assets/admin/js/sliderss.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Confirm before deleting
+            document.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = this.closest('form');
+                    if (confirm("{{ __('messages.Are_you_sure_delete') }}")) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

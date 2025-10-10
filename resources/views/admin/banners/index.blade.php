@@ -63,19 +63,16 @@
                                                 <form action="{{ route('banners.destroy', $info->id) }}" method="POST">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
-                                                        class="btn btn-sm btn-danger">{{ __('messages.Delete') }}</button>
+                                                    <button type="submit" class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('Are you sure you want to delete this banner?')">
+                                                        {{ __('messages.Delete') }}
+                                                    </button>
+
                                                 </form>
                                             @endcan
-
                                         </td>
-
-
                                     </tr>
                                 @endforeach
-
-
-
                             </tbody>
                         </table>
                         <br>
@@ -85,15 +82,9 @@
                             {{ __('messages.No_data') }} </div>
                     @endif
                 @endcan
-
             </div>
-
-
-
         </div>
-
     </div>
-
     </div>
 
 @endsection

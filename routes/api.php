@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\v1\User\ProductReviewController;
 use App\Http\Controllers\Api\v1\User\UserAddressController;
 use App\Http\Controllers\Api\v1\User\PageController;
 use App\Http\Controllers\Api\v1\User\ForgotPasswordController;
+use App\Http\Controllers\Api\v1\User\PointProductController;
 use App\Http\Controllers\Api\v1\User\BrandController;
 /*
 |--------------------------------------------------------------------------
@@ -100,7 +101,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         //----------- Product Review ----------------------//
         Route::post('/product-reviews', [ProductReviewController::class, 'store']); // Done
 
-
+        Route::get('/points', [PointsController::class, 'index']); 
         //----------------- Cart -------------------------------//
         Route::get('/carts', [CartController::class, 'index']); // Done
         Route::post('/carts', [CartController::class, 'store']); // Done
@@ -116,6 +117,21 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::get('/orders/{id}/cancel', [OrderController::class, 'cancel_order']);
         Route::post('/orders/{id}/refund', [OrderController::class, 'refund']);
         Route::get('buy-again', [OrderController::class, 'buyAgain']);
+        
+        
+          Route::get('/point-products', [PointProductController::class, 'index']);
+    
+        // Get only products user can afford
+        Route::get('/point-products/affordable', [PointProductController::class, 'affordable']);
+        
+        // Get specific product details
+        Route::get('/point-products/{id}', [PointProductController::class, 'show']);
+        
+        // Purchase a product
+        Route::post('/point-products/purchase', [PointProductController::class, 'purchase']);
+        
+        // Get user's purchase history
+        Route::get('/point-products/purchases', [PointProductController::class, 'purchases']);
 
     });
 });

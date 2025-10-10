@@ -29,6 +29,8 @@ return new class extends Migration
             $table->time('from_time')->nullable();
             $table->time('to_time')->nullable();
             $table->text('note')->nullable();
+            $table->string('phone_in_order')->nullable();
+            $table->tinyInteger('type_delivery')->default(1); // 1 pickup  // 2 delivery
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('address_id')->nullable();

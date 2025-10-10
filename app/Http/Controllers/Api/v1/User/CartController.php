@@ -94,7 +94,7 @@ class CartController extends Controller
         // Apply coupon discount as a percentage of the total
         $couponDiscount = $this->applyCouponDiscount($user->id, $total);
         $totalDiscount += $couponDiscount;
-        $totalAfterDiscounts = round($total - $couponDiscount, 2);
+        $totalAfterDiscounts = round($total - $couponDiscount, 2)+$totalTax+$totalCrv;
 
         // Update the cart records with the coupon discount
         foreach ($carts as $cart) {
