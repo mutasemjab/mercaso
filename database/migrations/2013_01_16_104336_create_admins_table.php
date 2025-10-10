@@ -29,7 +29,6 @@ return new class extends Migration
                 'name' => "Super Admin",
                 'username' => "admin",
                 'email' => "admin@demo.com",
-                'mobile' => null,
                 'password' => bcrypt('admin'), // password
                 'is_super_admin' => true, 
                 'created_at' => now(),
