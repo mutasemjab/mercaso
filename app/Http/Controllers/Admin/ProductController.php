@@ -21,6 +21,32 @@ use Maatwebsite\Excel\Excel as ExcelWriter;
 class ProductController extends Controller
 {
 
+    public function toggleStatus($id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+
+            // Toggle status: if 1 make it 2, if 2 make it 1
+            $product->status = $product->status == 1 ? 2 : 1;
+            $product->save();
+
+            $statusText = $product->status == 1 ? 'activated' : 'deactivated';
+
+            return response()->json([
+                'success' => true,
+                'message' => "Product {$statusText} successfully",
+                'new_status' => $product->status,
+                'status_text' => $product->status == 1 ? 'Active' : 'Not Active'
+            ]);
+        } catch (\Exception $ex) {
+            Log::error($ex);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating the status'
+            ], 500);
+        }
+    }
+
     public function showImportPage()
     {
         return view('admin.products.import');
@@ -172,15 +198,11 @@ class ProductController extends Controller
 
             // Add conditional validation based on product type
             $productType = $request->input('product_type');
-            
+
             if ($productType == '1' || $productType == '3') { // Retail or Both
                 $rules['selling_price_for_user'] = 'required|numeric|min:0';
-                $rules['min_order_for_user'] = 'required|numeric|min:0';
             }
-            
-            if ($productType == '2' || $productType == '3') { // Wholesale or Both
-                $rules['min_order_for_wholesale'] = 'required|numeric|min:0';
-            }
+
 
             $request->validate($rules);
 
@@ -198,35 +220,28 @@ class ProductController extends Controller
             // Modified tax handling
             if ($request->input('has_tax') == '1' && $request->input('tax_id')) {
                 $tax = Tax::find($request->input('tax_id'));
-                $product->tax = $tax ? $tax->value : null;
+                $product->tax = $tax ? $tax->value : 0;
             } else {
-                $product->tax = null;
+                $product->tax = 0;
             }
 
             // Modified crv handling
             if ($request->input('has_crv') == '1' && $request->input('crv_id')) {
                 $crv = Crv::find($request->input('crv_id'));
-                $product->crv = $crv ? $crv->value : null;
+                $product->crv = $crv ? $crv->value : 0;
             } else {
-                $product->crv = null;
+                $product->crv = 0;
             }
 
             $product->points = $request->input('points');
-            
+
             // Set values based on product type
             if ($productType == '1' || $productType == '3') { // Retail or Both
                 $product->selling_price_for_user = $request->input('selling_price_for_user');
-                $product->min_order_for_user = $request->input('min_order_for_user');
             } else {
                 $product->selling_price_for_user = 0;
-                $product->min_order_for_user = 0;
             }
-            
-            if ($productType == '2' || $productType == '3') { // Wholesale or Both
-                $product->min_order_for_wholesale = $request->input('min_order_for_wholesale');
-            } else {
-                $product->min_order_for_wholesale = 0;
-            }
+
 
             $product->rating = $request->input('rating');
             $product->total_rating = $request->input('total_rating');
@@ -308,15 +323,12 @@ class ProductController extends Controller
 
             // Add conditional validation based on product type
             $productType = $request->input('product_type');
-            
+
             if ($productType == '1' || $productType == '3') { // Retail or Both
                 $rules['selling_price_for_user'] = 'required|numeric|min:0';
-                $rules['min_order_for_user'] = 'required|numeric|min:0';
             }
-            
-            if ($productType == '2' || $productType == '3') { // Wholesale or Both
-                $rules['min_order_for_wholesale'] = 'required|numeric|min:0';
-            }
+
+        
 
             $request->validate($rules);
 
@@ -333,35 +345,29 @@ class ProductController extends Controller
             // Modified tax handling
             if ($request->input('has_tax') == '1' && $request->input('tax_id')) {
                 $tax = Tax::find($request->input('tax_id'));
-                $product->tax = $tax ? $tax->value : null;
+                $product->tax = $tax ? $tax->value : 0;
             } else {
-                $product->tax = null;
+                $product->tax = 0;
             }
 
             // Modified crv handling
             if ($request->input('has_crv') == '1' && $request->input('crv_id')) {
                 $crv = Crv::find($request->input('crv_id'));
-                $product->crv = $crv ? $crv->value : null;
+                $product->crv = $crv ? $crv->value : 0;
             } else {
-                $product->crv = null;
+                $product->crv = 0;
             }
 
             $product->points = $request->input('points');
-            
+
             // Set values based on product type
             if ($productType == '1' || $productType == '3') { // Retail or Both
                 $product->selling_price_for_user = $request->input('selling_price_for_user');
-                $product->min_order_for_user = $request->input('min_order_for_user');
             } else {
                 $product->selling_price_for_user = 0;
-                $product->min_order_for_user = 0;
             }
-            
-            if ($productType == '2' || $productType == '3') { // Wholesale or Both
-                $product->min_order_for_wholesale = $request->input('min_order_for_wholesale');
-            } else {
-                $product->min_order_for_wholesale = 0;
-            }
+
+          
 
             $product->rating = $request->input('rating');
             $product->total_rating = $request->input('total_rating');
@@ -391,7 +397,7 @@ class ProductController extends Controller
             if ($product->save()) {
                 // Handle product units - only for wholesale or both types
                 ProductUnit::where('product_id', $id)->delete();
-                
+
                 if (($productType == '2' || $productType == '3') && $request->has('units')) {
                     foreach ($request->units as $index => $unit_id) {
                         if (!empty($unit_id)) { // Only create if unit is selected
@@ -405,7 +411,7 @@ class ProductController extends Controller
                         }
                     }
                 }
-                
+
                 return redirect()->route('products.index')->with(['success' => 'Product updated']);
             } else {
                 return redirect()->back()->with(['error' => 'Something went wrong while updating the product']);

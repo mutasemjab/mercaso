@@ -34,7 +34,7 @@
                                    class="form-control @error('value') is-invalid @enderror" 
                                    id="value" 
                                    name="value" 
-                                   step="0.01" 
+                                   step="any" 
                                    min="0"
                                    value="{{ old('value', $crv->value) }}" 
                                    required>

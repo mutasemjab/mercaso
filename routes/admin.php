@@ -175,7 +175,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
          ->name('point-transactions.get-user-points');
         Route::get('deliveries/{delivery}/availabilities', [DeliveryController::class, 'manageAvailabilities'])
         ->name('deliveries.availabilities');
+
+        Route::patch('products/{id}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggleStatus');
+         Route::patch('admin/settings/{id}/toggle-status', [SettingController::class, 'toggleStatus'])->name('admin.setting.toggleStatus');
     });
+
 });
 
 

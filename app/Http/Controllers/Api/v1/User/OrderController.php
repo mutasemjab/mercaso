@@ -109,7 +109,7 @@ class OrderController extends Controller
 
 
 
-    public function store(Request $request)
+   public function store(Request $request)
     {
         // Get authenticated user's ID and user type
         $user_id = auth()->user()->id;
@@ -160,14 +160,48 @@ class OrderController extends Controller
                 $total_prices += $cartItem->total_price_product;
             }
 
-            // Minimum order check based on user type
-            $min_order = Setting::first();
-            if (($user_type == 1 && $total_prices < $min_order->min_order) || ($user_type != 1 && $total_prices < $min_order->min_order_wholeSale)) {
-                $minOrderAmount = $user_type == 1 ? $min_order->min_order : $min_order->min_order_wholeSale;
-                DB::rollBack();
-                $response = response()->json(['message' => 'Your order is less than the minimum order. Please buy at least ' . $minOrderAmount], 404);
-                Log::info('Order Response', ['response' => $response->getContent()]);
-                return $response;
+            // Check for minimum order only if settings are active
+            $activeSetting = Setting::where('status', 1)->first();
+
+            // Only check minimum order if there's an active setting
+            if ($activeSetting) {
+                // Check minimum order based on user type
+                if ($user_type == 1) {
+                    // Regular user - check min_order
+                    if ($total_prices < $activeSetting->min_order) {
+                        DB::rollBack();
+                        Log::info('Minimum Order Check Failed - Retail User', [
+                            'user_id' => $user_id,
+                            'current_total' => $total_prices,
+                            'minimum_required' => $activeSetting->min_order
+                        ]);
+                        return response()->json([
+                            'message' => 'Your order is less than the minimum order for retail customers. Please buy at least ' . $activeSetting->min_order,
+                            'minimum_required' => $activeSetting->min_order,
+                            'current_total' => $total_prices,
+                            'user_type' => 'retail'
+                        ], 400);
+                    }
+                } else {
+                    // Wholesale user (user_type = 2) - check min_order_wholeSale
+                    if ($total_prices < $activeSetting->min_order_wholeSale) {
+                        DB::rollBack();
+                        Log::info('Minimum Order Check Failed - Wholesale User', [
+                            'user_id' => $user_id,
+                            'current_total' => $total_prices,
+                            'minimum_required' => $activeSetting->min_order_wholeSale
+                        ]);
+                        return response()->json([
+                            'message' => 'Your order is less than the minimum order for wholesale customers. Please buy at least ' . $activeSetting->min_order_wholeSale,
+                            'minimum_required' => $activeSetting->min_order_wholeSale,
+                            'current_total' => $total_prices,
+                            'user_type' => 'wholesale'
+                        ], 400);
+                    }
+                }
+            } else {
+                // No active settings found - skip minimum order check
+                Log::info('Minimum order check skipped - no active settings', ['user_id' => $user_id]);
             }
 
             // Generate the order number based on order type, ensuring uniqueness
@@ -196,7 +230,6 @@ class OrderController extends Controller
                 'from_time' => $request->from_time,
                 'to_time' => $request->to_time,
                 'user_id' => $user_id,
-
             ]);
 
             // Handle photo note upload
@@ -254,13 +287,24 @@ class OrderController extends Controller
             DB::commit();
 
             // Log the response and return success
-            $response = response()->json($order, 200);
-            Log::info('Order Response', ['response' => $response->getContent()]);
-            return $response;
+            Log::info('Order Created Successfully', [
+                'order_id' => $order->id,
+                'user_id' => $user_id,
+                'user_type' => $user_type,
+                'total_prices' => $total_prices
+            ]);
+            
+            return response()->json($order, 200);
+            
         } catch (\Exception $e) {
             // Rollback the transaction in case of an error
             DB::rollBack();
-            Log::error('Order Creation Error', ['error' => $e->getMessage()]);
+            Log::error('Order Creation Error', [
+                'error' => $e->getMessage(),
+                'user_id' => $user_id,
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
             return response()->json(['message' => 'Order creation failed', 'error' => $e->getMessage()], 500);
         }
     }

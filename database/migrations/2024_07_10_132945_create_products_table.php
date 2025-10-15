@@ -25,8 +25,6 @@ return new class extends Migration
             $table->double('tax')->default(0);
             $table->double('selling_price_for_user');
             $table->tinyInteger('in_stock')->default(1); // 1 in stock // 2 out of stock
-            $table->double('min_order_for_user');
-            $table->double('min_order_for_wholesale');
             $table->tinyInteger('has_variation')->default(2); // 1 yes // 2 no
             $table->double('rating')->nullable();
             $table->double('total_rating')->nullable();

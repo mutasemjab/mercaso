@@ -14,7 +14,7 @@
             <div class="row">
                 @csrf
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group">
                         <label> {{ __('messages.Place') }} </label>
                         <input name="place" id="place" class="form-control" value="{{ old('place') }}" required>
@@ -24,11 +24,21 @@
                     </div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <div class="form-group">
                         <label> {{ __('messages.Price') }} </label>
-                        <input name="price" id="price" type="number" step="0.01" class="form-control" value="{{ old('price') }}" required>
+                        <input name="price" id="price" type="number" step="any" class="form-control" value="{{ old('price') }}" required>
                         @error('price')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+            
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label> Zip Code</label>
+                        <input name="zip_code" id="zip_code" type="number" step="any" class="form-control" value="{{ old('zip_code') }}">
+                        @error('zip_code')
                         <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>

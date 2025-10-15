@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->double('min_order')->nullable();
             $table->double('min_order_wholeSale')->nullable();
+            $table->tinyInteger('status')->default(1); // 1 active // 2 disactive
             $table->timestamps();
         });
     }

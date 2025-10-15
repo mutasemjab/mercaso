@@ -81,6 +81,7 @@ class DeliveryController extends Controller
         $request->validate([
             'place' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'zip_code' => 'nullable|numeric',
             'availabilities' => 'array',
             'availabilities.*.day_of_week' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'availabilities.*.time_from' => 'required|date_format:H:i',
@@ -93,6 +94,7 @@ class DeliveryController extends Controller
             $delivery = new Delivery();
             $delivery->place = $request->get('place');
             $delivery->price = $request->get('price');
+            $delivery->zip_code = $request->get('zip_code');
             
             if ($delivery->save()) {
                 // Save availabilities if provided
@@ -156,6 +158,7 @@ class DeliveryController extends Controller
         $request->validate([
             'place' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'zip_code' => 'nullable|numeric',
             'availabilities' => 'array',
             'availabilities.*.day_of_week' => 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
             'availabilities.*.time_from' => 'required|date_format:H:i',
@@ -168,7 +171,7 @@ class DeliveryController extends Controller
             $delivery = Delivery::findOrFail($id);
             $delivery->place = $request->get('place');
             $delivery->price = $request->get('price');
-
+            $delivery->zip_code = $request->get('zip_code');
             if ($delivery->save()) {
                 // Delete existing availabilities
                 $delivery->availabilities()->delete();

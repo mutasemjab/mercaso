@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('place');
             $table->double('price');
+            $table->integer('zip_code')->nullable();
             $table->timestamps();
         });
     }

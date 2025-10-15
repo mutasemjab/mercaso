@@ -26,6 +26,7 @@
                 <thead class="custom_thead">
                     <th>{{ __('messages.Place') }}</th>
                     <th>{{ __('messages.Price') }}</th>
+                    <th>Zip Code</th>
                     <th>Availabilities</th>
                     <th>{{ __('messages.Action') }}</th>
                 </thead>
@@ -34,6 +35,7 @@
                     <tr>
                         <td>{{ $info->place }}</td>
                         <td>${{ number_format($info->price, 2) }}</td>
+                        <td>{{ $info->zip_code }}</td>
                         <td>
                             @if($info->availabilities && $info->availabilities->count() > 0)
                                 @php
