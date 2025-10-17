@@ -9,58 +9,97 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Google\Client as GoogleClient;
 
 class FCMController extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    public static function sendMessage($title,$body,$token,$screen="order")
+    public static function sendMessage($title, $body, $fcmToken, $userId, $screen = "order")
     {
-        if(!$token)
+        if (!$fcmToken) {
+            \Log::error("FCM Error: No FCM token provided for user ID $userId");
             return false;
+        }
 
-        $server_key = "AAAAjS7wR4g:APA91bFfMyT1pcHTTXUQLC6y2s0ONq5sHnd4C8vHt4iltCCbOc43CErZm91UidWpyWDghY1Zi-yy0EDAY1KORg-cDD2r0TnqWcFpK4ffQkl-1p_hu7bDHw3tYQ8NbPJrCF0Khr6sjWrf";
-        $json_data = [
-            "to" => $token,
-            "priority"=>"high",
-            "notification" => [
-                "title" => $title,
-                "body" => $body,
-                "click_action"=>"FLUTTER_NOTIFICATION_CLICK"
-            ],
-            "data" => [
-                'screen'=> $screen
-            ]
-        ];
-        $data = json_encode($json_data);
+        $credentialsFilePath = base_path('json/mercaso-2aefb-05f5229874d7.json');
 
-        $url = 'https://fcm.googleapis.com/fcm/send';
-        $headers = array(
-            'Content-Type:application/json',
-            'Authorization:key=' . $server_key
-        );
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        $result = curl_exec($ch);
-        if ($result === FALSE) {
+        try {
+            $client = new GoogleClient();
+            $client->setAuthConfig($credentialsFilePath);
+            $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+            $client->useApplicationDefaultCredentials();
+            $client->fetchAccessTokenWithAssertion();
+            $tokenResponse = $client->getAccessToken();
+
+            $access_token = $tokenResponse['access_token'];
+            \Log::info("FCM Access Token for user ID $userId: " . $access_token);
+
+            $headers = [
+                "Authorization: Bearer $access_token",
+                'Content-Type: application/json'
+            ];
+
+            $data = [
+                "message" => [
+                    "token" => $fcmToken,
+                    "notification" => [
+                        "title" => $title,
+                        "body" => $body
+                    ],
+                    "data" => [
+                        'screen' => $screen,
+                        "click_action" => "FLUTTER_NOTIFICATION_CLICK"
+                    ],
+                    "android" => [
+                        "priority" => "high"
+                    ]
+                ]
+            ];
+
+            $payload = json_encode($data);
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/v1/projects/mercaso/messages:send');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+            curl_setopt($ch, CURLOPT_VERBOSE, true); // Enable verbose output for debugging
+            $result = curl_exec($ch);
+            $err = curl_error($ch);
             curl_close($ch);
-            return 'Oops! FCM Send Error: ' . curl_error($ch);
-        } else {
-            curl_close($ch);
-            return $result;
+
+            if ($result === false || $err) {
+                \Log::error("FCM Error for user ID $userId: cURL Error: " . $err);
+                return false;
+            } else {
+                $response = json_decode($result, true);
+                \Log::info("FCM Response for user ID $userId: " . json_encode($response));
+                if (isset($response['name'])) {
+                    return true;
+                } else {
+                    \Log::error("FCM Error for user ID $userId: " . json_encode($response));
+                    if (isset($response['error']['details'][0]['errorCode']) && $response['error']['details'][0]['errorCode'] === 'UNREGISTERED') {
+                        \Log::info("FCM token cleanup for user ID $userId");
+                       // User::where('id', $userId)->update(['fcm_token' => null]);
+                    }
+                    return false;
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error("FCM Error for user ID $userId: " . $e->getMessage());
+            return false;
         }
     }
-    public static function sendMessageToAll($title,$body): bool
+    
+   public static function sendMessageToAll($title, $body): bool
     {
         $users = User::all();
         foreach ($users as $user) {
-            self::sendMessage($title,$body,$user->fcm_token);
+            self::sendMessage($title, $body, $user->fcm_token, $user->id); // Added $user->id
         }
         
         return true;

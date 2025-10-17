@@ -8,6 +8,7 @@
         "php": "^8.0.2",
         "asciisd/knet": "^2.6",
         "doctrine/dbal": "^3.6",
+        "google/apiclient": "2.15",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^9.19",
         "laravel/passport": "^11.5",
