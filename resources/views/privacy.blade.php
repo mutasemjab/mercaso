@@ -564,7 +564,6 @@
     <!-- Header -->
     <header class="header">
         <h1>{{ $page->title ?? 'Privacy Policy' }}</h1>
-        <p class="subtitle">{{ config('app.name') }} - Protecting Your Privacy</p>
     </header>
 
 
@@ -583,10 +582,6 @@
 
                
 
-                <!-- Important Notice -->
-                <div class="highlight-box">
-                    <strong>Important:</strong> By using our website and services, you acknowledge that you have read, understood, and agree to be bound by this Privacy Policy. If you do not agree with any part of this policy, please do not use our services.
-                </div>
             </div>
 
             <!-- Page Actions -->
