@@ -143,13 +143,13 @@ class OrderController extends Controller
 
         return response()->json([
             'data' => $order,
-      
+
         ]);
     }
 
-   
 
-   public function store(Request $request)
+
+    public function store(Request $request)
     {
         // Get authenticated user's ID and user type
         $user_id = auth()->user()->id;
@@ -285,14 +285,14 @@ class OrderController extends Controller
                 // Use the exact values from cart instead of recalculating
                 $total_price_after_tax = $cartItem->total_price_product;
                 $discount_amount = $cartItem->discount_coupon ?? 0;
-                
+
                 // Calculate price before tax and discount
                 $tax_rate = $cartItem->product->tax / 100;
                 $total_price_before_tax = $total_price_after_tax / (1 + $tax_rate);
-                
+
                 // Calculate discount percentage based on actual discount amount
                 $discount_percentage = $total_price_before_tax > 0 ? ($discount_amount / $total_price_before_tax) : 0;
-                
+
                 // Calculate tax value on the discounted amount
                 $price_after_discount = $total_price_before_tax - $discount_amount;
                 $tax_value = $price_after_discount * $tax_rate;
@@ -313,10 +313,27 @@ class OrderController extends Controller
                 ]);
             }
 
-            // Update cart status to processed (status 2)
             Cart::where('user_id', $user_id)->where('status', 1)->update([
                 'status' => 2,
             ]);
+
+            // Mark applied coupons as used by creating UserCoupon records
+            $appliedCouponIds = $cartItems->whereNotNull('applied_coupon_id')
+                ->pluck('applied_coupon_id')
+                ->unique();
+
+            foreach ($appliedCouponIds as $couponId) {
+                // Check if not already exists to avoid duplicates
+                if (!UserCoupon::where('user_id', $user_id)->where('coupon_id', $couponId)->exists()) {
+                    UserCoupon::create([
+                        'user_id' => $user_id,
+                        'coupon_id' => $couponId,
+                    ]);
+                }
+            }
+
+
+
 
             // Commit the transaction
             DB::commit();

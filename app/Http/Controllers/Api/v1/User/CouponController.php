@@ -17,7 +17,7 @@ use Illuminate\Validation\ValidationException;
 class CouponController extends Controller
 {
 
-    public function applyCoupon(Request $request)
+   public function applyCoupon(Request $request)
     {
         $user_id = auth()->user()->id;
 
@@ -29,16 +29,16 @@ class CouponController extends Controller
 
         DB::beginTransaction();
         try {
-            // Step 2: Check if the coupon code exists and is valid
+            // Check if the coupon code exists and is valid
             $coupon = Coupon::where('code', $couponCode)
-                ->where('expired_at', '>', now()) // assuming 'expired_at' is a column in your coupons table
+                ->where('expired_at', '>', now())
                 ->first();
 
             if (!$coupon) {
                 throw ValidationException::withMessages(['code' => ['Invalid or expired coupon code']]);
             }
 
-            // Step 3: Check if the coupon has already been used by the user
+            // Check if the coupon has already been used by the user
             $alreadyUsed = UserCoupon::where('user_id', $user_id)
                 ->where('coupon_id', $coupon->id)
                 ->exists();
@@ -47,23 +47,26 @@ class CouponController extends Controller
                 throw ValidationException::withMessages(['code' => ['Coupon code has already been used']]);
             }
 
-            // Step 4: Apply the coupon
-            $discountPercentage = $coupon->amount; // This should be a percentage value
-
             // Apply the discount to the user's cart
-            $carts = Cart::where('user_id', $user_id)->get();
-
-            foreach ($carts as $cart) {
-                $discountAmount = ($cart->total_price * $discountPercentage) / 100;
-                $cart->discount_coupon += $discountAmount;
-                $cart->save();
+            $carts = Cart::where('user_id', $user_id)->where('status', 1)->get();
+            
+            if ($carts->isEmpty()) {
+                throw ValidationException::withMessages(['code' => ['No items in cart to apply coupon']]);
             }
 
-            // Mark the coupon as used for the current user
-            UserCoupon::create([
-                'user_id' => $user_id,
-                'coupon_id' => $coupon->id,
-            ]);
+            $totalCartValue = $carts->sum('total_price_product');
+            $discountPercentage = $coupon->amount;
+            $totalDiscountAmount = ($totalCartValue * $discountPercentage) / 100;
+
+            // Distribute the discount proportionally among cart items
+            foreach ($carts as $cart) {
+                $itemProportion = $cart->total_price_product / $totalCartValue;
+                $itemDiscount = $totalDiscountAmount * $itemProportion;
+                $cart->discount_coupon = round($itemDiscount, 2);
+                // Store which coupon was applied (you might need to add this column to cart table)
+                $cart->applied_coupon_id = $coupon->id;
+                $cart->save();
+            }
 
             DB::commit();
             return response(['message' => 'Coupon applied successfully'], 200);

@@ -22,7 +22,7 @@ class CartController extends Controller
             'product' => function ($query) {
                 $query->with('category', 'variations', 'productImages', 'units', 'unit', 'offers');
             },
-            'variation' // Include this if variation is directly related to the Cart model
+            'variation'
         ])->where('user_id', auth()->id())->where('status', 1)->get();
 
         $token = request()->bearerToken();
@@ -71,7 +71,7 @@ class CartController extends Controller
             // Apply offer discount if available
             if ($item->has_offer) {
                 $discount = round(($item->selling_price_for_user - $item->offer_price) * $cart->quantity, 2);
-                $cart->total_price_product = round($item->offer_price * $cart->quantity, 2); // Set to offer price * quantity
+                $cart->total_price_product = round($item->offer_price * $cart->quantity, 2);
                 $totalDiscount += $discount;
             }
 
@@ -88,19 +88,38 @@ class CartController extends Controller
 
             // Add to the overall total
             $total += $cart->total_price_product;
-
         }
 
-        // Apply coupon discount as a percentage of the total
-        $couponDiscount = $this->applyCouponDiscount($user->id, $total);
-        $totalDiscount += $couponDiscount;
-        $totalAfterDiscounts = round($total - $couponDiscount, 2)+$totalTax+$totalCrv;
-
-        // Update the cart records with the coupon discount
+        // Check if any cart item has applied coupon that was already used
+        $couponDiscount = 0;
+        $hasValidCoupon = false;
+        
         foreach ($carts as $cart) {
-            $cart->discount_coupon = round($couponDiscount, 2);
-            $cart->save();
+            if ($cart->discount_coupon > 0 && $cart->applied_coupon_id) {
+                // Check if this coupon was already used (exists in UserCoupon table)
+                $couponUsed = UserCoupon::where('user_id', $user->id)
+                    ->where('coupon_id', $cart->applied_coupon_id)
+                    ->exists();
+                
+                if ($couponUsed) {
+                    // Reset the discount since coupon was already used
+                    $cart->discount_coupon = 0;
+                    $cart->applied_coupon_id = null;
+                    $cart->save();
+                } else {
+                    // Coupon is still valid
+                    $couponDiscount += $cart->discount_coupon;
+                    $hasValidCoupon = true;
+                }
+            } else if ($cart->discount_coupon > 0) {
+                // Old cart items with discount but no applied_coupon_id, keep them for now
+                $couponDiscount += $cart->discount_coupon;
+                $hasValidCoupon = true;
+            }
         }
+
+        $totalDiscount += $couponDiscount;
+        $totalAfterDiscounts = round($total - $couponDiscount, 2) + $totalTax + $totalCrv;
 
         return response()->json([
             'data' => $carts,
@@ -109,28 +128,10 @@ class CartController extends Controller
             'total_after_discounts' => $totalAfterDiscounts,
             'total_tax' => round($totalTax, 2),
             'total_crv' => round($totalCrv, 2),
+            'has_valid_coupon' => $hasValidCoupon,
         ]);
     }
 
-
-    private function applyCouponDiscount($userId, $total)
-    {
-        $couponDiscount = 0;
-
-        // Fetch applied coupons
-        $userCoupons = UserCoupon::where('user_id', $userId)->with('coupon')->get();
-
-        foreach ($userCoupons as $userCoupon) {
-            $coupon = $userCoupon->coupon;
-
-            if ($coupon && $coupon->expired_at > now()) {
-                // Calculate the discount as a percentage of the total
-                $couponDiscount += $coupon->amount;
-            }
-        }
-
-        return round($couponDiscount, 2);
-    }
 
 
 
