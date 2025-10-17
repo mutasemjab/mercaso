@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Admin\BookingController;
 use App\Http\Controllers\ContactUsController;
 use App\Http\Controllers\HolidayController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\TripTypeController;
 use App\Http\Controllers\User\HomeController;
 use App\Models\Booking;
@@ -41,5 +42,8 @@ Route::get('/migrate-refresh', function () {
 
 
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
+
+    Route::get('/privacy-policy', [PageController::class, 'privacyPolicy'])->name('privacy.policy');
+    Route::get('/terms', [PageController::class, 'termsConditions'])->name('terms.conditions');
 
 });
