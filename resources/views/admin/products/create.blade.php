@@ -182,22 +182,9 @@
                     @enderror
                 </div>
 
-                <div class="form-group col-md-6" id="retail_min_order_field">
-                    <label for="min_order_for_user"> {{ __('messages.min_order_for_user') }}</label>
-                    <input name="min_order_for_user" id="min_order_for_user" class="form-control" value="{{ old('min_order_for_user') }}">
-                    @error('min_order_for_user')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
+          
 
-                <!-- Wholesale Fields - Hidden/Shown based on product type -->
-                <div class="form-group col-md-6" id="wholesale_min_order_field">
-                    <label for="min_order_for_wholesale"> {{ __('messages.min_order_for_wholesale') }}</label>
-                    <input name="min_order_for_wholesale" id="min_order_for_wholesale" class="form-control" value="{{ old('min_order_for_wholesale') }}">
-                    @error('min_order_for_wholesale')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
+          
 
                 <div class="form-group col-md-6">
                     <label for="status"> {{ __('messages.Status') }}</label>
@@ -285,135 +272,215 @@
 @endsection
 @section('script')
 <script>
-    // Function to toggle fields based on product type
-    function toggleProductTypeFields() {
-        const productType = document.getElementById('product_type').value;
-        const retailPriceField = document.getElementById('retail_price_field');
-        const retailMinOrderField = document.getElementById('retail_min_order_field');
-        const wholesaleMinOrderField = document.getElementById('wholesale_min_order_field');
-        const wholesaleUnitsSection = document.getElementById('wholesale_units_section');
+  // Function to toggle fields based on product type
+function toggleProductTypeFields() {
+    const productType = document.getElementById('product_type').value;
+    const retailPriceField = document.getElementById('retail_price_field');
+    const wholesaleUnitsSection = document.getElementById('wholesale_units_section');
 
-        // Clear required attributes first
-        document.getElementById('selling_price_for_user').removeAttribute('required');
-        document.getElementById('min_order_for_user').removeAttribute('required');
-        document.getElementById('min_order_for_wholesale').removeAttribute('required');
+    // Clear required attributes first
+    document.getElementById('selling_price_for_user').removeAttribute('required');
+    
+    // Clear required attributes from wholesale units
+    clearWholesaleUnitsRequired();
 
-        if (productType === '1') { // Retail only
-            retailPriceField.style.display = 'block';
-            retailMinOrderField.style.display = 'block';
-            wholesaleMinOrderField.style.display = 'none';
-            wholesaleUnitsSection.style.display = 'none';
-            
-            // Set required for retail fields
-            document.getElementById('selling_price_for_user').setAttribute('required', 'required');
-            document.getElementById('min_order_for_user').setAttribute('required', 'required');
-        } else if (productType === '2') { // Wholesale only
-            retailPriceField.style.display = 'none';
-            retailMinOrderField.style.display = 'none';
-            wholesaleMinOrderField.style.display = 'block';
-            wholesaleUnitsSection.style.display = 'block';
-            
-            // Set required for wholesale fields
-            document.getElementById('min_order_for_wholesale').setAttribute('required', 'required');
-        } else { // Both (3)
-            retailPriceField.style.display = 'block';
-            retailMinOrderField.style.display = 'block';
-            wholesaleMinOrderField.style.display = 'block';
-            wholesaleUnitsSection.style.display = 'block';
-            
-            // Set required for all fields
-            document.getElementById('selling_price_for_user').setAttribute('required', 'required');
-            document.getElementById('min_order_for_user').setAttribute('required', 'required');
-            document.getElementById('min_order_for_wholesale').setAttribute('required', 'required');
-        }
-    }
-
-    // Function to toggle tax dropdown
-    function toggleTaxDropdown() {
-        const hasTaxElement = document.getElementById('has_tax');
-        const taxDropdown = document.getElementById('tax_dropdown');
-
-        if (hasTaxElement && taxDropdown) {
-            if (hasTaxElement.value === '1') {
-                taxDropdown.style.display = 'block';
-            } else {
-                taxDropdown.style.display = 'none';
-            }
-        }
-    }
-
-    // Function to toggle crv dropdown
-    function toggleCrvDropdown() {
-        const hasCrvElement = document.getElementById('has_crv');
-        const crvDropdown = document.getElementById('crv_dropdown');
-
-        if (hasCrvElement && crvDropdown) {
-            if (hasCrvElement.value === '1') {
-                crvDropdown.style.display = 'block';
-            } else {
-                crvDropdown.style.display = 'none';
-            }
-        }
-    }
-
-    // Wait for DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initial state on page load
-        toggleProductTypeFields();
-        toggleTaxDropdown();
-        toggleCrvDropdown();
-
-        // Event listeners
-        const productTypeElement = document.getElementById('product_type');
-        const hasTaxElement = document.getElementById('has_tax');
-        const hasCrvElement = document.getElementById('has_crv');
-
-        if (productTypeElement) {
-            productTypeElement.addEventListener('change', toggleProductTypeFields);
-        }
+    if (productType === '1') { // Retail only
+        retailPriceField.style.display = 'block';
+        wholesaleUnitsSection.style.display = 'none';
         
-        if (hasTaxElement) {
-            hasTaxElement.addEventListener('change', toggleTaxDropdown);
-        }
+        // Set required for retail fields
+        document.getElementById('selling_price_for_user').setAttribute('required', 'required');
+    } else if (productType === '2') { // Wholesale only
+        retailPriceField.style.display = 'none';
+        wholesaleUnitsSection.style.display = 'block';
         
-        if (hasCrvElement) {
-            hasCrvElement.addEventListener('change', toggleCrvDropdown);
+        // Set required for wholesale units
+        setWholesaleUnitsRequired();
+    } else { // Both (3)
+        retailPriceField.style.display = 'block';
+        wholesaleUnitsSection.style.display = 'block';
+        
+        // Set required for retail and wholesale fields
+        document.getElementById('selling_price_for_user').setAttribute('required', 'required');
+        setWholesaleUnitsRequired();
+    }
+}
+
+// Function to set wholesale units as required
+function setWholesaleUnitsRequired() {
+    const unitSelects = document.querySelectorAll('select[name="units[]"]');
+    const barcodeInputs = document.querySelectorAll('input[name="barcodes[]"]');
+    const relationInputs = document.querySelectorAll('input[name="releations[]"]');
+    const priceInputs = document.querySelectorAll('input[name="selling_prices[]"]');
+
+    // Make at least the first unit row required
+    if (unitSelects.length > 0) {
+        unitSelects[0].setAttribute('required', 'required');
+        relationInputs[0].setAttribute('required', 'required');
+        priceInputs[0].setAttribute('required', 'required');
+    }
+}
+
+// Function to clear required attributes from wholesale units
+function clearWholesaleUnitsRequired() {
+    const unitSelects = document.querySelectorAll('select[name="units[]"]');
+    const barcodeInputs = document.querySelectorAll('input[name="barcodes[]"]');
+    const relationInputs = document.querySelectorAll('input[name="releations[]"]');
+    const priceInputs = document.querySelectorAll('input[name="selling_prices[]"]');
+
+    unitSelects.forEach(select => select.removeAttribute('required'));
+    barcodeInputs.forEach(input => input.removeAttribute('required'));
+    relationInputs.forEach(input => input.removeAttribute('required'));
+    priceInputs.forEach(input => input.removeAttribute('required'));
+}
+
+// Function to add required attributes to new wholesale unit rows
+function addRequiredToNewUnit(unitRow) {
+    const productType = document.getElementById('product_type').value;
+    
+    if (productType === '2' || productType === '3') { // Wholesale only or Both
+        const unitSelect = unitRow.querySelector('select[name="units[]"]');
+        const relationInput = unitRow.querySelector('input[name="releations[]"]');
+        const priceInput = unitRow.querySelector('input[name="selling_prices[]"]');
+        
+        if (unitSelect) unitSelect.setAttribute('required', 'required');
+        if (relationInput) relationInput.setAttribute('required', 'required');
+        if (priceInput) priceInput.setAttribute('required', 'required');
+    }
+}
+
+// Function to toggle tax dropdown
+function toggleTaxDropdown() {
+    const hasTaxElement = document.getElementById('has_tax');
+    const taxDropdown = document.getElementById('tax_dropdown');
+
+    if (hasTaxElement && taxDropdown) {
+        if (hasTaxElement.value === '1') {
+            taxDropdown.style.display = 'block';
+        } else {
+            taxDropdown.style.display = 'none';
         }
+    }
+}
+
+// Function to toggle crv dropdown
+function toggleCrvDropdown() {
+    const hasCrvElement = document.getElementById('has_crv');
+    const crvDropdown = document.getElementById('crv_dropdown');
+
+    if (hasCrvElement && crvDropdown) {
+        if (hasCrvElement.value === '1') {
+            crvDropdown.style.display = 'block';
+        } else {
+            crvDropdown.style.display = 'none';
+        }
+    }
+}
+
+// Function to validate wholesale units before form submission
+function validateWholesaleUnits() {
+    const productType = document.getElementById('product_type').value;
+    
+    if (productType === '2' || productType === '3') { // Wholesale only or Both
+        const unitSelects = document.querySelectorAll('select[name="units[]"]');
+        let hasValidUnit = false;
+        
+        unitSelects.forEach(select => {
+            if (select.value !== '') {
+                hasValidUnit = true;
+            }
+        });
+        
+        if (!hasValidUnit) {
+            alert('Please add at least one wholesale unit.');
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial state on page load
+    toggleProductTypeFields();
+    toggleTaxDropdown();
+    toggleCrvDropdown();
+
+    // Event listeners
+    const productTypeElement = document.getElementById('product_type');
+    const hasTaxElement = document.getElementById('has_tax');
+    const hasCrvElement = document.getElementById('has_crv');
+
+    if (productTypeElement) {
+        productTypeElement.addEventListener('change', toggleProductTypeFields);
+    }
+    
+    if (hasTaxElement) {
+        hasTaxElement.addEventListener('change', toggleTaxDropdown);
+    }
+    
+    if (hasCrvElement) {
+        hasCrvElement.addEventListener('change', toggleCrvDropdown);
+    }
+
+    // Add form validation on submit
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateWholesaleUnits()) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+
+$(document).ready(function() {
+    $('#productTab a').on('click', function (e) {
+        e.preventDefault();
+        $(this).tab('show');
     });
 
-    $(document).ready(function() {
-        $('#productTab a').on('click', function (e) {
-            e.preventDefault();
-            $(this).tab('show');
-        });
-
-        $('#add-unit').on('click', function() {
-            const unitTemplate = `
-                <div class="row product-unit">
-                    <div class="form-group col-md-3">
-                        <label for="unit">{{ __('messages.unit') }}</label>
-                        <select name="units[]" class="form-control">
-                            <option value="">Select Unit</option>
-                            @foreach ($units as $unit)
-                                <option value="{{ $unit->id }}">{{ $unit->name_en }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label for="barcode">{{ __('messages.barcode') }}</label>
-                        <input type="number" class="form-control" name="barcodes[]">
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label for="releation">{{ __('messages.releation') }}</label>
-                        <input type="number" class="form-control" name="releations[]">
-                    </div>
-                    <div class="form-group col-md-3">
-                        <label for="selling_price">{{ __('messages.selling_price') }}</label>
-                        <input type="number" class="form-control" name="selling_prices[]" step="0.01" min="0">
-                    </div>
-                </div>`;
-            $('#product-units-container').append(unitTemplate);
-        });
+    $('#add-unit').on('click', function() {
+        const unitTemplate = `
+            <div class="row product-unit">
+                <div class="form-group col-md-2">
+                    <label for="unit">{{ __('messages.unit') }}</label>
+                    <select name="units[]" class="form-control">
+                        <option value="">Select Unit</option>
+                        @foreach ($units as $unit)
+                            <option value="{{ $unit->id }}">{{ $unit->name_en }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="barcode">{{ __('messages.barcode') }}</label>
+                    <input type="number" class="form-control" name="barcodes[]">
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="releation">{{ __('messages.releation') }}</label>
+                    <input type="number" class="form-control" name="releations[]">
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="selling_price">{{ __('messages.selling_price') }}</label>
+                    <input type="number" class="form-control" name="selling_prices[]" step="0.01" min="0">
+                </div>
+                <div class="form-group col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger remove-unit">Remove</button>
+                </div>
+            </div>`;
+        
+        const newUnitRow = $(unitTemplate);
+        $('#product-units-container').append(newUnitRow);
+        
+        // Add required attributes to the new row if needed
+        addRequiredToNewUnit(newUnitRow[0]);
     });
+
+    // Handle remove unit button
+    $(document).on('click', '.remove-unit', function() {
+        $(this).closest('.product-unit').remove();
+    });
+});
 </script>
 @endsection
