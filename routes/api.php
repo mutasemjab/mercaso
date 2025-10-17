@@ -32,10 +32,13 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+
 //Route unAuth
 Route::group(['prefix' => 'v1/user'], function () {
 
-
+    Route::get('/orders/{id}/invoice', [OrderController::class, 'viewInvoicePDF'])->name('orders.invoice');
+    Route::get('/orders/{id}/invoice/download', [OrderController::class, 'generateInvoicePDF'])->name('orders.invoice.download');
+    
     Route::get('/pages/{type}', [PageController::class,'index']);
 
     Route::get('/business_type', [AuthController::class, 'get_business_type']); // Done
