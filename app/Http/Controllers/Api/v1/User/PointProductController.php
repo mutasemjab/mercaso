@@ -27,7 +27,7 @@ class PointProductController extends Controller
                                            'id' => $product->id,
                                            'name' => $product->name,
                                            'description' => $product->description,
-                                           'image' => $product->image ? asset('storage/' . $product->image) : null,
+                                           'image' => $product->image ? asset('assets/admin/uploads/' . $product->image) : null,
                                            'points_required' => $product->points_required,
                                            'stock' => $product->stock,
                                            'can_afford' => $product->canUserAfford($user),
@@ -59,7 +59,7 @@ class PointProductController extends Controller
                                            'id' => $product->id,
                                            'name' => $product->name,
                                            'description' => $product->description,
-                                           'image' => $product->image ? asset('storage/' . $product->image) : null,
+                                           'image' => $product->image ? asset('assets/admin/uploads/' . $product->image) : null,
                                            'points_required' => $product->points_required,
                                            'stock' => $product->stock
                                        ];
@@ -95,7 +95,7 @@ class PointProductController extends Controller
                 'id' => $pointProduct->id,
                 'name' => $pointProduct->name,
                 'description' => $pointProduct->description,
-                'image' => $pointProduct->image ? asset('storage/' . $pointProduct->image) : null,
+                'image' => $pointProduct->image ? asset('assets/admin/uploads/' . $pointProduct->image) : null,
                 'points_required' => $pointProduct->points_required,
                 'stock' => $pointProduct->stock,
                 'is_available' => $pointProduct->isAvailable(),
@@ -206,7 +206,7 @@ class PointProductController extends Controller
             return [
                 'id' => $purchase->id,
                 'product_name' => $purchase->pointProduct->name,
-                'product_image' => $purchase->pointProduct->image ? asset('storage/' . $purchase->pointProduct->image) : null,
+                'product_image' => $purchase->pointProduct->image ? asset('assets/admin/uploads/' . $purchase->pointProduct->image) : null,
                 'quantity' => $purchase->quantity,
                 'points_spent' => $purchase->points_spent,
                 'purchased_at' => $purchase->purchased_at->format('Y-m-d H:i:s')
