@@ -140,83 +140,14 @@ class OrderController extends Controller
             ], 404);
         }
 
-        // Add PDF invoice link to the response
-        $order->pdf_invoice_url = route('orders.invoice', ['id' => $order->id]);
 
         return response()->json([
             'data' => $order,
-            'pdf_invoice_url' => $order->pdf_invoice_url
+      
         ]);
     }
 
-    public function generateInvoicePDF($id)
-    {
-     
-
-        $order = Order::with([
-            'orderProducts' => function ($query) {
-                $query->with([
-                    'product' => function ($query) {
-                        $query->with(['category', 'productImages']);
-                    },
-                    'unit' => function ($query) {
-                        $query->select('id', 'name_en', 'name_ar');
-                    },
-                    'variation' => function ($query) {
-                        $query->select('id', 'product_id', 'variation');
-                    }
-                ]);
-            },
-            'address',
-            'user',
-        ])
-            ->where('id', $id)
-            ->first();
-
-        if (!$order) {
-            return response()->json([
-                'message' => 'Order not found or you do not have permission to view this order'
-            ], 404);
-        }
-
-        // Generate PDF using Excel package with DOMPDF
-        return Excel::download(new InvoiceExport($order), 'invoice-' . $order->id . '.pdf', \Maatwebsite\Excel\Excel::DOMPDF);
-    }
-
-    public function viewInvoicePDF($id)
-    {
-
-        $order = Order::with([
-            'orderProducts' => function ($query) {
-                $query->with([
-                    'product' => function ($query) {
-                        $query->with(['category', 'productImages']);
-                    },
-                    'unit' => function ($query) {
-                        $query->select('id', 'name_en', 'name_ar');
-                    },
-                    'variation' => function ($query) {
-                        $query->select('id', 'product_id', 'variation');
-                    }
-                ]);
-            },
-            'address',
-            'user',
-        ])
-            ->where('id', $id)
-            ->first();
-
-        if (!$order) {
-            abort(404, 'Order not found');
-        }
-
-        // Stream PDF in browser using Excel package
-        $headers = [
-            'Content-Type' => 'application/pdf',
-        ];
-
-        return Excel::download(new InvoiceExport($order), 'invoice-' . $order->id . '.pdf', \Maatwebsite\Excel\Excel::DOMPDF, $headers);
-    }
+   
 
     public function store(Request $request)
     {
