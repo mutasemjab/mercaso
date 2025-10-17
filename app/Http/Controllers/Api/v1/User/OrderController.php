@@ -149,7 +149,7 @@ class OrderController extends Controller
 
    
 
-    public function store(Request $request)
+   public function store(Request $request)
     {
         // Get authenticated user's ID and user type
         $user_id = auth()->user()->id;
@@ -183,7 +183,6 @@ class OrderController extends Controller
             $total_discounts = 0;
             $total_taxes = 0;
             $total_prices = 0;
-            $totalPriceBeforeTaxSum = 0;
 
             // Get address and delivery fee
             $delivery_fee = 0;
@@ -193,7 +192,7 @@ class OrderController extends Controller
                 $delivery_fee = $address->delivery->price ?? 0;
             }
 
-            // Calculate totals from cart items
+            // Calculate totals from cart items - USE EXACT CART VALUES
             foreach ($cartItems as $cartItem) {
                 $total_discounts += $cartItem->discount_coupon ?? 0;
                 $total_taxes += $cartItem->product->tax ?? 0;
@@ -279,22 +278,24 @@ class OrderController extends Controller
             }
             $order->save();
 
-            // Calculate totals for cart items
-            foreach ($cartItems as $cartItem) {
-                $total_price_after_tax_for_result = $cartItem->price * $cartItem->quantity;
-                $total_price_before_tax_for_result = $total_price_after_tax_for_result / (1 + ($cartItem->product->tax / 100));
-                $totalPriceBeforeTaxSum += $total_price_before_tax_for_result;
-            }
-
-            $final_result_total_price_before_tax = $totalPriceBeforeTaxSum;
-            $discount_percentage = $total_discounts / $final_result_total_price_before_tax;
-
-            // Attach cart items to the order
+            // Attach cart items to the order - PRESERVE EXACT CART CALCULATIONS
             foreach ($cartItems as $cartItem) {
                 $unit_id = ($user_type == 1) ? $cartItem->product->unit->id : $cartItem->product->units()->first()->id;
 
-                $total_price_after_tax = $cartItem->price * $cartItem->quantity;
-                $total_price_before_tax = $total_price_after_tax / (1 + ($cartItem->product->tax / 100));
+                // Use the exact values from cart instead of recalculating
+                $total_price_after_tax = $cartItem->total_price_product;
+                $discount_amount = $cartItem->discount_coupon ?? 0;
+                
+                // Calculate price before tax and discount
+                $tax_rate = $cartItem->product->tax / 100;
+                $total_price_before_tax = $total_price_after_tax / (1 + $tax_rate);
+                
+                // Calculate discount percentage based on actual discount amount
+                $discount_percentage = $total_price_before_tax > 0 ? ($discount_amount / $total_price_before_tax) : 0;
+                
+                // Calculate tax value on the discounted amount
+                $price_after_discount = $total_price_before_tax - $discount_amount;
+                $tax_value = $price_after_discount * $tax_rate;
 
                 $order->products()->attach($cartItem->product_id, [
                     'quantity' => $cartItem->quantity,
@@ -305,10 +306,10 @@ class OrderController extends Controller
                     'total_price_before_tax' => $total_price_before_tax,
                     'tax_percentage' => $cartItem->product->tax ?? 0,
                     'discount_percentage' => $discount_percentage,
-                    'discount_value' => $discount_percentage * $total_price_before_tax,
+                    'discount_value' => $discount_amount, // Use exact discount from cart
                     'line_discount_percentage' => null,
                     'line_discount_value' => null,
-                    'tax_value' => ($total_price_before_tax - ($discount_percentage * $total_price_before_tax)) * ($cartItem->product->tax / 100),
+                    'tax_value' => $tax_value,
                 ]);
             }
 
@@ -316,12 +317,6 @@ class OrderController extends Controller
             Cart::where('user_id', $user_id)->where('status', 1)->update([
                 'status' => 2,
             ]);
-
-            // Delete user coupon after the order is completed
-            $userCoupon = UserCoupon::where('user_id', $user_id)->first();
-            if ($userCoupon) {
-                $userCoupon->delete();
-            }
 
             // Commit the transaction
             DB::commit();
@@ -331,7 +326,8 @@ class OrderController extends Controller
                 'order_id' => $order->id,
                 'user_id' => $user_id,
                 'user_type' => $user_type,
-                'total_prices' => $total_prices
+                'total_prices' => $total_prices,
+                'total_discounts' => $total_discounts
             ]);
 
             return response()->json($order, 200);
