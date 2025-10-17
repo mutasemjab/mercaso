@@ -159,7 +159,7 @@ class ProductController extends Controller
             });
         }
 
-        $data = $query->paginate(PAGINATION_COUNT);
+        $data = $query->latest()->paginate(PAGINATION_COUNT);
 
         return view('admin.products.index', compact('data'));
     }
