@@ -151,7 +151,7 @@ class OrderController extends Controller
 
     public function generateInvoicePDF($id)
     {
-        $user_id = auth()->user()->id;
+     
 
         $order = Order::with([
             'orderProducts' => function ($query) {
@@ -170,7 +170,6 @@ class OrderController extends Controller
             'address',
             'user',
         ])
-            ->where('user_id', $user_id)
             ->where('id', $id)
             ->first();
 
