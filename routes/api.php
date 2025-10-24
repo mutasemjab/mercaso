@@ -69,9 +69,6 @@ Route::group(['prefix' => 'v1/user'], function () {
 
 
 
-
-
-
     // Auth Route
     Route::group(['middleware' => ['auth:user-api']], function () {
 
