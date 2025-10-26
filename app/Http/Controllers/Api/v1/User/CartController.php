@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\UserCoupon;
 use Illuminate\Http\Request;
 use App\Http\Resources\CartResource;
+use App\Models\Coupon;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -132,9 +133,6 @@ class CartController extends Controller
         ]);
     }
 
-
-
-
     public function store(Request $request)
     {
         // Validate the request data
@@ -192,12 +190,18 @@ class CartController extends Controller
                     $userCoupon->delete();
                 }
 
+                // Recalculate coupon discount for remaining items
+                $this->recalculateCouponDiscount($user->id);
+
                 return response()->json(['message' => 'Item removed from cart'], 200);
             } else {
                 // Correctly calculate the total price for the product
                 $cartItem->total_price_product = round($price * $cartItem->quantity, 2);
                 $cartItem->price = round($price, 2);
                 $cartItem->save();
+
+                // Recalculate coupon discount after quantity change
+                $this->recalculateCouponDiscount($user->id);
 
                 return response()->json($cartItem, 200);
             }
@@ -213,11 +217,55 @@ class CartController extends Controller
             $cart->status = 1;
             $cart->save();
 
+            // Recalculate coupon discount after adding new item
+            $this->recalculateCouponDiscount($user->id);
+
             return response()->json($cart, 201);
         }
     }
 
-
+    private function recalculateCouponDiscount($userId)
+    {
+        $carts = Cart::where('user_id', $userId)->where('status', 1)->get();
+        
+        // Find if there's an applied coupon
+        $appliedCouponId = null;
+        foreach ($carts as $cart) {
+            if ($cart->applied_coupon_id) {
+                $appliedCouponId = $cart->applied_coupon_id;
+                break;
+            }
+        }
+        
+        if (!$appliedCouponId) {
+            return; // No coupon applied
+        }
+        
+        // Get the coupon details
+        $coupon = Coupon::find($appliedCouponId);
+        if (!$coupon || $coupon->expired_at <= now()) {
+            // Coupon expired, remove it from all cart items
+            Cart::where('user_id', $userId)->where('status', 1)->update([
+                'discount_coupon' => 0,
+                'applied_coupon_id' => null
+            ]);
+            return;
+        }
+        
+        // Recalculate discount for current cart
+        $totalCartValue = $carts->sum('total_price_product');
+        $discountPercentage = $coupon->amount;
+        $totalDiscountAmount = ($totalCartValue * $discountPercentage) / 100;
+        
+        // Redistribute the discount proportionally among all cart items
+        foreach ($carts as $cart) {
+            $itemProportion = $cart->total_price_product / $totalCartValue;
+            $itemDiscount = $totalDiscountAmount * $itemProportion;
+            $cart->discount_coupon = round($itemDiscount, 2);
+            $cart->applied_coupon_id = $appliedCouponId;
+            $cart->save();
+        }
+    }
 
 
     public function update(Request $request, $id)
