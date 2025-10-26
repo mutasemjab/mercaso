@@ -35,7 +35,7 @@ class ProductController extends Controller
         }
 
         $itemlist = Product::with('category', 'variations', 'productImages', 'units', 'unit', 'offers')
-            ->whereIn('product_type', $productTypesToShow)->where('activate', 1);
+            ->whereIn('product_type', $productTypesToShow)->where('status', 1);
 
         // Search functionality
         if ($request->has('search')) {
@@ -144,7 +144,7 @@ class ProductController extends Controller
         }
 
         $item = Product::with('category', 'variations', 'productImages', 'units', 'unit', 'offers', 'category.countries')
-            ->where('id', $id)->where('activate', 1)
+            ->where('id', $id)->where('status', 1)
             ->whereIn('product_type', $productTypesToShow)
             ->first(); // Use first() instead of get() to fetch a single product
 
