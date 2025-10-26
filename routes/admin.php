@@ -34,6 +34,7 @@ use App\Http\Controllers\Reports\AllProductReportController;
 use App\Http\Controllers\Reports\InventoryReportController;
 use App\Http\Controllers\Reports\OrderReportController;
 use App\Http\Controllers\Reports\ProductReportController;
+use App\Http\Controllers\Reports\TaxCrvReportsController;
 use App\Http\Controllers\Reports\TaxReportController;
 use App\Http\Controllers\Reports\UserReportController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
@@ -147,7 +148,26 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/order_report', [OrderReportController::class, 'index'])->name('order_report');
         Route::get('/user_report', [UserReportController::class, 'index'])->name('user_report');
         Route::get('/product_report', [ProductReportController::class, 'allProducts'])->name('product_report');
+        Route::group(['prefix' => 'tax-crv-reports', 'as' => 'admin.tax-crv.',], function () {
+            
+            // Dashboard
+            Route::get('/', [TaxCrvReportsController::class, 'index'])->name('index');
+                
+            Route::get('/dashboard-stats', [TaxCrvReportsController::class, 'getDashboardStats'])->name('dashboard-stats');
 
+            // Sales Tax Reports
+            Route::post('/sales-tax-report', [TaxCrvReportsController::class, 'salesTaxReport'])->name('sales-tax');
+            
+            // CRV Reports
+            Route::post('/crv-report', [TaxCrvReportsController::class, 'crvReport'])->name('crv-report');
+            
+            // Combined Reports
+            Route::post('/combined-report', [TaxCrvReportsController::class, 'combinedReport'])->name('combined');
+            
+            // Monthly Tax Summary
+            Route::post('/monthly-summary', [TaxCrvReportsController::class, 'monthlyTaxSummary'])->name('monthly-summary');
+            
+        });
 
 
         // Resource Route

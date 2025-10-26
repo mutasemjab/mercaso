@@ -1,5 +1,47 @@
 @extends('layouts.admin')
 
+@section('css')
+<style>
+.icon-placeholder {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+</style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row">
@@ -308,63 +350,89 @@
 </div>
 @endsection
 
-@section('scripts')
+@section('script')
 <script>
 $(document).ready(function() {
-    // Load dashboard stats
+    console.log('Tax reports page loaded');
+    
+    // Load dashboard stats on page load
     loadDashboardStats();
 
     // Tax Report Form
     $('#taxReportForm').on('submit', function(e) {
         e.preventDefault();
-        const format = $(e.submitter).data('format');
+        
+        // Get the clicked button and its format
+        const clickedButton = $(document.activeElement);
+        const format = clickedButton.data('format') || 'json';
+        
+        console.log('Tax form submitted with format:', format);
+        
         const formData = new FormData(this);
         formData.append('format', format);
         
         if (format === 'excel') {
-            downloadReport('{{ route("admin.tax-crv.sales-tax") }}', formData);
+            downloadReport('{{ route("admin.tax-crv.sales-tax") }}', formData, clickedButton);
         } else {
-            viewReport('{{ route("admin.tax-crv.sales-tax") }}', formData, 'Sales Tax Summary');
+            viewReport('{{ route("admin.tax-crv.sales-tax") }}', formData, 'Sales Tax Summary', clickedButton);
         }
     });
 
     // CRV Report Form
     $('#crvReportForm').on('submit', function(e) {
         e.preventDefault();
-        const format = $(e.submitter).data('format');
+        
+        const clickedButton = $(document.activeElement);
+        const format = clickedButton.data('format') || 'json';
+        
+        console.log('CRV form submitted with format:', format);
+        
         const formData = new FormData(this);
         formData.append('format', format);
         
         if (format === 'excel') {
-            downloadReport('{{ route("admin.tax-crv.crv-report") }}', formData);
+            downloadReport('{{ route("admin.tax-crv.crv-report") }}', formData, clickedButton);
         } else {
-            viewReport('{{ route("admin.tax-crv.crv-report") }}', formData, 'CRV Summary');
+            viewReport('{{ route("admin.tax-crv.crv-report") }}', formData, 'CRV Summary', clickedButton);
         }
     });
 
-    // Combined Report Form
+
     $('#combinedReportForm').on('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        downloadReport('{{ route("admin.tax-crv.combined") }}', formData);
-    });
+    e.preventDefault();
+    
+    const clickedButton = $(document.activeElement);
+    const formData = new FormData(this);
+    
+    console.log('Combined form submitted');
+    
+    // Combined report always downloads Excel, so use downloadReport function
+    downloadReport('{{ route("admin.tax-crv.combined") }}', formData, clickedButton);
+});
+
+
 
     // Monthly Report Form
     $('#monthlyReportForm').on('submit', function(e) {
         e.preventDefault();
-        const format = $(e.submitter).data('format');
+        
+        const clickedButton = $(document.activeElement);
+        const format = clickedButton.data('format') || 'json';
+        
+        console.log('Monthly form submitted with format:', format);
+        
         const formData = new FormData(this);
         formData.append('format', format);
         
         if (format === 'excel') {
-            downloadReport('{{ route("admin.tax-crv.monthly-summary") }}', formData);
+            downloadReport('{{ route("admin.tax-crv.monthly-summary") }}', formData, clickedButton);
         } else {
-            viewReport('{{ route("admin.tax-crv.monthly-summary") }}', formData, 'Monthly Tax Summary');
+            viewReport('{{ route("admin.tax-crv.monthly-summary") }}', formData, 'Monthly Tax Summary', clickedButton);
         }
     });
 
-    function downloadReport(url, formData) {
-        const button = $(event.submitter);
+    // Also update your downloadReport function to handle the blob error better:
+    function downloadReport(url, formData, button) {
         const originalText = button.html();
         
         button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Generating...');
@@ -382,28 +450,81 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(data, status, xhr) {
-                // Create download link
-                const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                const url = window.URL.createObjectURL(blob);
+                console.log('Download successful, content type:', xhr.getResponseHeader('Content-Type'));
+                
+                // Check if response is actually a blob (file) or JSON (error)
+                const contentType = xhr.getResponseHeader('Content-Type');
+                
+                if (contentType && (contentType.includes('application/json') || contentType.includes('text/plain'))) {
+                    // This is probably an error response, not a file
+                    const reader = new FileReader();
+                    reader.onload = function() {
+                        try {
+                            const errorData = JSON.parse(reader.result);
+                            showAlert('Error: ' + (errorData.error || errorData.message || 'Unknown error'), 'error');
+                        } catch (e) {
+                            showAlert('Server returned an error: ' + reader.result, 'error');
+                        }
+                    };
+                    reader.readAsText(data);
+                    return;
+                }
+                
+                // Handle successful file download
+                const blob = new Blob([data], { 
+                    type: contentType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+                });
+                const downloadUrl = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = url;
+                a.href = downloadUrl;
                 
                 // Get filename from header or create default
                 const disposition = xhr.getResponseHeader('Content-Disposition');
                 let filename = 'report.xlsx';
                 if (disposition && disposition.indexOf('attachment') !== -1) {
-                    const matches = /filename="([^"]*)"/.exec(disposition);
-                    if (matches && matches[1]) filename = matches[1];
+                    const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+                    if (matches != null && matches[1]) {
+                        filename = matches[1].replace(/['"]/g, '');
+                    }
                 }
                 
                 a.download = filename;
+                document.body.appendChild(a);
                 a.click();
-                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(downloadUrl);
                 
                 showAlert('Report downloaded successfully!', 'success');
             },
-            error: function(xhr) {
-                showAlert('Error generating report: ' + xhr.responseText, 'error');
+            error: function(xhr, status, error) {
+                console.error('Download failed:', xhr);
+                
+                let errorMessage = 'Error generating report';
+                
+                // Try to read error from blob response
+                if (xhr.responseText) {
+                    try {
+                        const errorData = JSON.parse(xhr.responseText);
+                        errorMessage = errorData.error || errorData.message || errorMessage;
+                    } catch (e) {
+                        errorMessage = xhr.responseText || errorMessage;
+                    }
+                } else if (xhr.response) {
+                    // Handle blob error response
+                    const reader = new FileReader();
+                    reader.onload = function() {
+                        try {
+                            const errorData = JSON.parse(reader.result);
+                            showAlert('Error: ' + (errorData.error || errorData.message || 'Unknown error'), 'error');
+                        } catch (e) {
+                            showAlert('Server error: ' + reader.result, 'error');
+                        }
+                    };
+                    reader.readAsText(xhr.response);
+                    return;
+                }
+                
+                showAlert(errorMessage, 'error');
             },
             complete: function() {
                 button.prop('disabled', false).html(originalText);
@@ -411,8 +532,7 @@ $(document).ready(function() {
         });
     }
 
-    function viewReport(url, formData, title) {
-        const button = $(event.submitter);
+    function viewReport(url, formData, title, button) {
         const originalText = button.html();
         
         button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Loading...');
@@ -427,10 +547,19 @@ $(document).ready(function() {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             success: function(data) {
+                console.log('Report data loaded:', data);
                 displayResults(data, title);
             },
             error: function(xhr) {
-                showAlert('Error loading report: ' + xhr.responseText, 'error');
+                console.error('View report failed:', xhr);
+                let errorMessage = 'Error loading report';
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    errorMessage = errorData.error || errorData.message || errorMessage;
+                } catch (e) {
+                    errorMessage = xhr.responseText || errorMessage;
+                }
+                showAlert(errorMessage, 'error');
             },
             complete: function() {
                 button.prop('disabled', false).html(originalText);
@@ -456,6 +585,32 @@ $(document).ready(function() {
             }
             
             html += '</div>';
+            
+            // Show some transaction data if available
+            if (data.transactions && data.transactions.length > 0) {
+                html += '<hr><h6>Sample Transactions (First 5)</h6>';
+                html += '<div class="table-responsive">';
+                html += '<table class="table table-striped table-sm">';
+                html += '<thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Product</th><th>Amount</th><th>Tax</th></tr></thead>';
+                html += '<tbody>';
+                
+                data.transactions.slice(0, 5).forEach(transaction => {
+                    html += `<tr>
+                        <td>${transaction.order_number || 'N/A'}</td>
+                        <td>${transaction.date || 'N/A'}</td>
+                        <td>${transaction.customer_name || 'Guest'}</td>
+                        <td>${transaction.product_name || 'N/A'}</td>
+                        <td>$${transaction.sale_amount || 0}</td>
+                        <td>$${transaction.tax_amount || 0}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table></div>';
+                
+                if (data.transactions.length > 5) {
+                    html += `<p class="text-muted">Showing 5 of ${data.transactions.length} transactions</p>`;
+                }
+            }
         }
         
         $('#resultsContent').html(html);
@@ -463,56 +618,54 @@ $(document).ready(function() {
     }
 
     function loadDashboardStats() {
+        console.log('Loading dashboard statistics...');
+        
         $.ajax({
             url: '{{ route("admin.tax-crv.dashboard-stats") }}',
             method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
             success: function(data) {
-                console.log('Dashboard stats loaded:', data);
+                console.log('Dashboard stats loaded successfully:', data);
                 
                 // Update dashboard cards with real data
-                $('#thisMonthTax').text('$' + data.current_month_tax.toLocaleString('en-US', {minimumFractionDigits: 2}));
-                $('#thisMonthCrv').text('$' + data.current_month_crv.toLocaleString('en-US', {minimumFractionDigits: 2}));
-                $('#totalOrders').text(data.total_orders.toLocaleString());
-                $('#nextDueDate').text(data.next_due_date);
+                $('#thisMonthTax').text('$' + (data.current_month_tax || 0).toLocaleString('en-US', {minimumFractionDigits: 2}));
+                $('#thisMonthCrv').text('$' + (data.current_month_crv || 0).toLocaleString('en-US', {minimumFractionDigits: 2}));
+                $('#totalOrders').text((data.total_orders || 0).toLocaleString());
+                $('#nextDueDate').text(data.next_due_date || 'Unknown');
                 
                 // Show debug info in console if available
                 if (data.debug) {
                     console.log('Debug information:', data.debug);
                     
-                    // If no orders found, show helpful message
+                    // Show helpful alerts based on debug info
                     if (data.debug.total_orders_found === 0) {
-                        showAlert('No orders found for current month (' + data.debug.date_range.start + ' to ' + data.debug.date_range.end + ')', 'info');
-                    }
-                    
-                    // If orders found but no tax, show different message
-                    if (data.debug.total_orders_found > 0 && data.current_month_tax === 0) {
-                        showAlert('Orders found but no tax calculated. Check your order_products.tax_value field.', 'warning');
+                        console.warn('No orders found for current month:', data.debug.date_range);
+                    } else if (data.debug.total_orders_found > 0 && data.current_month_tax === 0) {
+                        console.warn('Orders found but no tax calculated. Check tax_value field.');
                     }
                 }
                 
-                // Update the due amount if total is significant
+                // Show tax due alert if significant amount
                 if (data.tax_due_amount > 0) {
-                    $('.container-fluid').prepend(`
-                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                            <strong>Tax Payment Due:</strong> $${data.tax_due_amount.toLocaleString('en-US', {minimumFractionDigits: 2})} due by ${data.next_due_date}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    `);
+                    showAlert(`Tax Payment Due: $${data.tax_due_amount.toLocaleString('en-US', {minimumFractionDigits: 2})} due by ${data.next_due_date}`, 'warning');
                 }
             },
-            error: function(xhr) {
-                console.error('Error loading dashboard stats:', xhr.responseText);
-                // Show error message
-                showAlert('Error loading dashboard statistics. Please refresh the page.', 'error');
+            error: function(xhr, status, error) {
+                console.error('Error loading dashboard stats:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    responseText: xhr.responseText,
+                    error: error
+                });
+                
+                showAlert('Error loading dashboard statistics. Please check the console for details.', 'error');
             }
         });
     }
 
     function showAlert(message, type) {
-        const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+        const alertClass = type === 'error' ? 'alert-danger' : 
+                          type === 'warning' ? 'alert-warning' : 'alert-success';
+        
         const alert = `<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -526,46 +679,4 @@ $(document).ready(function() {
     }
 });
 </script>
-@endsection
-
-@section('css')
-<style>
-.icon-placeholder {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.card {
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    transition: box-shadow 0.15s ease-in-out;
-}
-
-.card:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-
-.btn-lg {
-    padding: 0.75rem 1.5rem;
-    font-size: 1.1rem;
-}
-
-.page-header {
-    margin-bottom: 2rem;
-}
-
-.page-title {
-    font-size: 2rem;
-    font-weight: 300;
-    margin-bottom: 0.5rem;
-}
-
-.page-subtitle {
-    color: #6c757d;
-    font-size: 1.1rem;
-}
-</style>
 @endsection

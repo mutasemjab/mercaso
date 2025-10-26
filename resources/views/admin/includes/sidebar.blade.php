@@ -334,6 +334,15 @@
                         <ul class="nav nav-treeview">
                             @if(auth()->user()->can('order-report') || auth()->user()->is_super_admin)
                                 <li class="nav-item">
+                                    <a href="{{ route('admin.tax-crv.index') }}" class="nav-link {{ request()->routeIs('admin.tax-crv.index') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Tax & Crv Reports</p>
+                                    </a>
+                                </li>
+                            @endif
+                          
+                            @if(auth()->user()->can('order-report') || auth()->user()->is_super_admin)
+                                <li class="nav-item">
                                     <a href="{{ route('order_report') }}" class="nav-link {{ request()->routeIs('order_report') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>{{ __('messages.order_reports') }}</p>

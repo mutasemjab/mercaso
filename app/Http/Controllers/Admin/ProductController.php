@@ -412,7 +412,8 @@ class ProductController extends Controller
                     }
                 }
 
-                return redirect()->route('products.index')->with(['success' => 'Product updated']);
+              return redirect()->route('products.index', ['page' => $request->page])->with(['success' => 'Product updated']);
+
             } else {
                 return redirect()->back()->with(['error' => 'Something went wrong while updating the product']);
             }

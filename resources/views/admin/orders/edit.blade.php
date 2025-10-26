@@ -145,44 +145,67 @@
         <!-- Summary Table -->
         <div class="mt-5">
             <h4>Summary</h4>
-            <table class="table table-bordered" id="summary_table">
-                <tbody>
-                    <tr>
-                        <td>{{ __('messages.total_selling_price') }}</td>
-                        <td><span id="total_selling_price">$ {{ $order->total_prices - $order->delivery_fee }} </span></td>
-                    </tr>
-                    <tr>
-                        <td>{{ __('messages.total_discount') }}</td>
-                        <td><span id="total_discount">$ {{ $order->total_discounts }} </span></td>
-                    </tr>
-                    <tr>
-                        <td>{{ __('messages.coupon_discount') }}</td>
-                        <td><span id="coupon_discount">$ {{ $order->coupon_discount }} </span></td>
-                    </tr>
+         <table class="table table-bordered" id="summary_table">
+            <tbody>
+                <tr>
+                    <td>{{ __('messages.total_selling_price') }}</td>
+                    <td><span id="total_selling_price">$ 
+                        @php
+                            $totalSellingPrice = 0;
+                            foreach ($order->products as $product) {
+                                $totalSellingPrice += ($product->pivot->quantity * ($product->pivot->unit_price / (1 + ($product->pivot->tax_percentage / 100))));
+                            }
+                        @endphp
+                        {{ round($totalSellingPrice, 2) }}
+                    </span></td>
+                </tr>
+                <tr>
+                    <td>{{ __('messages.total_discount') }}</td>
+                    <td><span id="total_discount">$ 
+                        @php
+                            $totalLineDiscounts = 0;
+                            foreach ($order->products as $product) {
+                                $totalLineDiscounts += $product->pivot->line_discount_value;
+                            }
+                        @endphp
+                        {{ round($totalLineDiscounts, 2) }}
+                    </span></td>
+                </tr>
+                <tr>
+                    <td>{{ __('messages.coupon_discount') }}</td>
+                    <td><span id="coupon_discount">$ 
+                        @php
+                            // Calculate coupon discount properly
+                            $totalAfterLineDiscounts = $totalSellingPrice - $totalLineDiscounts;
+                            $couponDiscountAmount = ($totalAfterLineDiscounts * $order->coupon_discount) / 100;
+                        @endphp
+                        {{ round($couponDiscountAmount, 2) }}
+                    </span></td>
+                </tr>
 
-                    @php
-                    $taxGroups = $order->products->groupBy('pivot.tax_percentage')->map(function ($group) {
-                        return $group->sum('pivot.tax_value');
-                    });
-                    @endphp
+                @php
+                $taxGroups = $order->products->groupBy('pivot.tax_percentage')->map(function ($group) {
+                    return $group->sum('pivot.tax_value');
+                });
+                @endphp
 
-                    @foreach ($taxGroups as $taxPercentage => $taxValue)
-                    <tr>
-                        <td>{{ __('messages.total_tax') }} ({{ $taxPercentage }}%)</td>
-                        <td><span id="total_tax_{{ $taxPercentage }}"> $ {{ round($taxValue, 3) }} </span></td>
-                    </tr>
-                    @endforeach
+                @foreach ($taxGroups as $taxPercentage => $taxValue)
+                <tr>
+                    <td>{{ __('messages.total_tax') }} ({{ $taxPercentage }}%)</td>
+                    <td><span id="total_tax_{{ $taxPercentage }}"> $ {{ round($taxValue, 3) }} </span></td>
+                </tr>
+                @endforeach
 
-                    <tr>
-                        <td>{{ __('messages.delivery_fee') }}</td>
-                        <td><span id="delivery_fee">$ {{ $order->delivery_fee }} </span></td>
-                    </tr>
-                    <tr>
-                        <td>{{ __('messages.total_amount') }}</td>
-                        <td><span id="total_amount">$ {{ $order->total_prices }} </span></td>
-                    </tr>
-                </tbody>
-            </table>
+                <tr>
+                    <td>{{ __('messages.delivery_fee') }}</td>
+                    <td><span id="delivery_fee">$ {{ $order->delivery_fee }} </span></td>
+                </tr>
+                <tr>
+                    <td>{{ __('messages.total_amount') }}</td>
+                    <td><span id="total_amount">$ {{ $order->total_prices }} </span></td>
+                </tr>
+            </tbody>
+        </table>
         </div>
     </form>
 </div>
@@ -356,70 +379,85 @@
             updateSummary();
         });
 
-        function updateSummary() {
-            let totalBeforeTax = 0;
-            let totalLineDiscount = 0;
-            let totalCouponDiscount = 0;
-            let totalTax = 0;
-            let totalAmount = 0;
-            let totalPriceAfterLineDiscounts = 0;
+     function updateSummary() {
+        let totalSellingPrice = 0;  // Total before any discounts or taxes
+        let totalLineDiscount = 0;  // Total line discounts
+        let totalTax = 0;          // Total tax amount
+        let totalAmount = 0;       // Final total amount
+        let totalAfterLineDiscounts = 0; // Total after line discounts (before coupon)
 
-            const couponDiscountPercentage = parseFloat($('#coupon_discount_input').val()) || 0;
-            const deliveryFee = parseFloat($('#delivery_fee').text()) || 0;
+        const couponDiscountPercentage = parseFloat($('#coupon_discount_input').val()) || 0;
+        const deliveryFee = parseFloat($('#delivery_fee').text().replace('$', '').trim()) || 0;
 
-            $('#products_table tbody tr').each(function() {
-                const quantity = parseFloat($(this).find('.quantity').val()) || 0;
-                const sellingPriceWithoutTax = parseFloat($(this).find('.selling_price_without_tax').val()) || 0;
-                const taxPercentage = parseFloat($(this).find('.tax').val()) || 0;
-                const lineDiscountFixed = parseFloat($(this).find('.line_discount_fixed').val()) || 0;
-                const lineDiscountPercentage = parseFloat($(this).find('.line_discount_percentage').val()) || 0;
+        // First pass: Calculate totals and line discounts
+        $('#products_table tbody tr').each(function() {
+            const quantity = parseFloat($(this).find('.quantity').val()) || 0;
+            const sellingPriceWithoutTax = parseFloat($(this).find('.selling_price_without_tax').val()) || 0;
+            const lineDiscountFixed = parseFloat($(this).find('.line_discount_value').val()) || 0;
+            const lineDiscountPercentage = parseFloat($(this).find('.line_discount_percentage').val()) || 0;
 
-                // Check if a discount value exists to avoid recalculating it
-                let lineDiscountValue = parseFloat($(this).find('.line_discount_value').val()) || 0;
+            // Total selling price before any discounts (this is what should show in total_selling_price)
+            const itemTotalBeforeDiscounts = sellingPriceWithoutTax * quantity;
+            totalSellingPrice += itemTotalBeforeDiscounts;
 
-                if (lineDiscountValue === 0) {
-                    // Total price before line discount
-                    const totalPriceBeforeLineDiscount = sellingPriceWithoutTax * quantity;
+            // Calculate line discount value
+            let lineDiscountValue = lineDiscountFixed;
+            if (lineDiscountValue === 0 && lineDiscountPercentage > 0) {
+                lineDiscountValue = itemTotalBeforeDiscounts * (lineDiscountPercentage / 100);
+                $(this).find('.line_discount_value').val(lineDiscountValue.toFixed(2));
+            }
 
-                    // Apply line discounts only if the value hasn't been set yet
-                    lineDiscountValue = (totalPriceBeforeLineDiscount * (lineDiscountPercentage / 100)) + lineDiscountFixed;
-                    $(this).find('.line_discount_value').val(lineDiscountValue); // Save the calculated discount value
-                }
+            totalLineDiscount += lineDiscountValue;
+            totalAfterLineDiscounts += (itemTotalBeforeDiscounts - lineDiscountValue);
+        });
 
-                const totalPriceAfterLineDiscount = (sellingPriceWithoutTax * quantity) - lineDiscountValue;
+        // Calculate total coupon discount
+        const totalCouponDiscount = totalAfterLineDiscounts * (couponDiscountPercentage / 100);
 
-                // Calculate the price after applying coupon discount
-                const totalCouponDiscountValue = totalPriceAfterLineDiscount * (couponDiscountPercentage / 100);
-                const totalPriceAfterAllDiscounts = totalPriceAfterLineDiscount - totalCouponDiscountValue;
+        // Second pass: Calculate individual item totals with proportional coupon discount and taxes
+        $('#products_table tbody tr').each(function() {
+            const quantity = parseFloat($(this).find('.quantity').val()) || 0;
+            const sellingPriceWithoutTax = parseFloat($(this).find('.selling_price_without_tax').val()) || 0;
+            const taxPercentage = parseFloat($(this).find('.tax').val()) || 0;
+            const lineDiscountValue = parseFloat($(this).find('.line_discount_value').val()) || 0;
 
-                // Calculate tax based on the new total price after all discounts
-                const totalRowTax = totalPriceAfterAllDiscounts * (taxPercentage / 100);
+            // Item total before discounts
+            const itemTotalBeforeDiscounts = sellingPriceWithoutTax * quantity;
+            
+            // Item total after line discount
+            const itemTotalAfterLineDiscount = itemTotalBeforeDiscounts - lineDiscountValue;
 
-                // Calculate the total price for the item including tax and discounts
-                const totalOneItem = totalPriceAfterAllDiscounts + totalRowTax;
+            // Apply proportional coupon discount to this item
+            let itemCouponDiscount = 0;
+            if (totalAfterLineDiscounts > 0) {
+                const itemProportion = itemTotalAfterLineDiscount / totalAfterLineDiscounts;
+                itemCouponDiscount = totalCouponDiscount * itemProportion;
+            }
 
-                // Set the value for the total_one_item input field
-                $(this).find('.total_one_item').val(totalOneItem.toFixed(2));
+            // Item total after all discounts
+            const itemTotalAfterAllDiscounts = itemTotalAfterLineDiscount - itemCouponDiscount;
 
-                // Accumulate values for summary calculations
-                totalBeforeTax += sellingPriceWithoutTax * quantity;
-                totalLineDiscount += lineDiscountValue;
-                totalPriceAfterLineDiscounts += totalPriceAfterLineDiscount;
-                totalTax += totalRowTax;
-                totalAmount += totalOneItem;
-            });
+            // Calculate tax on the final discounted amount
+            const itemTax = itemTotalAfterAllDiscounts * (taxPercentage / 100);
 
-            // Calculate coupon discount on the total after line discounts
-            totalCouponDiscount = totalPriceAfterLineDiscounts * (couponDiscountPercentage / 100);
+            // Final total for this item (after discounts + tax)
+            const totalOneItem = itemTotalAfterAllDiscounts + itemTax;
 
-            // Update the summary fields
-            $('#total_selling_price').text(totalBeforeTax.toFixed(2));
-            $('#total_discount').text(totalLineDiscount.toFixed(2));
-            $('#coupon_discount').text(totalCouponDiscount.toFixed(2));
-            $('#total_tax').text(totalTax.toFixed(2));
-            $('#total_amount').text(totalAmount.toFixed(2));
-        }
+            // Update the total_one_item field
+            $(this).find('.total_one_item').val(totalOneItem.toFixed(2));
 
+            // Add to totals
+            totalTax += itemTax;
+            totalAmount += totalOneItem;
+        });
+
+        // Update the summary display
+        $('#total_selling_price').text('$ ' + totalSellingPrice.toFixed(2));
+        $('#total_discount').text('$ ' + totalLineDiscount.toFixed(2));
+        $('#coupon_discount').text('$ ' + totalCouponDiscount.toFixed(2));
+        $('#total_tax').text('$ ' + totalTax.toFixed(2));
+        $('#total_amount').text('$ ' + (totalAmount + deliveryFee).toFixed(2));
+    }
 
         initializeProductSearch();
     });

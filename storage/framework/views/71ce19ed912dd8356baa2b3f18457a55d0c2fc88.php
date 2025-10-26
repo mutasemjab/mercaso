@@ -339,6 +339,15 @@
                         <ul class="nav nav-treeview">
                             <?php if(auth()->user()->can('order-report') || auth()->user()->is_super_admin): ?>
                                 <li class="nav-item">
+                                    <a href="<?php echo e(route('admin.tax-crv.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.tax-crv.index') ? 'active' : ''); ?>">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>Tax & Crv Reports</p>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+                          
+                            <?php if(auth()->user()->can('order-report') || auth()->user()->is_super_admin): ?>
+                                <li class="nav-item">
                                     <a href="<?php echo e(route('order_report')); ?>" class="nav-link <?php echo e(request()->routeIs('order_report') ? 'active' : ''); ?>">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p><?php echo e(__('messages.order_reports')); ?></p>

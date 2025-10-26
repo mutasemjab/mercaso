@@ -26,6 +26,8 @@
                 @csrf
                 @method('PUT')
 
+                <input type="hidden" name="page" value="{{ request('page') }}">
+
                 <!-- Product Type Field -->
                 <div class="form-group col-md-6">
                     <label for="product_type"> {{ __('messages.product_type') }}</label>
