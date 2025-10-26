@@ -1,9 +1,8 @@
-@extends('layouts.admin')
-@section('title')
+<?php $__env->startSection('title'); ?>
 Orders
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('css')
+<?php $__env->startSection('css'); ?>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -48,7 +47,7 @@ Orders
         margin-bottom: 10px;
     }
 
-@if(app()->getLocale() == 'ar')
+<?php if(app()->getLocale() == 'ar'): ?>
 
     #details {
     display: flex;
@@ -73,7 +72,7 @@ Orders
         margin: 0; /* Removes all margins around the paragraphs */
         margin-bottom: 5px; /* Adds a smaller bottom margin to create a bit of space */
     }
-@else
+<?php else: ?>
     #details {
     display: flex;
     justify-content: space-between; 
@@ -96,7 +95,7 @@ Orders
     margin: 0; /* Removes all margins around the paragraphs */
     margin-bottom: 5px; /* Adds a smaller bottom margin to create a bit of space */
 }
-@endif
+<?php endif; ?>
 
 
 
@@ -181,35 +180,35 @@ Orders
         }
     }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <button onclick="printInvoice()" class="btn btn-sm btn-danger print-hidden">Print Invoice</button>
 
 <div id="invoice">
     <div id="header">
-        <img id="logo" src="{{asset('assets/admin/imgs/logo.png')}}" alt="Company Logo">
+        <img id="logo" src="<?php echo e(asset('assets/admin/imgs/logo.png')); ?>" alt="Company Logo">
         <div id="company-name">California Cash & Carry</div>
     </div>
     <br>
     <br>
-    @if($order->order_type == 2)
+    <?php if($order->order_type == 2): ?>
     <h4 style="text-align: center !important;">Return</h4>
-    @endif
+    <?php endif; ?>
 
     <div id="details">
         <div id="details-left">
-            <p>Date: {{ \Carbon\Carbon::parse($order->date)->format('Y-m-d') }}</p>
-            <p>Invoice #: {{$order->number}}</p>
+            <p>Date: <?php echo e(\Carbon\Carbon::parse($order->date)->format('Y-m-d')); ?></p>
+            <p>Invoice #: <?php echo e($order->number); ?></p>
             <p>Tax Number: 12354866 </p>
         </div>
         <div id="details-right">
-            <p>Client: {{$order->user->name}}</p>
-            <p>Client Number: {{$order->user->phone}}</p>
-            <p>Client Other Number: {{$order->phone_in_order}}</p>
-            @if($order->address)
-            <p class="inoice-d-address">Address: {{$order->address->address}} / Street: {{$order->address->street}} <br> Building Number: {{$order->address->building_number}}</p>
-             @endif
+            <p>Client: <?php echo e($order->user->name); ?></p>
+            <p>Client Number: <?php echo e($order->user->phone); ?></p>
+            <p>Client Other Number: <?php echo e($order->phone_in_order); ?></p>
+            <?php if($order->address): ?>
+            <p class="inoice-d-address">Address: <?php echo e($order->address->address); ?> / Street: <?php echo e($order->address->street); ?> <br> Building Number: <?php echo e($order->address->building_number); ?></p>
+             <?php endif; ?>
             </div>
     </div>
 
@@ -230,87 +229,90 @@ Orders
             </tr>
         </thead>
         <tbody>
-            @foreach($order->products as $product)
+            <?php $__currentLoopData = $order->products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <tr>
                 <td>
-                    @if ($product->productImages->first() && $product->productImages->first()->photo)
+                    <?php if($product->productImages->first() && $product->productImages->first()->photo): ?>
                     <div class="image">
-                        <img class="custom_photo" src="{{ asset('assets/admin/uploads').'/'.$product->productImages->first()->photo }}">
+                        <img class="custom_photo" src="<?php echo e(asset('assets/admin/uploads').'/'.$product->productImages->first()->photo); ?>">
                     </div>
-                    @else
+                    <?php else: ?>
                     No Photo
-                    @endif
+                    <?php endif; ?>
                 </td>
-                <td>{{ $product->name_en }}</td>
+                <td><?php echo e($product->name_en); ?></td>
                
-                <td>{{ $product->pivot->quantity }}</td>
+                <td><?php echo e($product->pivot->quantity); ?></td>
                 <td>
-                    @if ($product->pivot->unit_id)
-                    {{ \App\Models\Unit::find($product->pivot->unit_id)->name_en }}
-                    @else
+                    <?php if($product->pivot->unit_id): ?>
+                    <?php echo e(\App\Models\Unit::find($product->pivot->unit_id)->name_en); ?>
+
+                    <?php else: ?>
                     None
-                    @endif
+                    <?php endif; ?>
                 </td>
-                <td>{{ round($product->pivot->total_price_before_tax / $product->pivot->quantity, 3) }}</td>
-                <td>{{ round($product->pivot->total_price_before_tax, 3) }}</td>
+                <td><?php echo e(round($product->pivot->total_price_before_tax / $product->pivot->quantity, 3)); ?></td>
+                <td><?php echo e(round($product->pivot->total_price_before_tax, 3)); ?></td>
                 
                   
-                <td>{{ $product->pivot->line_discount_percentage ?? 0 }} %</td>
+                <td><?php echo e($product->pivot->line_discount_percentage ?? 0); ?> %</td>
                   
                   
                   
-                <td>{{ round($product->pivot->line_discount_value,3) ?? 0 }}</td>
+                <td><?php echo e(round($product->pivot->line_discount_value,3) ?? 0); ?></td>
                   
                    
-                <td>{{ $product->pivot->tax_percentage }} %</td>
-               @php
+                <td><?php echo e($product->pivot->tax_percentage); ?> %</td>
+               <?php
                 $discounted_price = $product->pivot->total_price_before_tax - $product->pivot->line_discount_value; 
                 $price_after_coupon = $discounted_price - ($discounted_price * ($order->coupon_discount / 100));
                 $tax_amount = $price_after_coupon * ($product->pivot->tax_percentage / 100);
-            @endphp
-               <td>{{ round($tax_amount, 3) }}</td>
+            ?>
+               <td><?php echo e(round($tax_amount, 3)); ?></td>
 
-                <td>{{ round($product->pivot->total_price_after_tax, 3) }}</td>
+                <td><?php echo e(round($product->pivot->total_price_after_tax, 3)); ?></td>
             </tr>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </tbody>
     </table>
 
     <div id="totals">
-        @php
+        <?php
         $totalPriceBeforeTax = $order->products->sum(function ($product) {
             return $product->pivot->total_price_before_tax;
         });
-        @endphp
-        <div>Total Before Tax: $ {{ round($totalPriceBeforeTax, 3) }} </div>
+        ?>
+        <div>Total Before Tax: $ <?php echo e(round($totalPriceBeforeTax, 3)); ?> </div>
 
         <div>
-            @if ($order->total_discounts)
-            <p class="total-label" style="color: red">Discount: - $ {{ round($order->total_discounts,3) }} </p>
-            @endif
+            <?php if($order->total_discounts): ?>
+            <p class="total-label" style="color: red">Discount: - $ <?php echo e(round($order->total_discounts,3)); ?> </p>
+            <?php endif; ?>
         </div>
 
-        @php
+        <?php
         $taxGroups = $order->products->groupBy('pivot.tax_percentage')->map(function ($group) {
             return $group->sum('pivot.tax_value');
         });
-        @endphp
+        ?>
 
-        @foreach ($taxGroups as $taxPercentage => $taxValue)
-        <div>Tax ({{ $taxPercentage }}%): $ {{ round($taxValue, 3) }} </div>
-        @endforeach
+        <?php $__currentLoopData = $taxGroups; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $taxPercentage => $taxValue): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        <div>Tax (<?php echo e($taxPercentage); ?>%): $ <?php echo e(round($taxValue, 3)); ?> </div>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
-        <div>Delivery Fee: $ {{ $order->delivery_fee }} </div>
+        <div>Delivery Fee: $ <?php echo e($order->delivery_fee); ?> </div>
 
-        <div>Total: $ {{ round($order->total_prices, 3) }} </div>
+        <div>Total: $ <?php echo e(round($order->total_prices, 3)); ?> </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('script')
+<?php $__env->startSection('script'); ?>
 <script>
     function printInvoice() {
         window.print();
     }
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\mercaso\resources\views/admin/orders/show.blade.php ENDPATH**/ ?>

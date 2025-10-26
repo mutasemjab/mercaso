@@ -49,7 +49,7 @@ class CategoryController extends Controller
             $categories = Category::whereNull('category_id')
                 ->with([
                     'childCategories.products' => function ($query) use ($productTypesToShow) {
-                        $query->whereIn('product_type', $productTypesToShow);
+                        $query->whereIn('product_type', $productTypesToShow)->where('activate', 1);
                     },
                     'childCategories.products.productImages',
                     'childCategories.products.productReviews',
@@ -135,7 +135,7 @@ class CategoryController extends Controller
             'childCategories.products.offers',
             'childCategories.products.brand', // Add brand relationship
             'products' => function ($query) use ($productTypesToShow) {
-                $query->whereIn('product_type', $productTypesToShow);
+                $query->whereIn('product_type', $productTypesToShow)->where('activate', 1);
             },
             'products.productImages',
             'products.productReviews',

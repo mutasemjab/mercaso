@@ -47,7 +47,7 @@ class BrandController extends Controller
         // Load the brand with its products filtered by product_type and related data
         $brand = Brand::with([
             'products' => function ($query) use ($productTypesToShow) {
-                $query->whereIn('product_type', $productTypesToShow);
+                $query->whereIn('product_type', $productTypesToShow)->where('activate', 1);
             },
             'products.productImages',
             'products.productReviews',
