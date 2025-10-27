@@ -29,7 +29,6 @@ class OrderController extends Controller
         // Find the latest order for this user
         $latestOrder = Order::where('user_id', $user->id)
             ->where('order_type', 1) // Only "Sell" type orders
-            ->latest() // Order by created_at desc
             ->with([
                 'orderProducts.product.category',
                 'orderProducts.product.variations',
