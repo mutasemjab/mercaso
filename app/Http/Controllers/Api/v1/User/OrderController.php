@@ -14,21 +14,20 @@ use App\Http\Resources\OrderResource;
 use App\Models\Setting;
 use App\Models\UserAddress;
 use App\Exports\InvoiceExport;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
-    public function buyAgain(Request $request)
+    public function buyAgain()
     {
         // Get authenticated user
-        $user = auth()->user();
+        $user = Auth::guard('user-api')->user();
 
         // Find the latest order for this user
         $latestOrder = Order::where('user_id', $user->id)
-            
-            ->latest() // Order by created_at desc
             ->with([
                 'orderProducts.product.category',
                 'orderProducts.product.variations',
