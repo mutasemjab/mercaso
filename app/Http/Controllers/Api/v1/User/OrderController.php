@@ -21,39 +21,39 @@ use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
-    public function buyAgain()
-    {
-        // Get authenticated user
-        $user = Auth::guard('user-api')->user();
+   public function buyAgain()
+{
+    // Get authenticated user
+    $user = Auth::guard('user-api')->user();
 
-        // Find the latest order for this user
-        $latestOrder = Order::where('user_id', $user->id)
-            ->where('order_type', 1) // Only "Sell" type orders
-            ->with([
-                'orderProducts.product.category',
-                'orderProducts.product.variations',
-                'orderProducts.product.productImages',
-                'orderProducts.product.units',
-                'orderProducts.product.unit',
-                'orderProducts.variation',
-                'orderProducts.unit'
-            ])
-            ->first();
+    // Get all orders for this user (not just the first)
+    $orders = Order::where('user_id', $user->id)
+        ->where('order_type', 1) // Only "Sell" type orders
+        ->with([
+            'orderProducts.product.category',
+            'orderProducts.product.variations',
+            'orderProducts.product.productImages',
+            'orderProducts.product.units',
+            'orderProducts.product.unit',
+            'orderProducts.variation',
+            'orderProducts.unit'
+        ])->latest()->get();
 
-        if (!$latestOrder) {
-            return response()->json([
-                'status' => false,
-                'message' => 'No previous orders found'
-            ], 404);
-        }
+    if ($orders->isEmpty()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'No previous orders found'
+        ], 404);
+    }
 
-        // Extract products from the latest order
-        $itemlist = collect();
-        foreach ($latestOrder->orderProducts as $orderProduct) {
+    // Collect all products from all orders
+    $itemlist = collect();
+
+    foreach ($orders as $order) {
+        foreach ($order->orderProducts as $orderProduct) {
             $product = $orderProduct->product;
 
             if ($product && $product->status == 1) {
-                // Determine user type and set properties accordingly
                 $userType = $user->user_type;
 
                 if ($userType == 1) {
@@ -67,7 +67,6 @@ class OrderController extends Controller
                     $product->quantity = $product->available_quantity_for_wholeSale;
                 }
 
-                // Set additional product properties
                 $product->is_favourite = $user->favourites()->where('product_id', $product->id)->exists();
                 $product->rating = $product->rating;
                 $product->total_rating = $product->total_rating;
@@ -78,9 +77,11 @@ class OrderController extends Controller
                 $itemlist->push($product);
             }
         }
-
-        return response()->json(['data' => $itemlist]);
     }
+
+    return response()->json(['data' => $itemlist]);
+}
+
 
     public function index()
     {
