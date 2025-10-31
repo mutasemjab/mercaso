@@ -339,7 +339,7 @@
                         <ul class="nav nav-treeview">
                             <?php if(auth()->user()->can('order-report') || auth()->user()->is_super_admin): ?>
                                 <li class="nav-item">
-                                    <a href="<?php echo e(route('admin.tax-crv.index')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.tax-crv.index') ? 'active' : ''); ?>">
+                                    <a href="<?php echo e(route('tax-crv-report')); ?>" class="nav-link <?php echo e(request()->routeIs('tax-crv-report') ? 'active' : ''); ?>">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>Tax & Crv Reports</p>
                                     </a>

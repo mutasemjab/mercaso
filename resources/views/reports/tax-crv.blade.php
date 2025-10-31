@@ -1,682 +1,394 @@
 @extends('layouts.admin')
 
-@section('css')
-<style>
-.icon-placeholder {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.card {
-    border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    transition: box-shadow 0.15s ease-in-out;
-}
-
-.card:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-}
-
-.btn-lg {
-    padding: 0.75rem 1.5rem;
-    font-size: 1.1rem;
-}
-
-.page-header {
-    margin-bottom: 2rem;
-}
-
-.page-title {
-    font-size: 2rem;
-    font-weight: 300;
-    margin-bottom: 0.5rem;
-}
-
-.page-subtitle {
-    color: #6c757d;
-    font-size: 1.1rem;
-}
-</style>
-@endsection
-
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4 no-print">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-4">
+                    <h1 class="display-4 font-weight-bold text-primary mb-2">
+                        <i class="fas fa-chart-line mr-2"></i>Sales Report By Category
+                    </h1>
+                    <p class="lead text-muted mb-1">for All Sales Outlets</p>
+                    <p class="text-muted">
+                        <i class="far fa-calendar-alt mr-2"></i>
+                        {{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Filter Section -->
+    <div class="row mb-4 no-print">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter mr-2"></i>Filter Report</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ route('tax-crv-report') }}" class="form-inline justify-content-center">
+                        <div class="form-group mr-3 mb-2">
+                            <label for="start_date" class="mr-2 font-weight-bold">Start Date:</label>
+                            <input type="date" 
+                                   name="start_date" 
+                                   id="start_date"
+                                   class="form-control" 
+                                   value="{{ \Carbon\Carbon::parse($startDate)->format('Y-m-d') }}"
+                                   required>
+                        </div>
+                        
+                        <div class="form-group mr-3 mb-2">
+                            <label for="end_date" class="mr-2 font-weight-bold">End Date:</label>
+                            <input type="date" 
+                                   name="end_date" 
+                                   id="end_date"
+                                   class="form-control" 
+                                   value="{{ \Carbon\Carbon::parse($endDate)->format('Y-m-d') }}"
+                                   required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg mb-2">
+                            <i class="fas fa-sync-alt mr-2"></i>Generate Report
+                        </button>
+                        
+                        <a href="{{ route('tax-crv-report') }}" class="btn btn-outline-secondary btn-lg ml-2 mb-2">
+                            <i class="fas fa-redo mr-2"></i>Reset
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4 no-print">
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-primary shadow-sm h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Sales</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ number_format($totals['total'], 2) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-success shadow-sm h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Tax</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ number_format($totals['tax'], 2) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-receipt fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-info shadow-sm h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total CRV</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">${{ number_format($totals['crv'], 2) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-recycle fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-left-warning shadow-sm h-100">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Total Quantity</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ number_format($totals['quantity']) }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-boxes fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Section -->
     <div class="row">
         <div class="col-12">
-            <div class="page-header">
-                <h1 class="page-title">{{ __('Tax & CRV Reports') }}</h1>
-                <p class="page-subtitle">{{ __('US Government Compliance Reports for Sales Tax and California Redemption Value') }}</p>
-            </div>
-        </div>
-    </div>
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-dark text-white no-print">
+                    <h5 class="mb-0"><i class="fas fa-table mr-2"></i>Detailed Report</h5>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Print Header (Only visible when printing) -->
+                    <div class="print-only" style="display: none;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0; font-size: 24px; font-weight: bold;">Sales Report By Category</h2>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>for All Sales Outlets</strong></p>
+                            <p style="margin: 5px 0; font-size: 12px;">
+                                {{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}
+                            </p>
+                        </div>
+                    </div>
 
-    <!-- Quick Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-placeholder bg-primary text-white rounded-circle p-3 me-3">
-                            <i class="fas fa-receipt"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">This Month Tax</h6>
-                            <h4 class="mb-0" id="thisMonthTax">$0.00</h4>
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped mb-0" id="reportTable">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th class="text-center" style="width: 3%;">#</th>
+                                    <th style="width: 15%;">Category</th>
+                                    <th class="text-right" style="width: 7%;">Quantity</th>
+                                    <th class="text-right" style="width: 8%;">Sales ($)</th>
+                                    <th class="text-right" style="width: 8%;">Discount ($)</th>
+                                    <th class="text-right" style="width: 8%;">Total ($)</th>
+                                    <th class="text-right" style="width: 7%;">Tax ($)</th>
+                                    <th class="text-right" style="width: 7%;">CRV ($)</th>
+                                    <th class="text-right" style="width: 7%;">Cost ($)</th>
+                                    <th class="text-right" style="width: 8%;">Profit ($)</th>
+                                    <th class="text-right" style="width: 7%;">Margin</th>
+                                    <th class="text-right" style="width: 8%;">% Sales</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($salesReport as $row)
+                                <tr>
+                                    <td class="text-center">{{ $row->row_number }}</td>
+                                    <td class="font-weight-bold">{{ $row->category_name }}</td>
+                                    <td class="text-right">{{ number_format($row->quantity) }}</td>
+                                    <td class="text-right">${{ number_format($row->sales, 2) }}</td>
+                                    <td class="text-right">
+                                        @if($row->discount > 0)
+                                            <span class="text-danger">${{ number_format($row->discount, 2) }}</span>
+                                        @else
+                                            $0.00
+                                        @endif
+                                    </td>
+                                    <td class="text-right font-weight-bold text-primary">
+                                        ${{ number_format($row->total, 2) }}
+                                    </td>
+                                    <td class="text-right text-success">${{ number_format($row->tax, 2) }}</td>
+                                    <td class="text-right text-info">${{ number_format($row->crv, 2) }}</td>
+                                    <td class="text-right">${{ number_format($row->cost, 2) }}</td>
+                                    <td class="text-right font-weight-bold text-success">
+                                        ${{ number_format($row->profit, 2) }}
+                                    </td>
+                                    <td class="text-right">{{ number_format($row->margin, 1) }}%</td>
+                                    <td class="text-right">{{ number_format($row->percentage_of_sales, 1) }}%</td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="12" class="text-center py-4">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                                        <p class="text-muted">No data available for the selected period</p>
+                                    </td>
+                                </tr>
+                                @endforelse
+                                
+                                @if($salesReport->isNotEmpty())
+                                <tr class="bg-dark text-white font-weight-bold">
+                                    <td colspan="2" class="text-center">TOTAL</td>
+                                    <td class="text-right">{{ number_format($totals['quantity']) }}</td>
+                                    <td class="text-right">${{ number_format($totals['sales'], 2) }}</td>
+                                    <td class="text-right">${{ number_format($totals['discount'], 2) }}</td>
+                                    <td class="text-right">${{ number_format($totals['total'], 2) }}</td>
+                                    <td class="text-right">${{ number_format($totals['tax'], 2) }}</td>
+                                    <td class="text-right">${{ number_format($totals['crv'], 2) }}</td>
+                                    <td class="text-right">$0.00</td>
+                                    <td class="text-right">${{ number_format($totals['total'], 2) }}</td>
+                                    <td class="text-right">100%</td>
+                                    <td class="text-right">100%</td>
+                                </tr>
+                                @endif
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-placeholder bg-success text-white rounded-circle p-3 me-3">
-                            <i class="fas fa-recycle"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">This Month CRV</h6>
-                            <h4 class="mb-0" id="thisMonthCrv">$0.00</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-placeholder bg-warning text-white rounded-circle p-3 me-3">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">Total Orders</h6>
-                            <h4 class="mb-0" id="totalOrders">0</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-placeholder bg-info text-white rounded-circle p-3 me-3">
-                            <i class="fas fa-calendar"></i>
-                        </div>
-                        <div>
-                            <h6 class="mb-0">Due Date</h6>
-                            <p class="mb-0" id="nextDueDate">{{ date('M d, Y', strtotime('next month')) }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reports Section -->
-    <div class="row">
-        <!-- Sales Tax Reports -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-receipt me-2"></i>
-                        {{ __('Sales Tax Reports') }}
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form id="taxReportForm">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="tax_start_date">{{ __('Start Date') }}</label>
-                                    <input type="date" class="form-control" id="tax_start_date" name="start_date" value="{{ date('Y-m-01') }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="tax_end_date">{{ __('End Date') }}</label>
-                                    <input type="date" class="form-control" id="tax_end_date" name="end_date" value="{{ date('Y-m-t') }}" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg" data-format="excel">
-                                <i class="fas fa-download me-2"></i>
-                                {{ __('Download Sales Tax Report (Excel)') }}
-                            </button>
-                            <button type="submit" class="btn btn-outline-primary" data-format="json">
-                                <i class="fas fa-eye me-2"></i>
-                                {{ __('View Tax Summary') }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- CRV Reports -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-recycle me-2"></i>
-                        {{ __('CRV Reports') }}
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form id="crvReportForm">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="crv_start_date">{{ __('Start Date') }}</label>
-                                    <input type="date" class="form-control" id="crv_start_date" name="start_date" value="{{ date('Y-m-01') }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="crv_end_date">{{ __('End Date') }}</label>
-                                    <input type="date" class="form-control" id="crv_end_date" name="end_date" value="{{ date('Y-m-t') }}" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg" data-format="excel">
-                                <i class="fas fa-download me-2"></i>
-                                {{ __('Download CRV Report (Excel)') }}
-                            </button>
-                            <button type="submit" class="btn btn-outline-success" data-format="json">
-                                <i class="fas fa-eye me-2"></i>
-                                {{ __('View CRV Summary') }}
-                            </button>
-                        </div>
-                    </form>
+                <div class="card-footer text-muted text-center no-print">
+                    <small>
+                        <i class="far fa-clock mr-1"></i>
+                        Report generated on {{ now()->format('M d, Y H:i A') }}
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Combined & Monthly Reports -->
-    <div class="row mt-4">
-        <!-- Combined Report -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header bg-warning text-dark">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-file-contract me-2"></i>
-                        {{ __('Combined Tax & CRV Report') }}
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">{{ __('Generate a comprehensive report including both sales tax and CRV data for government compliance.') }}</p>
-                    
-                    <form id="combinedReportForm">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="combined_start_date">{{ __('Start Date') }}</label>
-                                    <input type="date" class="form-control" id="combined_start_date" name="start_date" value="{{ date('Y-m-01') }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="combined_end_date">{{ __('End Date') }}</label>
-                                    <input type="date" class="form-control" id="combined_end_date" name="end_date" value="{{ date('Y-m-t') }}" required>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-warning btn-lg text-dark">
-                                <i class="fas fa-download me-2"></i>
-                                {{ __('Download Combined Report (Excel)') }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Monthly Summary -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-calendar-alt me-2"></i>
-                        {{ __('Monthly Tax Summary') }}
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">{{ __('Generate monthly tax summary for government filing purposes.') }}</p>
-                    
-                    <form id="monthlyReportForm">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="report_year">{{ __('Year') }}</label>
-                                    <select class="form-control" id="report_year" name="year" required>
-                                        @for($year = date('Y'); $year >= 2020; $year--)
-                                            <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
-                                        @endfor
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="report_month">{{ __('Month') }}</label>
-                                    <select class="form-control" id="report_month" name="month" required>
-                                        @for($month = 1; $month <= 12; $month++)
-                                            <option value="{{ $month }}" {{ $month == date('n') ? 'selected' : '' }}>
-                                                {{ date('F', mktime(0, 0, 0, $month, 1)) }}
-                                            </option>
-                                        @endfor
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-info btn-lg" data-format="excel">
-                                <i class="fas fa-download me-2"></i>
-                                {{ __('Download Monthly Summary (Excel)') }}
-                            </button>
-                            <button type="submit" class="btn btn-outline-info" data-format="json">
-                                <i class="fas fa-eye me-2"></i>
-                                {{ __('View Monthly Summary') }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Compliance Information -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <h4 class="card-title mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        {{ __('Compliance Information') }}
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <h5>{{ __('Sales Tax Compliance') }}</h5>
-                            <ul class="list-unstyled">
-                                <li><i class="fas fa-check text-success me-2"></i>{{ __('File monthly/quarterly returns') }}</li>
-                                <li><i class="fas fa-check text-success me-2"></i>{{ __('Pay by 20th of following month') }}</li>
-                                <li><i class="fas fa-check text-success me-2"></i>{{ __('Maintain records for 4 years') }}</li>
-                                <li><i class="fas fa-check text-success me-2"></i>{{ __('Report all taxable sales') }}</li>
-                            </ul>
-                        </div>
-                        <div class="col-lg-6">
-                            <h5>{{ __('CRV Compliance') }}</h5>
-                            <ul class="list-unstyled">
-                                <li><i class="fas fa-recycle text-success me-2"></i>{{ __('Monthly payments to CalRecycle') }}</li>
-                                <li><i class="fas fa-recycle text-success me-2"></i>{{ __('Due by 15th of following month') }}</li>
-                                <li><i class="fas fa-recycle text-success me-2"></i>{{ __('Track all beverage containers') }}</li>
-                                <li><i class="fas fa-recycle text-success me-2"></i>{{ __('Maintain detailed records') }}</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Export Buttons -->
+    <div class="row mt-4 no-print">
+        <div class="col-12 text-center">
+            <button class="btn btn-success btn-lg" onclick="window.print()">
+                <i class="fas fa-print mr-2"></i>Print Report
+            </button>
         </div>
     </div>
 </div>
 
-<!-- Results Modal -->
-<div class="modal fade" id="resultsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{ __('Report Results') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="resultsContent"></div>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
+<style>
+    .border-left-primary {
+        border-left: 4px solid #4e73df;
+    }
+    .border-left-success {
+        border-left: 4px solid #1cc88a;
+    }
+    .border-left-info {
+        border-left: 4px solid #36b9cc;
+    }
+    .border-left-warning {
+        border-left: 4px solid #f6c23e;
+    }
+    .bg-gradient-primary {
+        background: linear-gradient(90deg, #4e73df 0%, #224abe 100%);
+    }
+    .bg-gradient-dark {
+        background: linear-gradient(90deg, #5a5c69 0%, #373840 100%);
+    }
+    .table thead th {
+        border: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    .card {
+        border-radius: 10px;
+    }
+    .shadow-sm {
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075) !important;
+    }
 
-@section('script')
-<script>
-$(document).ready(function() {
-    console.log('Tax reports page loaded');
-    
-    // Load dashboard stats on page load
-    loadDashboardStats();
-
-    // Tax Report Form
-    $('#taxReportForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        // Get the clicked button and its format
-        const clickedButton = $(document.activeElement);
-        const format = clickedButton.data('format') || 'json';
-        
-        console.log('Tax form submitted with format:', format);
-        
-        const formData = new FormData(this);
-        formData.append('format', format);
-        
-        if (format === 'excel') {
-            downloadReport('{{ route("admin.tax-crv.sales-tax") }}', formData, clickedButton);
-        } else {
-            viewReport('{{ route("admin.tax-crv.sales-tax") }}', formData, 'Sales Tax Summary', clickedButton);
+    /* Print Styles for A4 */
+    @media print {
+        /* Hide non-printable elements */
+        .no-print {
+            display: none !important;
         }
-    });
 
-    // CRV Report Form
-    $('#crvReportForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        const clickedButton = $(document.activeElement);
-        const format = clickedButton.data('format') || 'json';
-        
-        console.log('CRV form submitted with format:', format);
-        
-        const formData = new FormData(this);
-        formData.append('format', format);
-        
-        if (format === 'excel') {
-            downloadReport('{{ route("admin.tax-crv.crv-report") }}', formData, clickedButton);
-        } else {
-            viewReport('{{ route("admin.tax-crv.crv-report") }}', formData, 'CRV Summary', clickedButton);
+        /* Show print-only elements */
+        .print-only {
+            display: block !important;
         }
-    });
 
-
-    $('#combinedReportForm').on('submit', function(e) {
-    e.preventDefault();
-    
-    const clickedButton = $(document.activeElement);
-    const formData = new FormData(this);
-    
-    console.log('Combined form submitted');
-    
-    // Combined report always downloads Excel, so use downloadReport function
-    downloadReport('{{ route("admin.tax-crv.combined") }}', formData, clickedButton);
-});
-
-
-
-    // Monthly Report Form
-    $('#monthlyReportForm').on('submit', function(e) {
-        e.preventDefault();
-        
-        const clickedButton = $(document.activeElement);
-        const format = clickedButton.data('format') || 'json';
-        
-        console.log('Monthly form submitted with format:', format);
-        
-        const formData = new FormData(this);
-        formData.append('format', format);
-        
-        if (format === 'excel') {
-            downloadReport('{{ route("admin.tax-crv.monthly-summary") }}', formData, clickedButton);
-        } else {
-            viewReport('{{ route("admin.tax-crv.monthly-summary") }}', formData, 'Monthly Tax Summary', clickedButton);
+        /* A4 Page Setup - Landscape for better table fit */
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
         }
-    });
 
-    // Also update your downloadReport function to handle the blob error better:
-    function downloadReport(url, formData, button) {
-        const originalText = button.html();
-        
-        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Generating...');
-        
-        $.ajax({
-            url: url,
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            xhrFields: {
-                responseType: 'blob'
-            },
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(data, status, xhr) {
-                console.log('Download successful, content type:', xhr.getResponseHeader('Content-Type'));
-                
-                // Check if response is actually a blob (file) or JSON (error)
-                const contentType = xhr.getResponseHeader('Content-Type');
-                
-                if (contentType && (contentType.includes('application/json') || contentType.includes('text/plain'))) {
-                    // This is probably an error response, not a file
-                    const reader = new FileReader();
-                    reader.onload = function() {
-                        try {
-                            const errorData = JSON.parse(reader.result);
-                            showAlert('Error: ' + (errorData.error || errorData.message || 'Unknown error'), 'error');
-                        } catch (e) {
-                            showAlert('Server returned an error: ' + reader.result, 'error');
-                        }
-                    };
-                    reader.readAsText(data);
-                    return;
-                }
-                
-                // Handle successful file download
-                const blob = new Blob([data], { 
-                    type: contentType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-                });
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                
-                // Get filename from header or create default
-                const disposition = xhr.getResponseHeader('Content-Disposition');
-                let filename = 'report.xlsx';
-                if (disposition && disposition.indexOf('attachment') !== -1) {
-                    const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
-                    if (matches != null && matches[1]) {
-                        filename = matches[1].replace(/['"]/g, '');
-                    }
-                }
-                
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(downloadUrl);
-                
-                showAlert('Report downloaded successfully!', 'success');
-            },
-            error: function(xhr, status, error) {
-                console.error('Download failed:', xhr);
-                
-                let errorMessage = 'Error generating report';
-                
-                // Try to read error from blob response
-                if (xhr.responseText) {
-                    try {
-                        const errorData = JSON.parse(xhr.responseText);
-                        errorMessage = errorData.error || errorData.message || errorMessage;
-                    } catch (e) {
-                        errorMessage = xhr.responseText || errorMessage;
-                    }
-                } else if (xhr.response) {
-                    // Handle blob error response
-                    const reader = new FileReader();
-                    reader.onload = function() {
-                        try {
-                            const errorData = JSON.parse(reader.result);
-                            showAlert('Error: ' + (errorData.error || errorData.message || 'Unknown error'), 'error');
-                        } catch (e) {
-                            showAlert('Server error: ' + reader.result, 'error');
-                        }
-                    };
-                    reader.readAsText(xhr.response);
-                    return;
-                }
-                
-                showAlert(errorMessage, 'error');
-            },
-            complete: function() {
-                button.prop('disabled', false).html(originalText);
-            }
-        });
-    }
-
-    function viewReport(url, formData, title, button) {
-        const originalText = button.html();
-        
-        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Loading...');
-        
-        $.ajax({
-            url: url,
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(data) {
-                console.log('Report data loaded:', data);
-                displayResults(data, title);
-            },
-            error: function(xhr) {
-                console.error('View report failed:', xhr);
-                let errorMessage = 'Error loading report';
-                try {
-                    const errorData = JSON.parse(xhr.responseText);
-                    errorMessage = errorData.error || errorData.message || errorMessage;
-                } catch (e) {
-                    errorMessage = xhr.responseText || errorMessage;
-                }
-                showAlert(errorMessage, 'error');
-            },
-            complete: function() {
-                button.prop('disabled', false).html(originalText);
-            }
-        });
-    }
-
-    function displayResults(data, title) {
-        $('#resultsModal .modal-title').text(title);
-        let html = '';
-        
-        if (data.summary) {
-            html += '<h5>Summary</h5>';
-            html += '<div class="row">';
-            
-            if (data.summary.totals) {
-                Object.entries(data.summary.totals).forEach(([key, value]) => {
-                    const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                    html += `<div class="col-md-6 mb-2">
-                        <strong>${label}:</strong> ${typeof value === 'number' ? '$' + value.toLocaleString() : value}
-                    </div>`;
-                });
-            }
-            
-            html += '</div>';
-            
-            // Show some transaction data if available
-            if (data.transactions && data.transactions.length > 0) {
-                html += '<hr><h6>Sample Transactions (First 5)</h6>';
-                html += '<div class="table-responsive">';
-                html += '<table class="table table-striped table-sm">';
-                html += '<thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Product</th><th>Amount</th><th>Tax</th></tr></thead>';
-                html += '<tbody>';
-                
-                data.transactions.slice(0, 5).forEach(transaction => {
-                    html += `<tr>
-                        <td>${transaction.order_number || 'N/A'}</td>
-                        <td>${transaction.date || 'N/A'}</td>
-                        <td>${transaction.customer_name || 'Guest'}</td>
-                        <td>${transaction.product_name || 'N/A'}</td>
-                        <td>$${transaction.sale_amount || 0}</td>
-                        <td>$${transaction.tax_amount || 0}</td>
-                    </tr>`;
-                });
-                
-                html += '</tbody></table></div>';
-                
-                if (data.transactions.length > 5) {
-                    html += `<p class="text-muted">Showing 5 of ${data.transactions.length} transactions</p>`;
-                }
-            }
+        body {
+            margin: 0;
+            padding: 0;
+            font-size: 10pt;
         }
-        
-        $('#resultsContent').html(html);
-        $('#resultsModal').modal('show');
-    }
 
-    function loadDashboardStats() {
-        console.log('Loading dashboard statistics...');
-        
-        $.ajax({
-            url: '{{ route("admin.tax-crv.dashboard-stats") }}',
-            method: 'GET',
-            success: function(data) {
-                console.log('Dashboard stats loaded successfully:', data);
-                
-                // Update dashboard cards with real data
-                $('#thisMonthTax').text('$' + (data.current_month_tax || 0).toLocaleString('en-US', {minimumFractionDigits: 2}));
-                $('#thisMonthCrv').text('$' + (data.current_month_crv || 0).toLocaleString('en-US', {minimumFractionDigits: 2}));
-                $('#totalOrders').text((data.total_orders || 0).toLocaleString());
-                $('#nextDueDate').text(data.next_due_date || 'Unknown');
-                
-                // Show debug info in console if available
-                if (data.debug) {
-                    console.log('Debug information:', data.debug);
-                    
-                    // Show helpful alerts based on debug info
-                    if (data.debug.total_orders_found === 0) {
-                        console.warn('No orders found for current month:', data.debug.date_range);
-                    } else if (data.debug.total_orders_found > 0 && data.current_month_tax === 0) {
-                        console.warn('Orders found but no tax calculated. Check tax_value field.');
-                    }
-                }
-                
-                // Show tax due alert if significant amount
-                if (data.tax_due_amount > 0) {
-                    showAlert(`Tax Payment Due: $${data.tax_due_amount.toLocaleString('en-US', {minimumFractionDigits: 2})} due by ${data.next_due_date}`, 'warning');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading dashboard stats:', {
-                    status: xhr.status,
-                    statusText: xhr.statusText,
-                    responseText: xhr.responseText,
-                    error: error
-                });
-                
-                showAlert('Error loading dashboard statistics. Please check the console for details.', 'error');
-            }
-        });
-    }
+        /* Remove all unnecessary spacing */
+        .container-fluid {
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
 
-    function showAlert(message, type) {
-        const alertClass = type === 'error' ? 'alert-danger' : 
-                          type === 'warning' ? 'alert-warning' : 'alert-success';
-        
-        const alert = `<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>`;
-        
-        $('.container-fluid').prepend(alert);
-        
-        setTimeout(() => {
-            $('.alert').alert('close');
-        }, 5000);
+        .row {
+            margin: 0 !important;
+        }
+
+        .col-12 {
+            padding: 0 !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+        }
+
+        .card-body {
+            padding: 0 !important;
+        }
+
+        /* Table styling for print */
+        .table-responsive {
+            overflow: visible !important;
+        }
+
+        #reportTable {
+            width: 100% !important;
+            margin: 0 !important;
+            font-size: 9pt !important;
+            border-collapse: collapse !important;
+        }
+
+        #reportTable thead th {
+            background-color: #343a40 !important;
+            color: white !important;
+            padding: 8px 4px !important;
+            border: 1px solid #000 !important;
+            font-size: 9pt !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        #reportTable tbody td {
+            padding: 6px 4px !important;
+            border: 1px solid #ddd !important;
+            font-size: 9pt !important;
+        }
+
+        #reportTable .bg-dark {
+            background-color: #343a40 !important;
+            color: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Keep colors in print */
+        .text-danger {
+            color: #dc3545 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .text-primary {
+            color: #007bff !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .text-success {
+            color: #28a745 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .text-info {
+            color: #17a2b8 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Remove badges in print - just show text */
+        .badge {
+            background: none !important;
+            color: #000 !important;
+            padding: 0 !important;
+            border: none !important;
+        }
     }
-});
-</script>
+</style>
 @endsection
