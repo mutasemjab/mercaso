@@ -206,7 +206,7 @@
                                 <?php endif; ?>
                                 
                                 <?php if($salesReport->isNotEmpty()): ?>
-                                <tr class="bg-dark text-white font-weight-bold">
+                                <tr class="bg-dark text-white font-weight-bold total-row">
                                     <td colspan="2" class="text-center">TOTAL</td>
                                     <td class="text-right"><?php echo e(number_format($totals['quantity'])); ?></td>
                                     <td class="text-right">$<?php echo e(number_format($totals['sales'], 2)); ?></td>
@@ -345,8 +345,9 @@
             padding: 8px 4px !important;
             border: 1px solid #000 !important;
             font-size: 9pt !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
         }
 
         #reportTable tbody td {
@@ -355,36 +356,40 @@
             font-size: 9pt !important;
         }
 
-        #reportTable .bg-dark {
+        /* FIXED: Total row styling for print */
+        #reportTable tbody tr.total-row td {
             background-color: #343a40 !important;
             color: white !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            border: 1px solid #000 !important;
+            font-weight: bold !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
         }
 
         /* Keep colors in print */
         .text-danger {
             color: #dc3545 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         .text-primary {
             color: #007bff !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         .text-success {
             color: #28a745 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         .text-info {
             color: #17a2b8 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         /* Remove badges in print - just show text */
