@@ -1,18 +1,16 @@
-@extends('layouts.admin')
+<?php $__env->startSection('title', 'Products'); ?>
 
-@section('title', 'Products')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 mb-0 text-gray-800">Products Management</h1>
         <div>
-            @can('product-add')
-                <a href="{{ route('products.create') }}" class="btn btn-primary">
+            <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('product-add')): ?>
+                <a href="<?php echo e(route('products.create')); ?>" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add New Product
                 </a>
-            @endcan
+            <?php endif; ?>
         </div>
     </div>
 
@@ -20,23 +18,23 @@
     <!-- Search and Filter Card -->
     <div class="card shadow mb-4">
         <div class="card-body">
-            <form action="{{ route('products.index') }}" method="GET" class="form-inline">
+            <form action="<?php echo e(route('products.index')); ?>" method="GET" class="form-inline">
                 <div class="form-group mr-2">
                     <input type="text" 
                            name="search" 
                            class="form-control" 
                            placeholder="Search by name, number, or barcode..." 
-                           value="{{ request('search') }}"
+                           value="<?php echo e(request('search')); ?>"
                            style="min-width: 300px;">
                 </div>
                 <button type="submit" class="btn btn-primary mr-2">
                     <i class="fas fa-search"></i> Search
                 </button>
-                @if(request('search'))
-                    <a href="{{ route('products.index') }}" class="btn btn-secondary">
+                <?php if(request('search')): ?>
+                    <a href="<?php echo e(route('products.index')); ?>" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Clear
                     </a>
-                @endif
+                <?php endif; ?>
             </form>
         </div>
     </div>
@@ -63,92 +61,93 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($data as $index => $product)
+                        <?php $__empty_1 = true; $__currentLoopData = $data; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                             <tr>
-                                <td>{{ $data->firstItem() + $index }}</td>
+                                <td><?php echo e($data->firstItem() + $index); ?></td>
                                 <td>
-                                    @if($product->productImages->count() > 0)
-                                        <img src="{{ asset('assets/admin/uploads/'.$product->productImages->first()->photo) }}" 
-                                             alt="{{ $product->name_ar }}" 
+                                    <?php if($product->productImages->count() > 0): ?>
+                                        <img src="<?php echo e(asset('assets/admin/uploads/'.$product->productImages->first()->photo)); ?>" 
+                                             alt="<?php echo e($product->name_ar); ?>" 
                                              class="img-thumbnail" 
                                              style="width: 60px; height: 60px; object-fit: cover;">
-                                    @else
-                                        <img src="{{ asset('assets/admin/img/no-image.png') }}" 
+                                    <?php else: ?>
+                                        <img src="<?php echo e(asset('assets/admin/img/no-image.png')); ?>" 
                                              alt="No Image" 
                                              class="img-thumbnail" 
                                              style="width: 60px; height: 60px; object-fit: cover;">
-                                    @endif
+                                    <?php endif; ?>
                                 </td>
                            
                                 <td>
-                                    <strong>{{ $product->name_ar }}</strong>
+                                    <strong><?php echo e($product->name_ar); ?></strong>
                                     <br>
-                                    <small class="text-muted">{{ $product->name_en }}</small>
+                                    <small class="text-muted"><?php echo e($product->name_en); ?></small>
                                 </td>
                                 <td>
-                                    @if($product->category)
-                                        <span class="badge badge-info">{{ $product->category->name_ar }}</span>
-                                    @else
+                                    <?php if($product->category): ?>
+                                        <span class="badge badge-info"><?php echo e($product->category->name_ar); ?></span>
+                                    <?php else: ?>
                                         <span class="badge badge-secondary">N/A</span>
-                                    @endif
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    @if($product->product_type == 1)
+                                    <?php if($product->product_type == 1): ?>
                                         <span class="badge badge-primary">Retail</span>
-                                    @elseif($product->product_type == 2)
+                                    <?php elseif($product->product_type == 2): ?>
                                         <span class="badge badge-warning">Wholesale</span>
-                                    @else
+                                    <?php else: ?>
                                         <span class="badge badge-success">Both</span>
-                                    @endif
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    @if($product->product_type == 1 || $product->product_type == 3)
-                                        <strong>$ {{ number_format($product->selling_price_for_user, 2) }}</strong>
-                                    @else
+                                    <?php if($product->product_type == 1 || $product->product_type == 3): ?>
+                                        <strong>$ <?php echo e(number_format($product->selling_price_for_user, 2)); ?></strong>
+                                    <?php else: ?>
                                         <span class="text-muted">Wholesale Only</span>
-                                    @endif
+                                    <?php endif; ?>
                                 </td>
                                 <td>
-                                    @if($product->in_stock == 1)
+                                    <?php if($product->in_stock == 1): ?>
                                         <span class="badge badge-success">
                                             <i class="fas fa-check"></i> In Stock
                                         </span>
-                                    @else
+                                    <?php else: ?>
                                         <span class="badge badge-danger">
                                             <i class="fas fa-times"></i> Out of Stock
                                         </span>
-                                    @endif
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" 
                                                class="custom-control-input status-toggle" 
-                                               id="status-{{ $product->id }}" 
-                                               data-id="{{ $product->id }}"
-                                               {{ $product->status == 1 ? 'checked' : '' }}>
-                                        <label class="custom-control-label" for="status-{{ $product->id }}">
-                                            <span class="status-text-{{ $product->id }}">
-                                                {{ $product->status == 1 ? 'Active' : 'Inactive' }}
+                                               id="status-<?php echo e($product->id); ?>" 
+                                               data-id="<?php echo e($product->id); ?>"
+                                               <?php echo e($product->status == 1 ? 'checked' : ''); ?>>
+                                        <label class="custom-control-label" for="status-<?php echo e($product->id); ?>">
+                                            <span class="status-text-<?php echo e($product->id); ?>">
+                                                <?php echo e($product->status == 1 ? 'Active' : 'Inactive'); ?>
+
                                             </span>
                                         </label>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        @can('product-edit')
-                                            <a href="{{ route('products.edit', ['product' => $product->id, 'page' => $data->currentPage()]) }}" 
+                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('product-edit')): ?>
+                                            <a href="<?php echo e(route('products.edit', ['product' => $product->id, 'page' => $data->currentPage()])); ?>" 
                                                class="btn btn-sm btn-warning" 
                                                title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                        @endcan
+                                        <?php endif; ?>
                                         
-                                        @can('product-delete')
-                                            <form action="{{ route('products.destroy', $product->id) }}" 
+                                        <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('product-delete')): ?>
+                                            <form action="<?php echo e(route('products.destroy', $product->id)); ?>" 
                                                   method="POST" 
                                                   class="d-inline delete-form">
-                                                @csrf
-                                                @method('DELETE')
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('DELETE'); ?>
                                                 <button type="submit" 
                                                         class="btn btn-sm btn-danger" 
                                                         title="Delete"
@@ -156,43 +155,44 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
-                                        @endcan
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
                                 <td colspan="11" class="text-center py-4">
                                     <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                                     <p class="text-muted">No products found.</p>
-                                    @can('product-add')
-                                        <a href="{{ route('products.create') }}" class="btn btn-primary">
+                                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('product-add')): ?>
+                                        <a href="<?php echo e(route('products.create')); ?>" class="btn btn-primary">
                                             <i class="fas fa-plus"></i> Add Your First Product
                                         </a>
-                                    @endcan
+                                    <?php endif; ?>
                                 </td>
                             </tr>
-                        @endforelse
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
 
             <!-- Pagination -->
-            @if($data->hasPages())
+            <?php if($data->hasPages()): ?>
                 <div class="d-flex justify-content-between align-items-center mt-4">
                     <div>
-                        Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} of {{ $data->total() }} products
+                        Showing <?php echo e($data->firstItem()); ?> to <?php echo e($data->lastItem()); ?> of <?php echo e($data->total()); ?> products
                     </div>
                     <div>
-                        {{ $data->appends(request()->query())->links() }}
+                        <?php echo e($data->appends(request()->query())->links()); ?>
+
                     </div>
                 </div>
-            @endif
+            <?php endif; ?>
         </div>
     </div>
 </div>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
 $(document).ready(function() {
     // Status toggle functionality
@@ -202,10 +202,10 @@ $(document).ready(function() {
         const toggleSwitch = $(this);
         
         $.ajax({
-           url: '{{ route("products.toggleStatus", ":id") }}'.replace(':id', productId),
+           url: '<?php echo e(route("products.toggleStatus", ":id")); ?>'.replace(':id', productId),
             type: 'PATCH',
             data: {
-                _token: '{{ csrf_token() }}'
+                _token: '<?php echo e(csrf_token()); ?>'
             },
             success: function(response) {
                 if(response.success) {
@@ -226,7 +226,8 @@ $(document).ready(function() {
     
 });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
 
 
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.admin', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\mercaso\resources\views/admin/products/index.blade.php ENDPATH**/ ?>
