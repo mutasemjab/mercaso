@@ -285,6 +285,16 @@
                     </li>
                 @endif
 
+                <!-- SMS Notifications -->
+                @if(auth()->user()->can('sms-notification-table'))
+                    <li class="nav-item">
+                        <a href="{{ route('sms.create') }}" class="nav-link {{ request()->routeIs('sms.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-sms"></i>
+                            <p>{{ __('messages.sms_notifications') }}</p>
+                        </a>
+                    </li>
+                @endif
+
                 <!-- Business Types (if exists) -->
                 @if(isset($user) && method_exists($user, 'can') && $user->can('businessType-table'))
                     <li class="nav-item">
@@ -322,9 +332,9 @@
                 </li>
 
                 <!-- Reports -->
-                @if(auth()->user()->can('order-report') || auth()->user()->can('products-report') || auth()->user()->can('users-report') || auth()->user()->is_super_admin)
-                    <li class="nav-item has-treeview {{ request()->routeIs('*_report') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('*_report') ? 'active' : '' }}">
+                @if(auth()->user()->can('order-report') || auth()->user()->can('products-report') || auth()->user()->can('users-report') || auth()->user()->can('category-report-view') || auth()->user()->can('customer-report-view') || auth()->user()->is_super_admin)
+                    <li class="nav-item has-treeview {{ request()->routeIs('*_report') || request()->routeIs('category-report.*') || request()->routeIs('customer-report.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('*_report') || request()->routeIs('category-report.*') || request()->routeIs('customer-report.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-chart-bar"></i>
                             <p>
                                 {{ __('messages.reports') }}
@@ -340,30 +350,29 @@
                                     </a>
                                 </li>
                             @endif
-                          
-                            @if(auth()->user()->can('order-report') || auth()->user()->is_super_admin)
-                                <li class="nav-item">
-                                    <a href="{{ route('order_report') }}" class="nav-link {{ request()->routeIs('order_report') ? 'active' : '' }}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>{{ __('messages.order_reports') }}</p>
-                                    </a>
-                                </li>
-                            @endif
-
-                            @if(auth()->user()->can('users-report') || auth()->user()->is_super_admin)
-                                <li class="nav-item">
-                                    <a href="{{ route('user_report') }}" class="nav-link {{ request()->routeIs('user_report') ? 'active' : '' }}">
-                                        <i class="far fa-circle nav-icon"></i>
-                                        <p>{{ __('messages.user_reports') }}</p>
-                                    </a>
-                                </li>
-                            @endif
-                            
                             @if(auth()->user()->can('products-report') || auth()->user()->is_super_admin)
                                 <li class="nav-item">
                                     <a href="{{ route('product_report') }}" class="nav-link {{ request()->routeIs('product_report') ? 'active' : '' }}">
                                         <i class="far fa-circle nav-icon"></i>
                                         <p>{{ __('messages.product_reports') }}</p>
+                                    </a>
+                                </li>
+                            @endif
+
+                            @if(auth()->user()->can('category-report-view') || auth()->user()->is_super_admin)
+                                <li class="nav-item">
+                                    <a href="{{ route('category-report.index') }}" class="nav-link {{ request()->routeIs('category-report.*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>{{ __('messages.category_reports') }}</p>
+                                    </a>
+                                </li>
+                            @endif
+
+                            @if(auth()->user()->can('customer-report-view') || auth()->user()->is_super_admin)
+                                <li class="nav-item">
+                                    <a href="{{ route('customer-report.index') }}" class="nav-link {{ request()->routeIs('customer-report.*') ? 'active' : '' }}">
+                                        <i class="far fa-circle nav-icon"></i>
+                                        <p>{{ __('messages.customer_reports') }}</p>
                                     </a>
                                 </li>
                             @endif

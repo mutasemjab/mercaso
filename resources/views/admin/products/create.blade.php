@@ -123,8 +123,8 @@
                     @enderror
                 </div>
 
-                <!-- Modified Tax Section -->
-                <div class="form-group col-md-6">
+                <!-- Modified Tax Section - Only for Retail Products -->
+                <div class="form-group col-md-6" id="has_tax_field" style="display: none;">
                     <label for="has_tax"> {{ __('messages.has_tax') }}</label>
                     <select name="has_tax" id="has_tax" class="form-control">
                         <option value="0" @if(old('has_tax') == '0') selected @endif>No</option>
@@ -211,11 +211,27 @@
                 </div>
 
                 <div class="form-group col-md-12">
-                    <img src="" id="image-preview" alt="Selected Image" height="50px" width="50px" style="display: none;">
-                    <button class="btn"> Photo</button>
-                    <input type="file" id="Item_img" name="photo[]" class="form-control" onchange="previewImage()" multiple>
+                    <label for="photo"> {{ __('messages.photos') }} (Max 10)</label>
+                    <div class="input-group">
+                        <input type="file" id="photo" name="photo[]" class="form-control" accept="image/*" multiple>
+                        <button class="btn btn-outline-primary" type="button">Select Images</button>
+                    </div>
+                    <small class="text-muted d-block mt-2">You can upload up to 10 images. Accepted formats: JPG, PNG, GIF, WEBP</small>
+
+                    <!-- Image Preview Container -->
+                    <div id="image-preview-container" class="mt-3" style="display: none;">
+                        <label>Image Preview:</label>
+                        <div id="preview-grid" class="row g-2">
+                        </div>
+                    </div>
+
+                    <!-- Counter -->
+                    <div class="mt-2">
+                        <span id="image-count">0</span>/10 images selected
+                    </div>
+
                     @error('photo')
-                    <span class="text-danger">{{ $message }}</span>
+                    <span class="text-danger d-block mt-2">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -272,34 +288,128 @@
 @endsection
 @section('script')
 <script>
+const MAX_IMAGES = 10;
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+function handleImageInput(input) {
+    const files = Array.from(input.files);
+
+    if (files.length > MAX_IMAGES) {
+        alert(`Maximum ${MAX_IMAGES} images allowed!`);
+        input.value = '';
+        document.getElementById('preview-grid').innerHTML = '';
+        document.getElementById('image-preview-container').style.display = 'none';
+        document.getElementById('image-count').textContent = '0';
+        return;
+    }
+
+    let validFiles = [];
+    files.forEach((file, index) => {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            alert(`File ${file.name} is not a valid image format`);
+            return;
+        }
+        validFiles.push(file);
+    });
+
+    if (validFiles.length === 0) {
+        document.getElementById('preview-grid').innerHTML = '';
+        document.getElementById('image-preview-container').style.display = 'none';
+        document.getElementById('image-count').textContent = '0';
+        input.value = '';
+        return;
+    }
+
+    // Reset file input with only valid files
+    const dataTransfer = new DataTransfer();
+    validFiles.forEach(file => dataTransfer.items.add(file));
+    input.files = dataTransfer.files;
+
+    displayPreviews(validFiles);
+    document.getElementById('image-count').textContent = validFiles.length;
+}
+
+function displayPreviews(files) {
+    const previewGrid = document.getElementById('preview-grid');
+    previewGrid.innerHTML = '';
+    document.getElementById('image-preview-container').style.display = 'block';
+
+    files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'col-md-3 col-sm-4 col-6 position-relative';
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'thumbnail-wrapper position-relative';
+
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = `Preview ${index + 1}`;
+            img.className = 'img-thumbnail w-100';
+            img.style.cssText = 'height: 120px; object-fit: cover;';
+
+            const nameLabel = document.createElement('small');
+            nameLabel.className = 'd-block text-truncate mt-1';
+            nameLabel.textContent = file.name;
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(nameLabel);
+            previewItem.appendChild(wrapper);
+            previewGrid.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const photoInput = document.getElementById('photo');
+    if (photoInput) {
+        photoInput.addEventListener('change', function() {
+            handleImageInput(this);
+        });
+    }
+});
+</script>
+<script>
   // Function to toggle fields based on product type
 function toggleProductTypeFields() {
     const productType = document.getElementById('product_type').value;
     const retailPriceField = document.getElementById('retail_price_field');
     const wholesaleUnitsSection = document.getElementById('wholesale_units_section');
+    const hasTaxField = document.getElementById('has_tax_field');
 
     // Clear required attributes first
     document.getElementById('selling_price_for_user').removeAttribute('required');
-    
+
     // Clear required attributes from wholesale units
     clearWholesaleUnitsRequired();
 
     if (productType === '1') { // Retail only
         retailPriceField.style.display = 'block';
         wholesaleUnitsSection.style.display = 'none';
-        
+        hasTaxField.style.display = 'block'; // Show tax field for retail
+
         // Set required for retail fields
         document.getElementById('selling_price_for_user').setAttribute('required', 'required');
     } else if (productType === '2') { // Wholesale only
         retailPriceField.style.display = 'none';
         wholesaleUnitsSection.style.display = 'block';
-        
+        hasTaxField.style.display = 'none'; // Hide tax field for wholesale only
+
+        // Reset tax fields
+        document.getElementById('has_tax').value = '0';
+        document.getElementById('tax_id').value = '';
+        document.getElementById('tax_dropdown').style.display = 'none';
+
         // Set required for wholesale units
         setWholesaleUnitsRequired();
     } else { // Both (3)
         retailPriceField.style.display = 'block';
         wholesaleUnitsSection.style.display = 'block';
-        
+        hasTaxField.style.display = 'block'; // Show tax field for both
+
         // Set required for retail and wholesale fields
         document.getElementById('selling_price_for_user').setAttribute('required', 'required');
         setWholesaleUnitsRequired();

@@ -56,9 +56,23 @@ class CategoryController extends Controller
                     return redirect()->route('categories.index')->with('error', 'Parent category not found.');
                 }
             }
-            if ($request->has('photo')) {
-                $the_file_path = uploadImage('assets/admin/uploads', $request->photo);
-                $category->photo = $the_file_path;
+            if ($request->has('photos')) {
+                $photoPaths = [];
+                if (is_array($request->photos)) {
+                    foreach ($request->photos as $photo) {
+                        if ($photo) {
+                            $the_file_path = uploadImage('assets/admin/uploads', $photo);
+                            $photoPaths[] = $the_file_path;
+                        }
+                    }
+                } elseif ($request->photos) {
+                    $the_file_path = uploadImage('assets/admin/uploads', $request->photos);
+                    $photoPaths[] = $the_file_path;
+                }
+
+                if (!empty($photoPaths)) {
+                    $category->photo = implode(',', $photoPaths);
+                }
             }
 
             if ($category->save()) {
@@ -114,9 +128,31 @@ class CategoryController extends Controller
                 $category->parentCategory()->dissociate();
             }
 
-            if ($request->has('photo')) {
-                $the_file_path = uploadImage('assets/admin/uploads', $request->photo);
-                $category->photo = $the_file_path;
+            if ($request->has('photos') && !empty($request->photos[0])) {
+                $photoPaths = [];
+
+                // Keep existing images if not being replaced
+                if ($category->photo) {
+                    $existingPaths = explode(',', $category->photo);
+                    $photoPaths = array_merge($photoPaths, array_filter($existingPaths));
+                }
+
+                // Add new images
+                if (is_array($request->photos)) {
+                    foreach ($request->photos as $photo) {
+                        if ($photo) {
+                            $the_file_path = uploadImage('assets/admin/uploads', $photo);
+                            $photoPaths[] = $the_file_path;
+                        }
+                    }
+                } elseif ($request->photos) {
+                    $the_file_path = uploadImage('assets/admin/uploads', $request->photos);
+                    $photoPaths[] = $the_file_path;
+                }
+
+                if (!empty($photoPaths)) {
+                    $category->photo = implode(',', array_unique($photoPaths));
+                }
             }
             if ($category->save()) {
                 return redirect()->route('categories.index')->with(['success' => 'Category update']);

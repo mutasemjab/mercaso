@@ -217,8 +217,8 @@ class ProductController extends Controller
             $product->description_en = $request->input('description_en');
             $product->description_ar = $request->input('description_ar');
 
-            // Modified tax handling
-            if ($request->input('has_tax') == '1' && $request->input('tax_id')) {
+            // Modified tax handling - Tax only applies to retail products
+            if (($productType == '1' || $productType == '3') && $request->input('has_tax') == '1' && $request->input('tax_id')) {
                 $tax = Tax::find($request->input('tax_id'));
                 $product->tax = $tax ? $tax->value : 0;
             } else {
@@ -255,6 +255,11 @@ class ProductController extends Controller
             // Handle product images
             if ($request->hasFile('photo')) {
                 $photos = $request->file('photo');
+                if (count($photos) > 10) {
+                    return redirect()->back()
+                        ->with(['error' => 'Maximum 10 images allowed per product'])
+                        ->withInput();
+                }
                 foreach ($photos as $photo) {
                     $photoPath = uploadImage('assets/admin/uploads', $photo);
                     if ($photoPath) {
@@ -342,8 +347,8 @@ class ProductController extends Controller
             $product->description_en = $request->input('description_en');
             $product->description_ar = $request->input('description_ar');
 
-            // Modified tax handling
-            if ($request->input('has_tax') == '1' && $request->input('tax_id')) {
+            // Modified tax handling - Tax only applies to retail products
+            if (($productType == '1' || $productType == '3') && $request->input('has_tax') == '1' && $request->input('tax_id')) {
                 $tax = Tax::find($request->input('tax_id'));
                 $product->tax = $tax ? $tax->value : 0;
             } else {
@@ -377,13 +382,16 @@ class ProductController extends Controller
             $product->unit_id = $request->input('unit');
             $product->brand_id = $request->input('brand') ?? null;
 
-            // Handle product images
+            // Handle product images - Append new images instead of replacing all
             if ($request->hasFile('photo')) {
-                // Delete all previous photos associated with the product
-                $product->productImages()->delete();
-
-                // Upload and insert new photos
+                // Upload and add new photos (keep existing ones)
                 $photos = $request->file('photo');
+                $existingImages = $product->productImages()->count();
+                if ($existingImages + count($photos) > 10) {
+                    return redirect()->back()
+                        ->with(['error' => 'Maximum 10 images allowed per product. Current: ' . $existingImages . ' images'])
+                        ->withInput();
+                }
                 foreach ($photos as $photo) {
                     $photoPath = uploadImage('assets/admin/uploads', $photo);
                     if ($photoPath) {
@@ -458,6 +466,41 @@ class ProductController extends Controller
 
             return redirect()->back()
                 ->with(['error' => ' Something Wrong   ' . $ex->getMessage()]);
+        }
+    }
+
+    /**
+     * Delete a single product image.
+     *
+     * @param  int  $productId
+     * @param  int  $imageId
+     * @return \Illuminate\Http\Response
+     */
+    public function deleteImage($productId, $imageId)
+    {
+        try {
+            $product = Product::findOrFail($productId);
+            $image = $product->productImages()->findOrFail($imageId);
+
+            // Delete the image file from storage if needed
+            $imagePath = public_path('assets/admin/uploads/' . $image->photo);
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
+
+            // Delete the database record
+            $image->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image deleted successfully'
+            ]);
+        } catch (\Exception $ex) {
+            Log::error($ex);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete image: ' . $ex->getMessage()
+            ], 500);
         }
     }
 }

@@ -91,12 +91,11 @@
 
                     <div class="col-md-12">
                         <div class="form-group">
-                            <img src="" id="image-preview" alt="Selected Image" height="50px" width="50px"
-                                style="display: none;">
-                            <button class="btn"> photo</button>
-                            <input type="file" id="Item_img" name="photo" class="form-control"
-                                onchange="previewImage()">
-                            @error('photo')
+                            <label>{{ __('messages.photo') }} (Multiple)</label>
+                            <div id="image-preview-container" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;"></div>
+                            <input type="file" id="Item_img" name="photos[]" class="form-control"
+                                onchange="previewImages()" multiple accept="image/*">
+                            @error('photos')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
@@ -130,19 +129,28 @@
 
 @section('script')
     <script>
-        function previewImage() {
-            var preview = document.getElementById('image-preview');
+        function previewImages() {
+            var previewContainer = document.getElementById('image-preview-container');
             var input = document.getElementById('Item_img');
-            var file = input.files[0];
-            if (file) {
-                preview.style.display = "block";
-                var reader = new FileReader();
-                reader.onload = function() {
-                    preview.src = reader.result;
+            previewContainer.innerHTML = '';
+
+            if (input.files && input.files.length > 0) {
+                for (let i = 0; i < input.files.length; i++) {
+                    let file = input.files[i];
+                    let reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        let img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.height = '100px';
+                        img.style.width = '100px';
+                        img.style.objectFit = 'cover';
+                        img.style.borderRadius = '5px';
+                        img.style.border = '2px solid #ddd';
+                        previewContainer.appendChild(img);
+                    }
+                    reader.readAsDataURL(file);
                 }
-                reader.readAsDataURL(file);
-            } else {
-                preview.style.display = "none";
             }
         }
     </script>

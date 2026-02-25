@@ -339,6 +339,9 @@ class OrderController extends Controller
             // Commit the transaction
             DB::commit();
 
+            // Dispatch OrderCreated event for SMS notification
+            event(new \App\Events\OrderCreated($order));
+
             // Log the response and return success
             Log::info('Order Created Successfully', [
                 'order_id' => $order->id,

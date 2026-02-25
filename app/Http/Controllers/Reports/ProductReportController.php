@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Shop;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Tax;
 use Illuminate\Http\Request;
 use App\Models\NoteVoucher;
 use App\Models\VoucherProduct;
@@ -121,25 +124,47 @@ class ProductReportController extends Controller
     // }
 
 
-    /// FOR Display all produtcs
+    /// FOR Display all products with filters
     public function allProducts(Request $request)
     {
-        $toDate = $request->input('to_date', date('Y-m-d'));
+        // Get filter inputs with defaults and convert to Carbon instances
+        $fromDate = $request->input('from_date', now()->subYear()->format('Y-m-d'));
+        $toDate = $request->input('to_date', now()->format('Y-m-d'));
+        $brandId = $request->input('brand_id', null);
+        $categoryId = $request->input('category_id', null);
+        $taxId = $request->input('tax_id', null);
+        $search = $request->input('search', null);
 
-        $reportData = [];
-        $products = collect(); // Initialize $products as an empty collection
+        // Convert date strings to Carbon instances with proper time boundaries
+        $startDateTime = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
+        $endDateTime = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
 
-            // Get product details
-            $products = Product::with('unit', 'units', 'category')
-                            ->whereDate('created_at', '<=', $toDate)
-                            ->get();
+        // Get all brands, categories, and taxes for filter dropdowns
+        $brands = Brand::all();
+        $categories = Category::all();
+        $taxes = Tax::all();
 
-            $reportData = [
-                'products' => $products,
-            ];
-        
+        // Build query with filters
+        $products = Product::with('unit', 'units', 'category', 'brand')
+                        ->whereBetween('created_at', [$startDateTime, $endDateTime])
+                        ->when($brandId, fn($q) => $q->where('brand_id', $brandId))
+                        ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
+                        ->when($taxId, function($q) use ($taxId) {
+                            $tax = Tax::find($taxId);
+                            return $tax ? $q->where('tax', $tax->value) : $q;
+                        })
+                        ->when($search, function($q) use ($search) {
+                            return $q->where('number', 'like', "%{$search}%")
+                                    ->orWhere('name_en', 'like', "%{$search}%")
+                                    ->orWhere('name_ar', 'like', "%{$search}%");
+                        })
+                        ->paginate(15); // Show 15 items per page
 
-        return view('reports.products', compact( 'products', 'reportData', 'toDate'));
+        $reportData = [
+            'products' => $products,
+        ];
+
+        return view('reports.products', compact('products', 'reportData', 'fromDate', 'toDate', 'brands', 'categories', 'taxes', 'brandId', 'categoryId', 'taxId', 'search'));
     }
 
 }

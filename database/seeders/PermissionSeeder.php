@@ -163,6 +163,10 @@ class PermissionSeeder extends Seeder
             'order-report',
             'products-report',
             'users-report',
+            'category-report-view',
+            'category-report-export',
+            'customer-report-view',
+            'customer-report-export',
         ];
 
 

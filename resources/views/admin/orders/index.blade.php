@@ -48,7 +48,7 @@
                   @can('order-table')
                     <table id="example2" class="table table-bordered table-hover">
                         <thead class="custom_thead">
-                            <th>#{{ __('messages.ID') }}</th>
+                            <th>{{ __('messages.Order_Number') }}</th>
                             <th>Type of delivery</th>
                             <th>{{ __('messages.Date') }}</th>
                             <th>{{ __('messages.order_type') }}</th>

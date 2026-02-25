@@ -95,6 +95,10 @@ class CustomerController extends Controller
              if($request->password){
                 $customer->password = Hash::make($request->password);
              }
+             // Handle PIN
+             if($request->pin){
+                $customer->pin = $request->pin;
+             }
              $customer->email = $request->get('email');
              $customer->phone = $request->get('phone');
              $customer->can_pay_with_receivable = $request->get('can_pay_with_receivable') ?? 2;

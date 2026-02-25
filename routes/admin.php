@@ -14,10 +14,8 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\DeliveryController;
 use App\Http\Controllers\Admin\NotificationController;
-use App\Http\Controllers\Admin\CountryController;
-use App\Http\Controllers\Admin\CityController;
+use App\Http\Controllers\Admin\SmsNotificationController;
 use App\Http\Controllers\Admin\WholeSaleController;
-use App\Http\Controllers\Admin\ShopController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\CouponController;
@@ -30,13 +28,12 @@ use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PointTransactionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\TaxController;
-use App\Http\Controllers\Reports\AllProductReportController;
-use App\Http\Controllers\Reports\InventoryReportController;
 use App\Http\Controllers\Reports\OrderReportController;
 use App\Http\Controllers\Reports\ProductReportController;
 use App\Http\Controllers\Reports\TaxCrvReportsController;
-use App\Http\Controllers\Reports\TaxReportController;
 use App\Http\Controllers\Reports\UserReportController;
+use App\Http\Controllers\Reports\CategoryReportController;
+use App\Http\Controllers\Reports\CustomerReportController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Permission\Models\Permission;
 /*
@@ -135,6 +132,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
         Route::post('/notifications/send', [NotificationController::class, 'send'])->name('notifications.send');
 
+        // SMS Notification
+        Route::get('/sms/create', [SmsNotificationController::class, 'create'])->name('sms.create');
+        Route::post('/sms/send', [SmsNotificationController::class, 'send'])->name('sms.send');
+
         Route::prefix('pages')->group(function () {
             Route::get('/', [PageController::class, 'index'])->name('pages.index');
             Route::get('/create', [PageController::class, 'create'])->name('pages.create');
@@ -149,6 +150,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/user_report', [UserReportController::class, 'index'])->name('user_report');
         Route::get('/product_report', [ProductReportController::class, 'allProducts'])->name('product_report');
          Route::get('/tax-crv', [TaxCrvReportsController::class, 'index'])->name('tax-crv-report');
+        Route::get('/category-report', [CategoryReportController::class, 'index'])->name('category-report.index');
+        Route::get('/category-report/export', [CategoryReportController::class, 'export'])->name('category-report.export');
+        Route::get('/customer-report', [CustomerReportController::class, 'index'])->name('customer-report.index');
+        Route::get('/customer-report/search', [CustomerReportController::class, 'search'])->name('customer-report.search');
+        Route::get('/customer-report/customer/{customerId}', [CustomerReportController::class, 'getCustomerStats'])->name('customer-report.stats');
 
 
 
@@ -180,6 +186,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         ->name('deliveries.availabilities');
 
         Route::patch('products/{id}/toggle-status', [ProductController::class, 'toggleStatus'])->name('products.toggleStatus');
+        Route::delete('products/{productId}/images/{imageId}', [ProductController::class, 'deleteImage'])->name('products.images.destroy');
          Route::patch('admin/settings/{id}/toggle-status', [SettingController::class, 'toggleStatus'])->name('admin.setting.toggleStatus');
     });
 

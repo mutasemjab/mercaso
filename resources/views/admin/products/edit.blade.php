@@ -147,7 +147,7 @@
                     @enderror
                 </div>
 
-                <!-- Modified Tax Section -->
+                <!-- Modified Tax Section - Only for Retail Products -->
                 @php
                     $hasTax = $data->tax ? '1' : '0';
                     $selectedTaxId = null;
@@ -161,7 +161,7 @@
                     }
                 @endphp
 
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-6" id="has_tax_field" style="display: none;">
                     <label for="has_tax">{{ __('messages.has_tax') }}</label>
                     <select name="has_tax" id="has_tax" class="form-control">
                         <option value="0" {{ $hasTax == '0' ? 'selected' : '' }}>No</option>
@@ -263,22 +263,49 @@
                     @enderror
                 </div>
 
-                <div class="form-group col-md-6">
-                    <div class="form-group">
-                        @if($data->productImages->count() > 0)
-                        @foreach($data->productImages as $image)
-                        <img src="{{ asset('assets/admin/uploads/' . $image->photo) }}" alt="Product Image"
-                            height="50px" width="50px">
-                        @endforeach
-                        @else
-                        <p>No images available for this product.</p>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="form-group col-md-6">
+                <div class="form-group col-md-12">
                     <label>Product Images</label>
-                    <input type="file" name="photo[]" class="form-control" multiple>
+
+                    <!-- Existing Images -->
+                    @if($data->productImages->count() > 0)
+                    <div class="mb-3">
+                        <label class="text-muted d-block mb-2">Existing Images ({{ $data->productImages->count() }})</label>
+                        <div id="existing-images-grid" class="row g-2">
+                            @foreach($data->productImages as $image)
+                            <div class="col-md-3 col-sm-4 col-6 position-relative existing-image-item" data-image-id="{{ $image->id }}">
+                                <div class="thumbnail-wrapper position-relative">
+                                    <img src="{{ asset('assets/admin/uploads/' . $image->photo) }}" alt="Product Image" class="img-thumbnail w-100" style="height: 120px; object-fit: cover;">
+                                    <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-image-btn" data-product-id="{{ $data->id }}" data-image-id="{{ $image->id }}" title="Delete image">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <small class="d-block text-truncate mt-1 text-muted">{{ basename($image->photo) }}</small>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @else
+                    <div class="alert alert-info">No images available for this product.</div>
+                    @endif
+
+                    <!-- New Images Upload -->
+                    <div class="mb-3 border-top pt-3">
+                        <label for="photo">Upload New Images (Max 10 total per product)</label>
+                        <input type="file" id="photo" name="photo[]" class="form-control" accept="image/*" multiple>
+                        <small class="text-muted d-block mt-2">You can upload additional images. Accepted formats: JPG, PNG, GIF, WEBP</small>
+
+                        <!-- New Image Preview Container -->
+                        <div id="new-image-preview-container" class="mt-3" style="display: none;">
+                            <label>New Images Preview:</label>
+                            <div id="new-preview-grid" class="row g-2">
+                            </div>
+                        </div>
+
+                        <!-- Counter -->
+                        <div class="mt-2">
+                            <span id="new-image-count">0</span> new images selected
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -349,29 +376,38 @@ function toggleProductTypeFields() {
     const productType = document.getElementById('product_type').value;
     const retailPriceField = document.getElementById('retail_price_field');
     const wholesaleUnitsSection = document.getElementById('wholesale_units_section');
+    const hasTaxField = document.getElementById('has_tax_field');
 
     // Clear required attributes first
     document.getElementById('selling_price_for_user').removeAttribute('required');
-    
+
     // Clear required attributes from wholesale units
     clearWholesaleUnitsRequired();
 
     if (productType === '1') { // Retail only
         retailPriceField.style.display = 'block';
         wholesaleUnitsSection.style.display = 'none';
-        
+        hasTaxField.style.display = 'block'; // Show tax field for retail
+
         // Set required for retail fields
         document.getElementById('selling_price_for_user').setAttribute('required', 'required');
     } else if (productType === '2') { // Wholesale only
         retailPriceField.style.display = 'none';
         wholesaleUnitsSection.style.display = 'block';
-        
+        hasTaxField.style.display = 'none'; // Hide tax field for wholesale only
+
+        // Reset tax fields
+        document.getElementById('has_tax').value = '0';
+        document.getElementById('tax_id').value = '';
+        document.getElementById('tax_dropdown').style.display = 'none';
+
         // Set required for wholesale units
         setWholesaleUnitsRequired();
     } else { // Both (3)
         retailPriceField.style.display = 'block';
         wholesaleUnitsSection.style.display = 'block';
-        
+        hasTaxField.style.display = 'block'; // Show tax field for both
+
         // Set required for retail and wholesale fields
         document.getElementById('selling_price_for_user').setAttribute('required', 'required');
         setWholesaleUnitsRequired();
@@ -471,10 +507,116 @@ function toggleCrvDropdown() {
     }
 }
 
+// Image handling functions
+const MAX_IMAGES = 10;
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+function handleNewImageInput(input) {
+    const files = Array.from(input.files);
+
+    if (files.length > MAX_IMAGES) {
+        alert(`Maximum ${MAX_IMAGES} images allowed!`);
+        input.value = '';
+        const grid = document.getElementById('new-preview-grid');
+        while (grid.firstChild) grid.removeChild(grid.firstChild);
+        document.getElementById('new-image-preview-container').style.display = 'none';
+        document.getElementById('new-image-count').textContent = '0';
+        return;
+    }
+
+    let validFiles = [];
+    files.forEach((file) => {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            alert(`File ${file.name} is not a valid image format`);
+            return;
+        }
+        validFiles.push(file);
+    });
+
+    if (validFiles.length === 0) {
+        const grid = document.getElementById('new-preview-grid');
+        while (grid.firstChild) grid.removeChild(grid.firstChild);
+        document.getElementById('new-image-preview-container').style.display = 'none';
+        document.getElementById('new-image-count').textContent = '0';
+        input.value = '';
+        return;
+    }
+
+    const dataTransfer = new DataTransfer();
+    validFiles.forEach(file => dataTransfer.items.add(file));
+    input.files = dataTransfer.files;
+
+    displayNewPreviews(validFiles);
+    document.getElementById('new-image-count').textContent = validFiles.length;
+}
+
+function displayNewPreviews(files) {
+    const previewGrid = document.getElementById('new-preview-grid');
+    while (previewGrid.firstChild) previewGrid.removeChild(previewGrid.firstChild);
+    document.getElementById('new-image-preview-container').style.display = 'block';
+
+    files.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'col-md-3 col-sm-4 col-6 position-relative';
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'thumbnail-wrapper position-relative';
+
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = `Preview ${index + 1}`;
+            img.className = 'img-thumbnail w-100';
+            img.style.cssText = 'height: 120px; object-fit: cover; border: 2px solid #28a745;';
+
+            const nameLabel = document.createElement('small');
+            nameLabel.className = 'd-block text-truncate mt-1 text-success';
+            nameLabel.textContent = file.name;
+
+            wrapper.appendChild(img);
+            wrapper.appendChild(nameLabel);
+            previewItem.appendChild(wrapper);
+            previewGrid.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function deleteImage(productId, imageId) {
+    if (!confirm('Are you sure you want to delete this image?')) {
+        return;
+    }
+
+    fetch(`/en/admin/products/${productId}/images/${imageId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const imageItem = document.querySelector(`[data-image-id="${imageId}"]`);
+            if (imageItem) {
+                imageItem.remove();
+            }
+        } else {
+            alert('Failed to delete image: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Error deleting image: ' + error);
+    });
+}
+
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Initial state on page load
     toggleProductTypeFields();
+    toggleTaxDropdown();
+    toggleCrvDropdown();
 
     // Event listeners
     const productTypeElement = document.getElementById('product_type');
@@ -484,11 +626,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (productTypeElement) {
         productTypeElement.addEventListener('change', toggleProductTypeFields);
     }
-    
+
     if (hasTaxElement) {
         hasTaxElement.addEventListener('change', toggleTaxDropdown);
     }
-    
+
     if (hasCrvElement) {
         hasCrvElement.addEventListener('change', toggleCrvDropdown);
     }
@@ -502,6 +644,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Handle new image input
+    const photoInput = document.getElementById('photo');
+    if (photoInput) {
+        photoInput.addEventListener('change', function() {
+            handleNewImageInput(this);
+        });
+    }
+
+    // Handle delete image buttons
+    document.querySelectorAll('.delete-image-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.getAttribute('data-product-id');
+            const imageId = this.getAttribute('data-image-id');
+            deleteImage(productId, imageId);
+        });
+    });
 });
 
 $(document).ready(function() {
