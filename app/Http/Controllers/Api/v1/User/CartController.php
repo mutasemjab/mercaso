@@ -77,7 +77,8 @@ class CartController extends Controller
             }
 
             // Calculate tax and CRV for this product (percentages)
-            if ($item->tax && $item->tax > 0) {
+            // No tax for wholesale users
+            if ($authenticatedUser && !$authenticatedUser->isWholesale() && $item->tax && $item->tax > 0) {
                 $productTax = round(($cart->total_price_product * $item->tax) / 100, 2);
                 $totalTax += $productTax;
             }

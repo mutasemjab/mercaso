@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\DeliveryController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\SmsNotificationController;
 use App\Http\Controllers\Admin\WholeSaleController;
+use App\Http\Controllers\Admin\WholesaleRequestController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\CouponController;
@@ -98,6 +99,12 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::post('/wholeSale/ajax_search', [WholeSaleController::class, 'ajax_search'])->name('admin.wholeSale.ajax_search');
         Route::get('/wholeSale/export', [WholeSaleController::class, 'export'])->name('admin.wholeSale.export');
         /*         end  wholeSale                */
+
+        /*         start  wholesale requests                */
+        Route::get('/wholesaleRequest/index', [WholesaleRequestController::class, 'index'])->name('admin.wholesaleRequest.index');
+        Route::post('/wholesaleRequest/approve/{id}', [WholesaleRequestController::class, 'approve'])->name('admin.wholesaleRequest.approve');
+        Route::post('/wholesaleRequest/reject/{id}', [WholesaleRequestController::class, 'reject'])->name('admin.wholesaleRequest.reject');
+        /*         end  wholesale requests                */
 
 
         Route::name('admin.')->group(function() {

@@ -36,8 +36,7 @@ class SettingController extends Controller
                 $setting = new Setting();
                 $setting->min_order = $request->get('min_order');
                 $setting->min_order_wholeSale = $request->get('min_order_wholeSale');
-
-
+                $setting->phone_number = $request->get('phone_number');
 
                 if ($setting->save()) {
                     return redirect()->route('admin.setting.index')->with(['success' => 'setting created']);
@@ -73,6 +72,7 @@ class SettingController extends Controller
             try {
                 $setting->min_order = $request->get('min_order');
                 $setting->min_order_wholeSale = $request->get('min_order_wholeSale');
+                $setting->phone_number = $request->get('phone_number');
 
                 if ($setting->save()) {
                     return redirect()->route('admin.setting.index')->with(['success' => 'setting update']);

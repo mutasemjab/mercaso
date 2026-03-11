@@ -75,16 +75,6 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>{{ __('messages.PIN') }}</label>
-                            <input name="pin" id="pin" class="form-control" value="{{ old('pin', $data['pin']) }}" maxlength="6" placeholder="Enter 6-digit PIN">
-                            @error('pin')
-                                <span class="text-danger">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-
 
 
 

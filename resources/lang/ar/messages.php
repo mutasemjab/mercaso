@@ -269,6 +269,7 @@ return [
     'delivery' => 'التوصيل',
     'point_transactions' => 'معاملات النقاط',
     'business_types' => 'أنواع الأعمال',
+    'retail' => 'التجزئة',
     'wholesale' => 'الجملة',
     'admin_account' => 'حساب الإدارة',
     
@@ -432,6 +433,7 @@ return [
     "serial_number"=>"الرقم التسلسلي",
     "total_sales"=>"إجمالي المبيعات",
     "with_each_other"=>"مع بعضهم البعض",
+    "photos"=>"الصور",
     "Actions"=>"الإجراءات",
     "Add_Point_Transaction"=>"إضافة معاملة نقاط",
     "Admin"=>"الإدارة",

@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create('wholesale_requests', function (Blueprint $table) {
             $table->id();
-            $table->double('min_order')->nullable();
-            $table->double('min_order_wholeSale')->nullable();
-            $table->string('phone_number')->nullable();
-            $table->tinyInteger('status')->default(1); // 1 active // 2 disactive
+            $table->unsignedBigInteger('user_id');
+            $table->string('commercial_registration');
+            $table->tinyInteger('status')->default(1)->comment('1=pending, 2=approved, 3=rejected');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('settings');
+        Schema::dropIfExists('wholesale_requests');
     }
 };

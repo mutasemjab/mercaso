@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Models\Notification;
 use App\Models\User;
 use App\Models\WholeSale;
+use App\Models\WholesaleRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -31,6 +32,38 @@ class AuthController extends Controller
         }
         $user->save();
         return response(['success' => 'The account change successfully'], 200);
+    }
+
+    public function verifyWholesale(Request $request)
+    {
+        $user = auth()->user();
+
+        $validator = Validator::make($request->all(), [
+            'commercial_registration' => 'required|image|mimes:jpeg,png,jpg|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return response(['errors' => $validator->errors()], 422);
+        }
+
+        // Check if user already has a pending request
+        $pendingRequest = WholesaleRequest::where('user_id', $user->id)
+            ->where('status', 1)
+            ->first();
+
+        if ($pendingRequest) {
+            return response(['errors' => ['You already have a pending wholesale request']], 400);
+        }
+
+        $imagePath = uploadImage('assets/admin/uploads/commercial_registrations', $request->commercial_registration);
+
+        WholesaleRequest::create([
+            'user_id' => $user->id,
+            'commercial_registration' => $imagePath,
+            'status' => 1,
+        ]);
+
+        return response(['success' => 'Your wholesale request has been submitted and is pending approval'], 200);
     }
 
     public function get_business_type()
@@ -218,8 +251,19 @@ class AuthController extends Controller
    public function userProfile()
    {
         $user = auth()->user();
+
+        $wholesaleRequest = null;
+        if ($user->user_type == 1) {
+            $wholesaleRequest = WholesaleRequest::where('user_id', $user->id)->latest()->first();
+        }
+
         return response()->json([
             'user' => $user,
+            'wholesale_request' => $wholesaleRequest ? [
+                'id' => $wholesaleRequest->id,
+                'status' => $wholesaleRequest->status == 1 ? 'pending' : ($wholesaleRequest->status == 2 ? 'approved' : 'rejected'),
+                'created_at' => $wholesaleRequest->created_at,
+            ] : null,
         ]);
    }
 

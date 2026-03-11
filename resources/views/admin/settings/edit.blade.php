@@ -55,7 +55,16 @@ edit Setting
                     </div>
                 </div>
 
-
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label> Phone Number </label>
+                        <input name="phone_number" id="phone_number" class="form-control"
+                            value="{{ old('phone_number',$data['phone_number']) }}">
+                        @error('phone_number')
+                        <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
 
                 <div class="col-md-12">
                     <div class="form-group text-center">

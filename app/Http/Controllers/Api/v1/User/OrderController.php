@@ -194,9 +194,13 @@ class OrderController extends Controller
             }
 
             // Calculate totals from cart items - USE EXACT CART VALUES
+            $user = auth()->user();
             foreach ($cartItems as $cartItem) {
                 $total_discounts += $cartItem->discount_coupon ?? 0;
-                $total_taxes += $cartItem->product->tax ?? 0;
+                // No tax for wholesale users; calculate actual tax amount (not just percentage)
+                if (!$user->isWholesale() && $cartItem->product->tax > 0) {
+                    $total_taxes += round(($cartItem->total_price_product * $cartItem->product->tax) / 100, 2);
+                }
                 $total_prices += $cartItem->total_price_product;
             }
 
@@ -287,16 +291,22 @@ class OrderController extends Controller
                 $total_price_after_tax = $cartItem->total_price_product;
                 $discount_amount = $cartItem->discount_coupon ?? 0;
 
-                // Calculate price before tax and discount
-                $tax_rate = $cartItem->product->tax / 100;
-                $total_price_before_tax = $total_price_after_tax / (1 + $tax_rate);
+                // No tax for wholesale users
+                if ($user->isWholesale()) {
+                    $tax_rate = 0;
+                    $tax_percentage = 0;
+                    $total_price_before_tax = $total_price_after_tax;
+                    $tax_value = 0;
+                } else {
+                    $tax_rate = $cartItem->product->tax / 100;
+                    $tax_percentage = $cartItem->product->tax ?? 0;
+                    $total_price_before_tax = $total_price_after_tax / (1 + $tax_rate);
+                    $price_after_discount = $total_price_before_tax - $discount_amount;
+                    $tax_value = $price_after_discount * $tax_rate;
+                }
 
                 // Calculate discount percentage based on actual discount amount
                 $discount_percentage = $total_price_before_tax > 0 ? ($discount_amount / $total_price_before_tax) : 0;
-
-                // Calculate tax value on the discounted amount
-                $price_after_discount = $total_price_before_tax - $discount_amount;
-                $tax_value = $price_after_discount * $tax_rate;
 
                 $order->products()->attach($cartItem->product_id, [
                     'quantity' => $cartItem->quantity,
@@ -305,9 +315,9 @@ class OrderController extends Controller
                     'unit_id' => $unit_id,
                     'total_price_after_tax' => $total_price_after_tax,
                     'total_price_before_tax' => $total_price_before_tax,
-                    'tax_percentage' => $cartItem->product->tax ?? 0,
+                    'tax_percentage' => $tax_percentage,
                     'discount_percentage' => $discount_percentage,
-                    'discount_value' => $discount_amount, // Use exact discount from cart
+                    'discount_value' => $discount_amount,
                     'line_discount_percentage' => null,
                     'line_discount_value' => null,
                     'tax_value' => $tax_value,

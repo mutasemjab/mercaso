@@ -383,6 +383,7 @@ return [
     'delivery' => 'Delivery',
     'point_transactions' => 'Point Transactions',
     'business_types' => 'Business Types',
+    'retail' => 'Retail',
     'wholesale' => 'Wholesale',
     'admin_account' => 'Admin Account',
     
@@ -545,5 +546,6 @@ return [
     'serial_number' => 'Serial number',
     'total_sales' => 'Total sales',
     'with_each_other' => 'With each other',
+    'photos' => 'Photos',
 
 ];

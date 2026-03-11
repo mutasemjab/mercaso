@@ -74,11 +74,38 @@
                 @endif
 
                 @if(auth()->user()->can('wholeSale-table'))
-                    <li class="nav-item">
-                        <a href="{{ route('admin.wholeSale.index') }}" class="nav-link {{ request()->routeIs('admin.wholeSale.*') ? 'active' : '' }}">
+                    @php
+                        $pendingWholesaleCount = \App\Models\WholesaleRequest::where('status', 1)->count();
+                    @endphp
+                    <li class="nav-item has-treeview {{ request()->routeIs('admin.wholeSale.*') || request()->routeIs('admin.wholesaleRequest.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.wholeSale.*') || request()->routeIs('admin.wholesaleRequest.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-handshake"></i>
-                            <p>{{ __('messages.wholesale') }}</p>
+                            <p>
+                                {{ __('messages.wholesale') }}
+                                @if($pendingWholesaleCount > 0)
+                                    <span class="badge badge-danger right">{{ $pendingWholesaleCount }}</span>
+                                @endif
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
                         </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.wholeSale.index') }}" class="nav-link {{ request()->routeIs('admin.wholeSale.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>{{ __('messages.wholeSales') }}</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.wholesaleRequest.index') }}" class="nav-link {{ request()->routeIs('admin.wholesaleRequest.*') ? 'active' : '' }}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Pending Requests
+                                        @if($pendingWholesaleCount > 0)
+                                            <span class="badge badge-warning right">{{ $pendingWholesaleCount }}</span>
+                                        @endif
+                                    </p>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 @endif
 

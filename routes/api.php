@@ -36,7 +36,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //Route unAuth
 Route::group(['prefix' => 'v1/user'], function () {
 
- 
+    Route::get('/phone_number', function () {
+        $setting = \App\Models\Setting::where('status', 1)->first();
+        return response()->json(['phone_number' => $setting?->phone_number]);
+    });
+
     Route::get('/pages/{type}', [PageController::class,'index']);
 
     Route::get('/business_type', [AuthController::class, 'get_business_type']); // Done
@@ -75,6 +79,7 @@ Route::group(['prefix' => 'v1/user'], function () {
         Route::post('/mobile_verified', [AuthController::class, 'mobileVerified']);
         Route::post('/update_profile', [AuthController::class, 'updateProfile']);
         Route::post('/change_user_type', [AuthController::class, 'change_user_type']);
+        Route::post('/verify-wholesale', [AuthController::class, 'verifyWholesale']);
         Route::post('/delete_account', [AuthController::class, 'deleteAccount']);
         Route::get('/user_profile', [AuthController::class, 'userProfile']);
 

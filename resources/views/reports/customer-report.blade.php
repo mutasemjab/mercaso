@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td class="text-right">${parseFloat(order.tax).toFixed(2)}</td>
                     <td class="text-right">${parseFloat(order.delivery_fee).toFixed(2)}</td>
                     <td class="text-center"><span class="badge badge-${order.payment_status === 'Paid' ? 'success' : 'warning'}">${order.payment_status}</span></td>
-                    <td class="text-center"><a href="${ordersShowBaseUrl}/${order.id}" class="btn btn-sm btn-info" title="View Order"><i class="fas fa-eye"></i></a></td>
+                    <td class="text-center"><a href="${ordersShowBaseUrl}/${order.id}?from=customer-report" class="btn btn-sm btn-info" title="View Order"><i class="fas fa-eye"></i></a></td>
                 `;
                 ordersTableBody.appendChild(row);
             });

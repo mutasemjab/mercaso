@@ -21,6 +21,7 @@ class CategoryReportController extends Controller
         $startDate = $request->input('start_date', now()->subMonth()->startOfDay());
         $endDate = $request->input('end_date', now()->endOfDay());
         $parentCategoryId = $request->input('parent_category_id', null);
+        $userType = $request->input('user_type', null); // 1 = retail, 2 = wholesale
 
         // Get all parent categories for filter dropdown
         $parentCategories = Category::whereNull('category_id')->orderBy('name_ar')->get();
@@ -30,9 +31,13 @@ class CategoryReportController extends Controller
             ->join('orders', 'order_products.order_id', '=', 'orders.id')
             ->join('products', 'order_products.product_id', '=', 'products.id')
             ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->join('users', 'orders.user_id', '=', 'users.id')
             ->whereBetween('orders.created_at', [$startDate, $endDate])
             ->where('orders.order_status', '!=', 5) // Exclude canceled orders
             ->where('orders.order_type', 1) // Only sales orders
+            ->when($userType, function ($query, $userType) {
+                return $query->where('users.user_type', $userType);
+            })
             ->select(
                 'categories.id as category_id',
                 'categories.name_ar',
@@ -95,7 +100,8 @@ class CategoryReportController extends Controller
             'startDate',
             'endDate',
             'parentCategories',
-            'parentCategoryId'
+            'parentCategoryId',
+            'userType'
         ));
     }
 
@@ -157,15 +163,20 @@ class CategoryReportController extends Controller
 
         $startDate = $request->input('start_date', now()->subMonth()->startOfDay());
         $endDate = $request->input('end_date', now()->endOfDay());
+        $userType = $request->input('user_type', null);
 
         // Get the same data as index()
         $salesData = DB::table('order_products')
             ->join('orders', 'order_products.order_id', '=', 'orders.id')
             ->join('products', 'order_products.product_id', '=', 'products.id')
             ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->join('users', 'orders.user_id', '=', 'users.id')
             ->whereBetween('orders.created_at', [$startDate, $endDate])
             ->where('orders.order_status', '!=', 5)
             ->where('orders.order_type', 1)
+            ->when($userType, function ($query, $userType) {
+                return $query->where('users.user_type', $userType);
+            })
             ->select(
                 'categories.id',
                 'categories.name_ar',

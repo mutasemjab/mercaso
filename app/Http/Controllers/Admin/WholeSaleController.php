@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use App\Exports\UsersExport;
-
-use App\Models\Shop;
-use App\Models\WholeSale;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
+use Illuminate\Http\Request;
 use App\Exports\UsersSampleExport;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Excel as ExcelWriter;
 
 class WholeSaleController extends Controller
@@ -57,7 +55,7 @@ class WholeSaleController extends Controller
         if ($request->search) {
             $data = User::where('user_type', 2)
                         ->where(function ($q) use ($request) {
-                            $q->where(\DB::raw('CONCAT_WS(" ", `name`, `email`, `phone`)'), 'like', '%' . $request->search . '%');
+                            $q->where(DB::raw('CONCAT_WS(" ", `name`, `email`, `phone`)'), 'like', '%' . $request->search . '%');
                         })
                         ->paginate(PAGINATION_COUNT);
         } else {
@@ -106,6 +104,9 @@ class WholeSaleController extends Controller
             $customer->email = $request->get('email');
             $customer->phone = $request->get('phone');
 
+            if ($request->pin) {
+                $customer->pin = $request->get('pin');
+            }
 
             if ($request->activate) {
                 $customer->activate = $request->get('activate');

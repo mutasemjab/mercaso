@@ -58,6 +58,11 @@ class User extends Authenticatable
        return $this->hasMany(WholeSale::class);
     }
 
+    public function wholesaleRequests()
+    {
+       return $this->hasMany(WholesaleRequest::class);
+    }
+
     public function orders()
     {
        return $this->hasMany(Order::class);
@@ -100,6 +105,14 @@ public function getTotalPointsSpentAttribute(): int
 public function getPointProductPurchasesCountAttribute(): int
 {
     return $this->pointProductPurchases()->count();
+}
+
+/**
+ * Check if user is wholesale
+ */
+public function isWholesale(): bool
+{
+    return $this->user_type == 2;
 }
 
 

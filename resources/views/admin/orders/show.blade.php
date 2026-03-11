@@ -160,9 +160,10 @@
         }
 
         .product-image {
-            width: 30px;
-            height: 25px;
+            width: 50px;
+            height: 50px;
             object-fit: cover;
+            border-radius: 4px;
         }
 
         /* Totals Section */
@@ -446,10 +447,11 @@
         <table class="products-table">
             <thead>
                 <tr>
-                    <th style="width: 25%;">Description</th>
-                    <th style="width: 15%;">Barcode</th>
-                    <th style="width: 10%;">Size</th>
+                    <th style="width: 8%;">Image</th>
+                    <th style="width: 22%;">Product Name</th>
+                    <th style="width: 13%;">Barcode</th>
                     <th style="width: 12%;">SKU</th>
+                    <th style="width: 10%;">Size</th>
                     <th style="width: 10%;">Quantity</th>
                     <th style="width: 10%;text-align: right;">Price</th>
                     <th style="width: 8%;text-align: right;">Amount</th>
@@ -458,6 +460,14 @@
             <tbody>
                 @foreach ($order->products as $product)
                     <tr>
+                        <td>
+                            @if ($product->productImages->first())
+                                <img src="{{ asset($product->productImages->first()->photo) }}"
+                                    alt="{{ $product->name_en }}" class="product-image">
+                            @else
+                                -
+                            @endif
+                        </td>
                         <td>{{ $product->name_en }}</td>
                         <td>
                             @if ($product->pivot->unit_id && $product->units->where('id', $product->pivot->unit_id)->first())
@@ -466,6 +476,7 @@
                                 -
                             @endif
                         </td>
+                        <td>{{ $product->sku ?? $product->id }}</td>
                         <td>
                             @if ($product->pivot->unit_id)
                                 {{ \App\Models\Unit::find($product->pivot->unit_id)->name_en }}
@@ -473,7 +484,6 @@
                                 -
                             @endif
                         </td>
-                        <td>{{ $product->sku ?? $product->id }}</td>
                         <td class="numeric">{{ $product->pivot->quantity }}</td>
                         <td class="numeric">
                             ${{ number_format($product->pivot->total_price_before_tax / $product->pivot->quantity, 2) }}
@@ -519,5 +529,30 @@
         function printInvoice() {
             window.print();
         }
+
+        // Check if coming from customer-report and hide image column
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromParam = urlParams.get('from');
+
+            if (fromParam === 'customer-report') {
+                // Hide the Image column (index 0 in products-table)
+                const table = document.querySelector('.products-table');
+                if (table) {
+                    // Hide header
+                    const headerRow = table.querySelector('thead tr');
+                    if (headerRow && headerRow.children[0]) {
+                        headerRow.children[0].style.display = 'none';
+                    }
+                    // Hide all cells in first column
+                    const rows = table.querySelectorAll('tbody tr');
+                    rows.forEach(row => {
+                        if (row.children[0]) {
+                            row.children[0].style.display = 'none';
+                        }
+                    });
+                }
+            }
+        });
     </script>
 @endsection
