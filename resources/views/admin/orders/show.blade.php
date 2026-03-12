@@ -530,25 +530,34 @@
             window.print();
         }
 
-        // Check if coming from customer-report and hide image column
+        // Check if coming from customer-report and hide/show columns accordingly
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const fromParam = urlParams.get('from');
+            const table = document.querySelector('.products-table');
 
-            if (fromParam === 'customer-report') {
-                // Hide the Image column (index 0 in products-table)
-                const table = document.querySelector('.products-table');
-                if (table) {
-                    // Hide header
-                    const headerRow = table.querySelector('thead tr');
+            if (table) {
+                const headerRow = table.querySelector('thead tr');
+                const rows = table.querySelectorAll('tbody tr');
+
+                if (fromParam === 'customer-report') {
+                    // Show name (index 1), hide image (index 0)
                     if (headerRow && headerRow.children[0]) {
                         headerRow.children[0].style.display = 'none';
                     }
-                    // Hide all cells in first column
-                    const rows = table.querySelectorAll('tbody tr');
                     rows.forEach(row => {
                         if (row.children[0]) {
                             row.children[0].style.display = 'none';
+                        }
+                    });
+                } else {
+                    // Show image (index 0), hide name (index 1)
+                    if (headerRow && headerRow.children[1]) {
+                        headerRow.children[1].style.display = 'none';
+                    }
+                    rows.forEach(row => {
+                        if (row.children[1]) {
+                            row.children[1].style.display = 'none';
                         }
                     });
                 }

@@ -284,6 +284,7 @@ class OrderController extends Controller
     $validatedData = $request->validate([
         'date' => 'required|date',
         'payment_type' => 'required|string',
+        'payment_status' => 'required|integer|in:1,2',
         'products' => 'required|array',
         'products.*.name' => 'required|string',
         'products.*.unit' => 'required|integer|exists:units,id',
@@ -304,6 +305,7 @@ class OrderController extends Controller
     
     $order->update([
         'order_status' => $request->order_status,
+        'payment_status' => $request->payment_status,
         'date' => Carbon::parse($request->date),
         'payment_type' => $request->payment_type,
         'address_id' => $request->address,

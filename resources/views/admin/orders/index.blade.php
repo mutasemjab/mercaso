@@ -49,6 +49,7 @@
                     <table id="example2" class="table table-bordered table-hover">
                         <thead class="custom_thead">
                             <th>{{ __('messages.Order_Number') }}</th>
+                            <th>{{ __('messages.Phone') }}</th>
                             <th>Type of delivery</th>
                             <th>{{ __('messages.Date') }}</th>
                             <th>{{ __('messages.order_type') }}</th>
@@ -65,6 +66,7 @@
                                 <tr>
 
                                     <td>{{ $info->number }}</td>
+                                    <td>{{ $info->user->phone ?? '-' }}</td>
                                     <td>{{ $info->type_delivery == 1 ? 'pickup' : 'delivery' }}</td>
                                     <td>{{ $info->date }}</td>
                                     <td style="{{ $info->order_type == 2 ? 'color:red;' : '' }}">

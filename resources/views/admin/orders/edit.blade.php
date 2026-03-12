@@ -9,13 +9,9 @@
 
         <input type="hidden" name="redirect_to" id="redirect_to" value="index">
 
-        @if($order->order_status == 6 || $order->order_status == 4)
-       @else
         <h6 style="color: red"> Just Click One Click Only </h6>
         <button type="submit" class="btn btn-primary" onclick="setRedirect('index')">{{ __('messages.Submit') }}</button>
         <button type="submit" class="btn btn-primary" onclick="setRedirect('show')">{{ __('messages.Save_Print') }}</button>
-        @endif
-
 
         @if($order->order_status == 6)
         <h3 style="color:red;">{{ __('messages.Refund') }}</h3>
@@ -51,6 +47,15 @@
         </div>
         <div class="col-md-6">
             <div class="form-group mt-3">
+                <label for="payment_status">{{ __('messages.payment_status') }}</label>
+                <select name="payment_status" class="form-control" required>
+                    <option value="1" {{ $order->payment_status == 1 ? 'selected' : '' }}>{{ __('messages.paid') }}</option>
+                    <option value="2" {{ $order->payment_status == 2 ? 'selected' : '' }}>{{ __('messages.unpaid') }}</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mt-3">
                 <label for="userSearch">{{ __('messages.User') }}</label>
                 <input type="text" id="userSearch" class="form-control" name="user" value="{{ $order->user->name }}" required />
             </div>
@@ -78,6 +83,7 @@
         <table class="table table-bordered" id="products_table">
             <thead>
                 <tr>
+                    <th>{{ __('messages.Photo') }}</th>
                     <th>{{ __('messages.product') }}</th>
                     <th>{{ __('messages.unit') }}</th>
                     <th>{{ __('messages.quantity') }}</th>
@@ -94,6 +100,13 @@
             <tbody>
                 @foreach ($order->products as $index => $orderProduct)
                 <tr>
+                    <td>
+                        @if($orderProduct->productImages->isNotEmpty())
+                            <img src="{{ asset('storage/' . $orderProduct->productImages->first()->photo) }}" alt="{{ $orderProduct->name_ar }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                        @else
+                            <span class="text-muted text-center d-block">-</span>
+                        @endif
+                    </td>
                     <td><input type="text" class="form-control product-search" name="products[{{ $index }}][name]" value="{{ $orderProduct->name_ar }}" /></td>
                     <td>
                         <select class="form-control product-unit" name="products[{{ $index }}][unit]">
@@ -274,6 +287,7 @@
         $('#add_row').on('click', function() {
             $('#products_table tbody').append(`
                 <tr>
+                    <td></td>
                     <td><input type="text" class="form-control product-search" name="products[${rowIdx}][name]" /></td>
                     <td>
                         <select class="form-control product-unit" name="products[${rowIdx}][unit]">
