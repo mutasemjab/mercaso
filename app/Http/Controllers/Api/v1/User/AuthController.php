@@ -24,12 +24,22 @@ class AuthController extends Controller
     public function change_user_type()
     {
         $user = auth()->user();
-        if($user->user_type == 1)
-        {
-            $user->user_type = 2;  
-        }else{
-            $user->user_type = 1;  
+
+        if ($user->user_type == 1) {
+            // Switching to wholesale — must have an approved verification
+            $approvedRequest = WholesaleRequest::where('user_id', $user->id)
+                ->where('status', 2)
+                ->first();
+
+            if (!$approvedRequest) {
+                return response(['errors' => ['You must have an approved wholesale verification to switch to wholesale']], 403);
+            }
+
+            $user->user_type = 2;
+        } else {
+            $user->user_type = 1;
         }
+
         $user->save();
         return response(['success' => 'The account change successfully'], 200);
     }
@@ -46,13 +56,11 @@ class AuthController extends Controller
             return response(['errors' => $validator->errors()], 422);
         }
 
-        // Check if user already has a pending request
-        $pendingRequest = WholesaleRequest::where('user_id', $user->id)
-            ->where('status', 1)
-            ->first();
+        // Check if user already has any wholesale request (pending, approved, or rejected)
+        $existingRequest = WholesaleRequest::where('user_id', $user->id)->first();
 
-        if ($pendingRequest) {
-            return response(['errors' => ['You already have a pending wholesale request']], 400);
+        if ($existingRequest) {
+            return response(['errors' => ['You already have a wholesale request']], 400);
         }
 
         $imagePath = uploadImage('assets/admin/uploads/commercial_registrations', $request->commercial_registration);
@@ -252,10 +260,7 @@ class AuthController extends Controller
    {
         $user = auth()->user();
 
-        $wholesaleRequest = null;
-        if ($user->user_type == 1) {
-            $wholesaleRequest = WholesaleRequest::where('user_id', $user->id)->latest()->first();
-        }
+        $wholesaleRequest = WholesaleRequest::where('user_id', $user->id)->latest()->first();
 
         return response()->json([
             'user' => $user,
