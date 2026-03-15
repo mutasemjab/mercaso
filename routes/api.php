@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\v1\User\ProductReviewController;
 use App\Http\Controllers\Api\v1\User\UserAddressController;
 use App\Http\Controllers\Api\v1\User\PageController;
 use App\Http\Controllers\Api\v1\User\ForgotPasswordController;
+use App\Http\Controllers\Api\v1\User\OTPPasswordResetController;
 use App\Http\Controllers\Api\v1\User\PointProductController;
 use App\Http\Controllers\Api\v1\User\BrandController;
 /*
@@ -51,10 +52,15 @@ Route::group(['prefix' => 'v1/user'], function () {
     //---------------- Auth --------------------//
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    // Mobile app password reset flow
+    // Mobile app password reset flow (Email-based)
     Route::post('/password/request-reset', [ForgotPasswordController::class, 'requestReset']);
     Route::post('/password/verify-code', [ForgotPasswordController::class, 'verifyCode']);
     Route::post('/password/reset', [ForgotPasswordController::class, 'resetPassword']);
+
+    // SMS OTP password reset flow
+    Route::post('/password/send-otp', [OTPPasswordResetController::class, 'sendOTP']);
+    Route::post('/password/resend-otp', [OTPPasswordResetController::class, 'resendOTP']);
+    Route::post('/password/reset-otp', [OTPPasswordResetController::class, 'resetPassword']);
 
     //Route unAuth
     Route::get('/latest',  [ProductController::class, 'latest']); // Done
