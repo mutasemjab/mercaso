@@ -31,7 +31,7 @@ class OTPPasswordResetController extends Controller
 
         $phone = $request->phone;
 
-        try {
+        //try {
             // Delete old OTP records for this phone
             DB::table('otp_codes')->where('phone', $phone)->delete();
 
@@ -65,12 +65,12 @@ class OTPPasswordResetController extends Controller
                 'message' => 'OTP has been sent to your phone',
                 'phone' => $phone
             ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 0,
-                'message' => 'An error occurred. Please try again later.'
-            ], 500);
-        }
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'status' => 0,
+        //         'message' => 'An error occurred. Please try again later.'
+        //     ], 500);
+        // }
     }
 
     /**
