@@ -24,6 +24,11 @@ return [
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
+    'twilio' => [
+        'sid' => env('SID_TWILIO'),
+        'token' => env('TOKEN_TWILIO'),
+        'from' => env('FROM_TWILIO'),
+    ],
 
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
