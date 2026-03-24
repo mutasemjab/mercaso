@@ -450,7 +450,6 @@
                     <th style="width: 8%;">Image</th>
                     <th style="width: 22%;">Product Name</th>
                     <th style="width: 13%;">Barcode</th>
-                    <th style="width: 12%;">SKU</th>
                     <th style="width: 10%;">Size</th>
                     <th style="width: 10%;">Quantity</th>
                     <th style="width: 10%;text-align: right;">Price</th>
@@ -476,7 +475,6 @@
                                 -
                             @endif
                         </td>
-                        <td>{{ $product->sku ?? $product->id }}</td>
                         <td>
                             @if ($product->pivot->unit_id)
                                 {{ \App\Models\Unit::find($product->pivot->unit_id)->name_en }}

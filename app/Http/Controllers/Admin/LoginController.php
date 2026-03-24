@@ -48,6 +48,7 @@ class LoginController extends Controller
      $admin=Admin::findorFail($id);
      try{
          $admin->username = $request->get('username');
+         $admin->mobile = $request->get('mobile');
          $admin->password = Hash::make($request->password);
 
          if($admin->save()){

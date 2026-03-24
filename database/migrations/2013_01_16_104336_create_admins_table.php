@@ -19,8 +19,9 @@ return new class extends Migration
             $table->string('name', 100);
             $table->string('email', 100)->nullable();
             $table->string('username', 100);
+            $table->string('mobile', 20)->nullable();
             $table->string('password', 225);
-            $table->boolean('is_super_admin')->default(false); 
+            $table->boolean('is_super_admin')->default(false);
            $table->timestamps();
         });
 

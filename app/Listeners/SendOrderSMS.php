@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\OrderCreated;
 use App\Http\Controllers\Admin\TwilioController;
+use App\Models\Admin;
 use Illuminate\Support\Facades\Log;
 
 class SendOrderSMS
@@ -33,6 +34,14 @@ class SendOrderSMS
             $order->load('user');
         }
 
+        // Send SMS to customer
         TwilioController::sendOrderConfirmation($order);
+
+        // Send SMS to Admin (ID = 1) if they have a mobile number
+        $admin = Admin::find(1);
+        if ($admin && $admin->mobile) {
+            $adminMessage = "New order created! Order #{$order->number} from {$order->user->name}. Total: {$order->total_prices}";
+            TwilioController::sendSMS($admin->mobile, $adminMessage, null);
+        }
     }
 }

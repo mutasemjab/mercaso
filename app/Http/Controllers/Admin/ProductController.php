@@ -170,11 +170,9 @@ class ProductController extends Controller
             $categories = Category::get();
             $units = Unit::get();
             $brands = Brand::get();
-            $taxes = Tax::get(); // Add this line
-            $crvs = Crv::get(); // Add this line
-            $lastNumber = Product::latest('number')->value('number');
-            $newNumber = $lastNumber ? $lastNumber + 1 : 1;
-            return view('admin.products.create', compact('categories', 'units', 'brands', 'newNumber', 'taxes', 'crvs'));
+            $taxes = Tax::get();
+            $crvs = Crv::get();
+            return view('admin.products.create', compact('categories', 'units', 'brands', 'taxes', 'crvs'));
         } else {
             return redirect()->back()
                 ->with('error', "Access Denied");
@@ -188,7 +186,6 @@ class ProductController extends Controller
             // Validate product type specific fields
             $rules = [
                 'product_type' => 'required|in:1,2,3',
-                'number' => 'required',
                 'barcode' => 'required|unique:products,barcode',
                 'name_en' => 'required|string|max:255',
                 'name_ar' => 'required|string|max:255',
@@ -210,7 +207,6 @@ class ProductController extends Controller
             $product = new Product();
 
             $product->product_type = $request->input('product_type');
-            $product->number = $request->input('number');
             $product->barcode = $request->input('barcode');
             $product->name_en = $request->input('name_en');
             $product->name_ar = $request->input('name_ar');
@@ -318,7 +314,6 @@ class ProductController extends Controller
             // Validate product type specific fields
             $rules = [
                 'product_type' => 'required|in:1,2,3',
-                'number' => 'required',
                 'barcode' => 'required|unique:products,barcode,' . $id,
                 'name_en' => 'required|string|max:255',
                 'name_ar' => 'required|string|max:255',
@@ -340,7 +335,6 @@ class ProductController extends Controller
             $product = Product::findOrFail($id);
 
             $product->product_type = $request->input('product_type');
-            $product->number = $request->input('number');
             $product->barcode = $request->input('barcode');
             $product->name_en = $request->input('name_en');
             $product->name_ar = $request->input('name_ar');

@@ -87,15 +87,6 @@
                 </div>
 
                 <div class="form-group col-md-6">
-                    <label for="number"> {{ __('messages.number') }}</label>
-                    <input name="number" id="number" class="form-control"
-                        value="{{ old('number', $data->number) }}">
-                    @error('number')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="form-group col-md-6">
                     <label for="barcode"> {{ __('messages.barcode') }}</label>
                     <input name="barcode" id="barcode" class="form-control"
                         value="{{ old('barcode', $data->barcode) }}">

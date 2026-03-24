@@ -14,6 +14,16 @@ class Product extends Model
     protected $hidden = ['name_en', 'name_ar', 'name_fr'];
     protected $appends = ['name','description'];
 
+    protected static function booted()
+    {
+        static::creating(function ($product) {
+            if (!$product->number) {
+                $lastProduct = Product::orderByRaw('CAST(number AS UNSIGNED) DESC')->first();
+                $product->number = $lastProduct ? intval($lastProduct->number) + 1 : 1;
+            }
+        });
+    }
+
        // Global scope to include only products with status = 1
     // protected static function booted()
     // {

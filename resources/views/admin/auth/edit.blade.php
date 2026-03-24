@@ -39,6 +39,16 @@ edit Admin Login
 </div>
 </div>
 
+<div class="col-md-6">
+<div class="form-group">
+  <label>Mobile</label>
+  <input name="mobile" id="mobile" class="form-control" value="{{ old('mobile',$data['mobile']) }}"    >
+  @error('mobile')
+  <span class="text-danger">{{ $message }}</span>
+  @enderror
+</div>
+</div>
+
 
 
 
