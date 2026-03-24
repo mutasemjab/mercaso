@@ -249,10 +249,10 @@ class OrderController extends Controller
             }
 
             // Generate the order number based on order type, ensuring uniqueness
-            $lastOrder = Order::where('order_type', 1)->orderBy('number', 'desc')->lockForUpdate()->first();
+            $lastOrder = Order::where('order_type', 1)->orderByRaw('CAST(number AS UNSIGNED) DESC')->lockForUpdate()->first();
             $newNumber = $lastOrder ? $lastOrder->number + 1 : 1;
 
-            $lastOrderForRefund = Order::where('order_type', 2)->orderBy('number', 'desc')->lockForUpdate()->first();
+            $lastOrderForRefund = Order::where('order_type', 2)->orderByRaw('CAST(number AS UNSIGNED) DESC')->lockForUpdate()->first();
             $newNumberOfRefund = $lastOrderForRefund ? $lastOrderForRefund->number + 1 : 1;
 
             $orderNumber = $request->order_type == 2 ? $newNumberOfRefund : $newNumber;
