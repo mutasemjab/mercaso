@@ -18,8 +18,12 @@ class CategoryReportController extends Controller
         }
 
         // Get date range from request or use defaults
-        $startDate = $request->input('start_date', now()->subMonth()->startOfDay());
-        $endDate = $request->input('end_date', now()->endOfDay());
+        $startDate = $request->has('start_date')
+            ? Carbon::createFromFormat('Y-m-d', $request->input('start_date'))->startOfDay()
+            : now()->subMonth()->startOfDay();
+        $endDate = $request->has('end_date')
+            ? Carbon::createFromFormat('Y-m-d', $request->input('end_date'))->endOfDay()
+            : now()->endOfDay();
         $parentCategoryId = $request->input('parent_category_id', null);
         $userType = $request->input('user_type', null); // 1 = retail, 2 = wholesale
 
@@ -161,8 +165,12 @@ class CategoryReportController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $startDate = $request->input('start_date', now()->subMonth()->startOfDay());
-        $endDate = $request->input('end_date', now()->endOfDay());
+        $startDate = $request->has('start_date')
+            ? Carbon::createFromFormat('Y-m-d', $request->input('start_date'))->startOfDay()
+            : now()->subMonth()->startOfDay();
+        $endDate = $request->has('end_date')
+            ? Carbon::createFromFormat('Y-m-d', $request->input('end_date'))->endOfDay()
+            : now()->endOfDay();
         $userType = $request->input('user_type', null);
 
         // Get the same data as index()
