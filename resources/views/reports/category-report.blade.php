@@ -360,15 +360,21 @@
 
             body,
             html {
-                background-color: white;
+                background-color: white !important;
+                background-image: none !important;
                 margin: 0;
                 padding: 0;
+                font-family: Arial, Helvetica, sans-serif !important;
+                font-size: 11px !important;
+                color: #000 !important;
             }
 
             .container-fluid {
                 max-width: 100%;
                 margin: 0;
-                padding: 15px;
+                padding: 5px;
+                background-color: white !important;
+                background-image: none !important;
             }
 
             .card {
@@ -376,6 +382,8 @@
                 border: none !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                background-color: white !important;
+                background-image: none !important;
             }
 
             .card-header {
@@ -393,6 +401,9 @@
             .table-responsive {
                 overflow: visible !important;
                 display: block !important;
+                background-color: white !important;
+                background-image: none !important;
+                border: none !important;
             }
 
             .py-4 {
@@ -422,11 +433,14 @@
             }
 
             .report-table {
-                font-size: 11px !important;
+                font-size: 9px !important;
                 width: 100%;
                 border-collapse: collapse !important;
-                margin: 10px 0;
+                margin: 3px 0;
                 display: table !important;
+                background-color: white !important;
+                background-image: none !important;
+                line-height: 1.2;
             }
 
             .report-table tbody {
@@ -448,11 +462,11 @@
             .report-table thead th {
                 background-color: #333 !important;
                 color: white !important;
-                padding: 5px 4px !important;
+                padding: 4px 3px !important;
                 text-align: right;
-                border: 1px solid #333 !important;
+                border: 1px solid #000 !important;
                 font-weight: bold !important;
-                font-size: 10px !important;
+                font-size: 9px !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
@@ -460,18 +474,18 @@
             th {
                 background-color: #333 !important;
                 color: white !important;
-                padding: 5px 4px !important;
+                padding: 4px 3px !important;
                 text-align: right;
-                border: 1px solid #333 !important;
-                font-weight: bold;
-                font-size: 10px;
+                border: 1px solid #000 !important;
+                font-weight: bold !important;
+                font-size: 9px !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
 
             td {
-                padding: 4px 3px !important;
-                border: 1px solid #ddd;
+                padding: 3px 2px !important;
+                border: 1px solid #000 !important;
                 text-align: right;
             }
 
@@ -481,28 +495,38 @@
             }
 
             tbody tr:nth-child(even) {
-                background-color: #f9f9f9;
+                background-color: white !important;
             }
 
             tbody tr:nth-child(odd) {
-                background-color: white;
+                background-color: white !important;
             }
 
             .total-row {
-                background-color: #333 !important;
+                background-color: #2c3e50 !important;
                 color: white !important;
-                font-weight: bold;
+                font-weight: bold !important;
+                border-top: 2px solid #2c3e50 !important;
             }
 
             .total-row td {
-                border: 1px solid #333 !important;
+                background-color: #2c3e50 !important;
+                border: 1px solid #000 !important;
                 color: white !important;
+                padding: 4px 3px !important;
+                font-weight: bold !important;
+                font-size: 9px !important;
+                display: table-cell !important;
+            }
+
+            .total-row td.no-print {
+                display: table-cell !important;
             }
 
             .badge {
                 background-color: transparent !important;
                 color: black !important;
-                border: 1px solid #999;
+                border: none !important;
                 padding: 2px 3px;
                 font-size: 9px;
             }
@@ -511,9 +535,17 @@
                 page-break-inside: avoid;
             }
 
+            /* Hide footer and copyright */
+            footer,
+            .footer,
+            [class*="footer"],
+            [class*="copyright"] {
+                display: none !important;
+            }
+
             @page {
                 size: A4 landscape;
-                margin: 8mm;
+                margin: 5mm;
             }
         }
 
