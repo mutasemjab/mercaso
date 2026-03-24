@@ -2,6 +2,15 @@
 
 @section('content')
     <div class="container-fluid py-4">
+        <!-- Print Header (Only visible when printing) -->
+        <div class="print-header">
+            <h2 class="print-title">{{ __('messages.category_report') }}</h2>
+            <p class="print-subtitle">{{ __('messages.sales_and_inventory_overview') }}</p>
+            <p class="print-date">
+                {{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}
+            </p>
+        </div>
+
         <!-- Header Section -->
         <div class="row mb-4 no-print">
             <div class="col-12">
@@ -277,6 +286,32 @@
 
     <!-- Styles -->
     <style>
+        /* Print Header Styles */
+        .print-header {
+            display: none;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .print-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .print-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin: 0 0 8px 0;
+        }
+
+        .print-date {
+            font-size: 12px;
+            color: #666;
+            margin: 0;
+        }
+
         .border-left-primary {
             border-left: 4px solid #4e73df;
         }
@@ -349,6 +384,31 @@
 
         /* Print Styles */
         @media print {
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 15px;
+            }
+
+            .print-title {
+                font-size: 20px !important;
+                font-weight: bold !important;
+                margin: 0 0 8px 0 !important;
+                color: #000 !important;
+            }
+
+            .print-subtitle {
+                font-size: 12px !important;
+                color: #000 !important;
+                margin: 0 0 6px 0 !important;
+            }
+
+            .print-date {
+                font-size: 11px !important;
+                color: #000 !important;
+                margin: 0 !important;
+            }
+
             .no-print {
                 display: none !important;
             }
