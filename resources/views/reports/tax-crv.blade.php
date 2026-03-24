@@ -41,14 +41,23 @@
                         
                         <div class="form-group mr-3 mb-2">
                             <label for="end_date" class="mr-2 font-weight-bold">End Date:</label>
-                            <input type="date" 
-                                   name="end_date" 
+                            <input type="date"
+                                   name="end_date"
                                    id="end_date"
-                                   class="form-control" 
+                                   class="form-control"
                                    value="{{ \Carbon\Carbon::parse($endDate)->format('Y-m-d') }}"
                                    required>
                         </div>
-                        
+
+                        <div class="form-group mr-3 mb-2">
+                            <label for="user_type" class="mr-2 font-weight-bold">Type:</label>
+                            <select name="user_type" id="user_type" class="form-control">
+                                <option value="all" {{ request('user_type', 'all') === 'all' ? 'selected' : '' }}>{{ trans('messages.all') }}</option>
+                                <option value="wholesale" {{ request('user_type') === 'wholesale' ? 'selected' : '' }}>{{ trans('messages.wholesale') }}</option>
+                                <option value="retail" {{ request('user_type') === 'retail' ? 'selected' : '' }}>{{ trans('messages.retail') }}</option>
+                            </select>
+                        </div>
+
                         <button type="submit" class="btn btn-primary btn-lg mb-2">
                             <i class="fas fa-sync-alt mr-2"></i>Generate Report
                         </button>

@@ -15,16 +15,26 @@ class TaxCrvReportsController extends Controller
         // Get date range from request or use defaults
         $startDate = $request->input('start_date', now()->startOfMonth());
         $endDate = $request->input('end_date', now()->endOfMonth());
+        $userType = $request->input('user_type', 'all');
 
         // Get sales data grouped by category
-        $salesReport = DB::table('order_products')
+        $query = DB::table('order_products')
             ->join('orders', 'order_products.order_id', '=', 'orders.id')
             ->join('products', 'order_products.product_id', '=', 'products.id')
             ->join('categories', 'products.category_id', '=', 'categories.id')
+            ->join('users', 'orders.user_id', '=', 'users.id')
             ->whereBetween('orders.created_at', [$startDate, $endDate])
             ->where('orders.order_status', '!=', 5) // Exclude canceled orders
-            ->where('orders.order_type', 1) // Only sales orders
-            ->select(
+            ->where('orders.order_type', 1); // Only sales orders
+
+        // Filter by user type (wholesale/retail)
+        if ($userType === 'wholesale') {
+            $query->where('users.user_type', 2);
+        } elseif ($userType === 'retail') {
+            $query->where('users.user_type', 1);
+        }
+
+        $salesReport = $query->select(
                 'categories.id as category_id',
                 'categories.name_en as category_name',
                 DB::raw('SUM(order_products.quantity) as quantity'),
