@@ -164,17 +164,17 @@ $(document).ready(function() {
         $('#user_type_group').hide();
         $('#selected_users_group').hide();
 
-        // Remove required attribute from all
-        $('#user_type').prop('required', false);
-        $('#selected_users').prop('required', false);
+        // Disable all fields to prevent them from being sent
+        $('#user_type').prop('disabled', true).prop('required', false);
+        $('#selected_users').prop('disabled', true).prop('required', false);
 
-        // Show relevant group and make required
+        // Show relevant group and enable/require as needed
         if (sendType === 'by_type') {
             $('#user_type_group').show();
-            $('#user_type').prop('required', true);
+            $('#user_type').prop('disabled', false).prop('required', true);
         } else if (sendType === 'selected') {
             $('#selected_users_group').show();
-            $('#selected_users').prop('required', true);
+            $('#selected_users').prop('disabled', false).prop('required', true);
         }
     });
 
