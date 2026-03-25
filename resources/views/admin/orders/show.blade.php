@@ -461,7 +461,7 @@
                     <tr>
                         <td>
                             @if ($product->productImages->first())
-                                <img src="{{ asset($product->productImages->first()->photo) }}"
+                                <img src="{{ asset('assets/admin/uploads/' . $product->productImages->first()->photo) }}"
                                     alt="{{ $product->name_en }}" class="product-image">
                             @else
                                 -
