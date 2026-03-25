@@ -174,9 +174,15 @@
                     @enderror
                 </div>
 
-          
+                <div class="form-group col-md-6">
+                    <label for="purchase_price">Purchase Price</label>
+                    <input name="purchase_price" id="purchase_price" class="form-control" type="number" step="0.01" min="0" value="{{ old('purchase_price') }}">
+                    @error('purchase_price')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
 
-          
+
 
                 <div class="form-group col-md-6">
                     <label for="status"> {{ __('messages.Status') }}</label>
@@ -241,7 +247,7 @@
                     <div class="tab-pane fade show active" id="tab1" role="tabpanel" aria-labelledby="tab1-tab">
                         <div id="product-units-container" class="mt-3">
                             <div class="row product-unit">
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-2">
                                     <label for="unit">{{ __('messages.unit_for_wholeSale') }}</label>
                                     <select name="units[]" class="form-control">
                                         <option value="">Select Unit</option>
@@ -250,17 +256,21 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-2">
                                     <label for="barcode">{{ __('messages.barcode') }}</label>
                                     <input type="number" class="form-control" name="barcodes[]">
                                 </div>
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-2">
                                     <label for="releation">{{ __('messages.releation') }}</label>
                                     <input type="number" class="form-control" name="releations[]">
                                 </div>
-                                <div class="form-group col-md-3">
+                                <div class="form-group col-md-2">
                                     <label for="selling_price">{{ __('messages.selling_price') }}</label>
                                     <input type="number" class="form-control" name="selling_prices[]" step="0.01" min="0">
+                                </div>
+                                <div class="form-group col-md-2">
+                                    <label for="purchase_price">Purchase Price</label>
+                                    <input type="number" class="form-control" name="purchase_prices[]" step="0.01" min="0">
                                 </div>
                             </div>
                         </div>

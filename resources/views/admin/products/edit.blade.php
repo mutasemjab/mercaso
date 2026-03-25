@@ -228,7 +228,14 @@
                     @enderror
                 </div>
 
-            
+                <div class="form-group col-md-6">
+                    <label for="purchase_price">Purchase Price</label>
+                    <input name="purchase_price" id="purchase_price" class="form-control" type="number" step="0.01" min="0"
+                        value="{{ old('purchase_price', $data->purchase_price) }}">
+                    @error('purchase_price')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
 
                 <div class="form-group col-md-6">
                     <label for="status"> {{ __('messages.Status') }}</label>
@@ -315,7 +322,7 @@
                             @foreach ($data->units as $productUnit)
                                 <div class="row product-unit">
                                     <!-- Unit Selection -->
-                                    <div class="form-group col-md-3">
+                                    <div class="form-group col-md-2">
                                         <label for="unit">{{ __('messages.unit_for_wholeSale') }}</label>
                                         <select name="units[]" class="form-control">
                                             <option value="">Select Unit</option>
@@ -326,21 +333,27 @@
                                     </div>
 
                                     <!-- Barcode Input -->
-                                    <div class="form-group col-md-3">
+                                    <div class="form-group col-md-2">
                                         <label for="barcode">{{ __('messages.barcode') }}</label>
                                         <input type="number" class="form-control" name="barcodes[]" value="{{ $productUnit->pivot->barcode }}">
                                     </div>
 
                                     <!-- Releation Input -->
-                                    <div class="form-group col-md-3">
+                                    <div class="form-group col-md-2">
                                         <label for="releation">{{ __('messages.releation') }}</label>
                                         <input type="number" class="form-control" name="releations[]" value="{{ $productUnit->pivot->releation }}">
                                     </div>
 
                                     <!-- Selling Price Input -->
-                                    <div class="form-group col-md-3">
+                                    <div class="form-group col-md-2">
                                         <label for="selling_price">{{ __('messages.selling_price') }}</label>
                                         <input type="number" class="form-control" name="selling_prices[]" value="{{ $productUnit->pivot->selling_price }}" step="any">
+                                    </div>
+
+                                    <!-- Purchase Price Input -->
+                                    <div class="form-group col-md-2">
+                                        <label for="purchase_price">Purchase Price</label>
+                                        <input type="number" class="form-control" name="purchase_prices[]" value="{{ $productUnit->pivot->purchase_price ?? 0 }}" step="0.01" min="0">
                                     </div>
                                 </div>
                             @endforeach

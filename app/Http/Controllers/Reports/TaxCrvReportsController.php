@@ -42,7 +42,8 @@ class TaxCrvReportsController extends Controller
                 DB::raw('SUM(order_products.discount_value + COALESCE(order_products.line_discount_value, 0)) as discount'),
                 DB::raw('SUM(order_products.total_price_after_tax) as total'),
                 DB::raw('SUM(order_products.tax_value) as tax'),
-                DB::raw('SUM(order_products.quantity * products.crv) as crv')
+                DB::raw('SUM(order_products.quantity * products.crv) as crv'),
+                DB::raw('SUM(order_products.quantity * products.purchase_price) as total_cost')
             )
             ->groupBy('categories.id', 'categories.name_en')
             ->orderByDesc('total')
@@ -56,16 +57,19 @@ class TaxCrvReportsController extends Controller
             'total' => $salesReport->sum('total'),
             'tax' => $salesReport->sum('tax'),
             'crv' => $salesReport->sum('crv'),
+            'cost' => $salesReport->sum('total_cost'),
         ];
 
         // Calculate percentages and profit
         $salesReport = $salesReport->map(function ($item, $index) use ($totals) {
             $item->row_number = $index + 1;
-            $item->cost = 0; // You can add cost calculation if you have cost data
-            $item->profit = $item->total; // Profit = Total - Cost
-            $item->margin = 100; // Margin percentage
-            $item->percentage_of_sales = $totals['total'] > 0 
-                ? round(($item->total / $totals['total']) * 100, 1) 
+            $item->cost = $item->total_cost;
+            $item->profit = $item->total - $item->total_cost; // Profit = Total - Cost
+            $item->margin = $item->total > 0
+                ? round(($item->profit / $item->total) * 100, 1)
+                : 0;
+            $item->percentage_of_sales = $totals['total'] > 0
+                ? round(($item->total / $totals['total']) * 100, 1)
                 : 0;
             return $item;
         });

@@ -238,6 +238,7 @@ class ProductController extends Controller
                 $product->selling_price_for_user = 0;
             }
 
+            $product->purchase_price = $request->input('purchase_price', 0);
 
             $product->rating = $request->input('rating');
             $product->total_rating = $request->input('total_rating');
@@ -276,6 +277,7 @@ class ProductController extends Controller
                             'barcode' => $request->barcodes[$index] ?? null,
                             'releation' => $request->releations[$index] ?? 1,
                             'selling_price' => $request->selling_prices[$index] ?? 0,
+                            'purchase_price' => $request->purchase_prices[$index] ?? 0,
                         ]);
                     }
                 }
@@ -366,7 +368,7 @@ class ProductController extends Controller
                 $product->selling_price_for_user = 0;
             }
 
-          
+            $product->purchase_price = $request->input('purchase_price', 0);
 
             $product->rating = $request->input('rating');
             $product->total_rating = $request->input('total_rating');
@@ -409,6 +411,7 @@ class ProductController extends Controller
                                 'barcode' => $request->barcodes[$index] ?? null,
                                 'releation' => $request->releations[$index] ?? 1,
                                 'selling_price' => $request->selling_prices[$index] ?? 0,
+                                'purchase_price' => $request->purchase_prices[$index] ?? 0,
                             ]);
                         }
                     }

@@ -219,9 +219,9 @@
                                     <td class="text-right">${{ number_format($totals['total'], 2) }}</td>
                                     <td class="text-right">${{ number_format($totals['tax'], 2) }}</td>
                                     <td class="text-right">${{ number_format($totals['crv'], 2) }}</td>
-                                    <td class="text-right">$0.00</td>
-                                    <td class="text-right">${{ number_format($totals['total'], 2) }}</td>
-                                    <td class="text-right">100%</td>
+                                    <td class="text-right">${{ number_format($totals['cost'], 2) }}</td>
+                                    <td class="text-right">${{ number_format($totals['total'] - $totals['cost'], 2) }}</td>
+                                    <td class="text-right">{{ $totals['total'] > 0 ? round((($totals['total'] - $totals['cost']) / $totals['total']) * 100, 1) : 0 }}%</td>
                                     <td class="text-right">100%</td>
                                 </tr>
                                 @endif
