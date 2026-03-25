@@ -102,7 +102,7 @@
                 <tr>
                     <td>
                         @if($orderProduct->productImages->isNotEmpty())
-                            <img src="{{ asset('storage/' . $orderProduct->productImages->first()->photo) }}" alt="{{ $orderProduct->name_ar }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+                            <img src="{{ asset('assets/admin/uploads/' . $orderProduct->productImages->first()->photo) }}" alt="{{ $orderProduct->name_ar }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
                         @else
                             <span class="text-muted text-center d-block">-</span>
                         @endif
