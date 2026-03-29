@@ -269,7 +269,8 @@ class OrderController extends Controller
     public function show($id)
     {
         $order = Order::with('products', 'products.variations', 'products.units')->findOrFail($id);
-        return view('admin.orders.show', compact('order'));
+        $settings = \App\Models\Setting::first();
+        return view('admin.orders.show', compact('order', 'settings'));
 
     }
 

@@ -37,6 +37,13 @@ class SettingController extends Controller
                 $setting->min_order = $request->get('min_order');
                 $setting->min_order_wholeSale = $request->get('min_order_wholeSale');
                 $setting->phone_number = $request->get('phone_number');
+                $setting->company_name = $request->get('company_name');
+                $setting->street_address = $request->get('street_address');
+                $setting->city = $request->get('city');
+                $setting->state = $request->get('state');
+                $setting->country = $request->get('country');
+                $setting->zip_code = $request->get('zip_code');
+                $setting->company_phone = $request->get('company_phone');
 
                 if ($setting->save()) {
                     return redirect()->route('admin.setting.index')->with(['success' => 'setting created']);
@@ -73,6 +80,13 @@ class SettingController extends Controller
                 $setting->min_order = $request->get('min_order');
                 $setting->min_order_wholeSale = $request->get('min_order_wholeSale');
                 $setting->phone_number = $request->get('phone_number');
+                $setting->company_name = $request->get('company_name');
+                $setting->street_address = $request->get('street_address');
+                $setting->city = $request->get('city');
+                $setting->state = $request->get('state');
+                $setting->country = $request->get('country');
+                $setting->zip_code = $request->get('zip_code');
+                $setting->company_phone = $request->get('company_phone');
 
                 if ($setting->save()) {
                     return redirect()->route('admin.setting.index')->with(['success' => 'setting update']);

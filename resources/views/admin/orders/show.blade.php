@@ -387,10 +387,18 @@
             <div class="company-info">
                 <img src="{{ asset('assets/admin/imgs/logo.png') }}" alt="Company Logo" class="company-logo" />
                 <div class="company-details">
-                    <h1>CALIFORNIA CASH AND CARRY</h1>
-                    <p>791 Oller Street</p>
-                    <p>Mendota, CA United States 93640</p>
-                    <p>(800) 000-0000</p>
+                    @if ($settings && $settings->company_name)
+                        <h1>{{ $settings->company_name }}</h1>
+                    @endif
+                    @if ($settings && $settings->street_address)
+                        <p>{{ $settings->street_address }}</p>
+                    @endif
+                    @if ($settings && ($settings->city || $settings->state || $settings->country || $settings->zip_code))
+                        <p>{{ $settings->city }}{{ $settings->state ? ', ' . $settings->state : '' }} {{ $settings->country }} {{ $settings->zip_code }}</p>
+                    @endif
+                    @if ($settings && $settings->company_phone)
+                        <p>{{ $settings->company_phone }}</p>
+                    @endif
                 </div>
             </div>
             <div class="invoice-title">
