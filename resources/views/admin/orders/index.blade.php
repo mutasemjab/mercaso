@@ -89,9 +89,9 @@
                                             {{ __('messages.Refund') }}
                                         @endif
                                     </td>
-                                    <td>{{ $info->delivery_fee }}</td>
-                                    <td>{{ $info->total_prices }}</td>
-                                    <td>{{ $info->total_discounts }}</td>
+                                    <td>${{ $info->delivery_fee }}</td>
+                                    <td>${{ $info->total_prices }}</td>
+                                    <td>${{ $info->total_discounts }}</td>
                                     <td>{{ $info->payment_type == 1 ? 'cash' : 'visa' }}</td>
                                     <td>
                                         @if ($info->payment_status == 1)

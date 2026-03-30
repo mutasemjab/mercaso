@@ -393,9 +393,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Statistics
         document.getElementById('totalOrders').textContent = stats.total_orders;
-        document.getElementById('totalSpent').textContent = parseFloat(stats.total_spent).toFixed(2);
-        document.getElementById('avgOrderValue').textContent = parseFloat(stats.average_order_value).toFixed(2);
-        document.getElementById('totalDiscount').textContent = parseFloat(stats.total_discount).toFixed(2);
+        document.getElementById('totalSpent').textContent = formatPrice(stats.total_spent);
+        document.getElementById('avgOrderValue').textContent = formatPrice(stats.average_order_value);
+        document.getElementById('totalDiscount').textContent = formatPrice(stats.total_discount);
 
         // Orders table
         const ordersTableBody = document.getElementById('ordersTableBody');
@@ -412,10 +412,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${order.number}</td>
                     <td>${order.date}</td>
                     <td class="text-center"><span class="badge ${statusColor}">${order.status}</span></td>
-                    <td class="text-right">${parseFloat(order.total).toFixed(2)}</td>
-                    <td class="text-right">${parseFloat(order.discount).toFixed(2)}</td>
-                    <td class="text-right">${parseFloat(order.tax).toFixed(2)}</td>
-                    <td class="text-right">${parseFloat(order.delivery_fee).toFixed(2)}</td>
+                    <td class="text-right">${formatPrice(order.total)}</td>
+                    <td class="text-right">${formatPrice(order.discount)}</td>
+                    <td class="text-right">${formatPrice(order.tax)}</td>
+                    <td class="text-right">${formatPrice(order.delivery_fee)}</td>
                     <td class="text-center"><span class="badge badge-${order.payment_status === 'Paid' ? 'success' : 'warning'}">${order.payment_status}</span></td>
                     <td class="text-center"><a href="${ordersShowBaseUrl}/${order.id}?from=customer-report" class="btn btn-sm btn-info" title="View Order"><i class="fas fa-eye"></i></a></td>
                 `;
@@ -436,11 +436,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td class="text-center">${index + 1}</td>
                     <td>${product.name}</td>
                     <td class="text-center">${product.quantity}</td>
-                    <td class="text-right">${parseFloat(product.total_price).toFixed(2)}</td>
+                    <td class="text-right">${formatPrice(product.total_price)}</td>
                 `;
                 productsTableBody.appendChild(row);
             });
         }
+    }
+
+    // Format price with dollar sign or return dash for NaN/null/undefined
+    function formatPrice(value) {
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? '-' : '$' + parsed.toFixed(2);
     }
 
     // Get status badge color
