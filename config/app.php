@@ -73,7 +73,7 @@ return [
     |
     */
 
-    'timezone' => 'Africa/Cairo',
+    'timezone' => 'America/Los_Angeles', // USA Pacific Time
 
     /*
     |--------------------------------------------------------------------------
