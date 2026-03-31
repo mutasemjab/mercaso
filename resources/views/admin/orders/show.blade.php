@@ -455,8 +455,7 @@
         <table class="products-table">
             <thead>
                 <tr>
-                    <th style="width: 8%;">Image</th>
-                    <th style="width: 22%;">Product Name</th>
+                    <th style="width: 30%;">Product</th>
                     <th style="width: 13%;">Barcode</th>
                     <th style="width: 10%;">Size</th>
                     <th style="width: 10%;">Quantity</th>
@@ -468,14 +467,16 @@
                 @foreach ($order->products as $product)
                     <tr>
                         <td>
-                            @if ($product->productImages->first())
-                                <img src="{{ asset('assets/admin/uploads/' . $product->productImages->first()->photo) }}"
-                                    alt="{{ $product->name_en }}" class="product-image">
-                            @else
-                                -
-                            @endif
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                @if ($product->productImages->first())
+                                    <img src="{{ asset('assets/admin/uploads/' . $product->productImages->first()->photo) }}"
+                                        alt="{{ $product->name_en }}" class="product-image">
+                                @else
+                                    <span style="width:50px;height:50px;display:inline-block;"></span>
+                                @endif
+                                <span>{{ $product->name_en }}</span>
+                            </div>
                         </td>
-                        <td>{{ $product->name_en }}</td>
                         <td>
                             @if ($product->pivot->unit_id && $product->units->where('id', $product->pivot->unit_id)->first())
                                 {{ $product->units->where('id', $product->pivot->unit_id)->first()->pivot->barcode ?? '-' }}
@@ -536,37 +537,15 @@
             window.print();
         }
 
-        // Check if coming from customer-report and hide/show columns accordingly
+        // Hide product images when coming from customer-report
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             const fromParam = urlParams.get('from');
-            const table = document.querySelector('.products-table');
 
-            if (table) {
-                const headerRow = table.querySelector('thead tr');
-                const rows = table.querySelectorAll('tbody tr');
-
-                if (fromParam === 'customer-report') {
-                    // Show name (index 1), hide image (index 0)
-                    if (headerRow && headerRow.children[0]) {
-                        headerRow.children[0].style.display = 'none';
-                    }
-                    rows.forEach(row => {
-                        if (row.children[0]) {
-                            row.children[0].style.display = 'none';
-                        }
-                    });
-                } else {
-                    // Show image (index 0), hide name (index 1)
-                    if (headerRow && headerRow.children[1]) {
-                        headerRow.children[1].style.display = 'none';
-                    }
-                    rows.forEach(row => {
-                        if (row.children[1]) {
-                            row.children[1].style.display = 'none';
-                        }
-                    });
-                }
+            if (fromParam === 'customer-report') {
+                document.querySelectorAll('.products-table tbody .product-image').forEach(img => {
+                    img.style.display = 'none';
+                });
             }
         });
     </script>

@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resultsSection.style.display = 'none';
 
         // Fetch customer statistics
-        fetch(`/ar/admin/customer-report/customer/${selectedCustomerId}`)
+        fetch(`/{{ app()->getLocale() }}/admin/customer-report/customer/${selectedCustomerId}`)
             .then(response => response.json())
             .then(data => {
                 displayCustomerStats(data);
