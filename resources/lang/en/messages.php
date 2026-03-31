@@ -548,4 +548,9 @@ return [
     'with_each_other' => 'With each other',
     'photos' => 'Photos',
 
+    // Language
+    'en' => 'English',
+    'ar' => 'Arabic',
+    'language' => 'Language',
+
 ];

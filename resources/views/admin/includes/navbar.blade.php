@@ -12,7 +12,7 @@
       </li>
         @foreach(LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
         <a class="nav-link"  hreflang="{{ $localeCode }}" href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}">
-            {{ $properties['native'] }}
+            {{ __('messages.' . $localeCode) }}
         </a>
     @endforeach
     </ul>
