@@ -75,7 +75,6 @@ class CustomerReportController extends Controller
 
         // Get customer orders
         $orders = Order::where('user_id', $customerId)
-            ->where('order_status', '!=', 5) // Exclude canceled orders
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -111,7 +110,6 @@ class CustomerReportController extends Controller
             ->join('products', 'order_products.product_id', '=', 'products.id')
             ->join('orders', 'order_products.order_id', '=', 'orders.id')
             ->where('orders.user_id', $customerId)
-            ->where('orders.order_status', '!=', 5)
             ->select(
                 'products.id',
                 'products.name_ar',

@@ -22,10 +22,36 @@
 
             <a href="{{ route('orders.create') }}" class="btn btn-sm btn-success"> {{ __('messages.New') }}
                 {{ __('messages.orders') }}</a>
+        </div>
 
-            <form action="{{ route('orders.index') }}" method="GET" class="form-inline float-right">
-                <input type="text" name="search" class="form-control mr-sm-2" placeholder="{{ __('messages.Search') }}">
-                <button type="submit" class="btn btn-primary">{{ __('messages.Search') }}</button>
+        <!-- Filter Section -->
+        <div class="card-body border-top">
+            <form action="{{ route('orders.index') }}" method="GET" class="form-inline justify-content-center mb-3">
+                <div class="form-group mr-3 mb-2">
+                    <label for="search" class="mr-2"><strong>{{ __('messages.Search') }}:</strong></label>
+                    <input type="text" name="search" id="search" class="form-control"
+                           placeholder="Order # or Phone" value="{{ request('search') }}">
+                </div>
+
+                <div class="form-group mr-3 mb-2">
+                    <label for="from_date" class="mr-2"><strong>From Date:</strong></label>
+                    <input type="date" name="from_date" id="from_date" class="form-control"
+                           value="{{ request('from_date') }}">
+                </div>
+
+                <div class="form-group mr-3 mb-2">
+                    <label for="to_date" class="mr-2"><strong>To Date:</strong></label>
+                    <input type="date" name="to_date" id="to_date" class="form-control"
+                           value="{{ request('to_date') }}">
+                </div>
+
+                <button type="submit" class="btn btn-primary mb-2">
+                    <i class="fas fa-filter mr-1"></i>{{ __('messages.Search') }}
+                </button>
+
+                <a href="{{ route('orders.index') }}" class="btn btn-secondary ml-2 mb-2">
+                    <i class="fas fa-redo mr-1"></i>Reset
+                </a>
             </form>
         </div>
         <!-- /.card-header -->
@@ -68,7 +94,7 @@
                                     <td>{{ $info->number }}</td>
                                     <td>{{ $info->user->phone ?? '-' }}</td>
                                     <td>{{ $info->type_delivery == 1 ? 'pickup' : 'delivery' }}</td>
-                                    <td>{{ $info->date }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($info->date)->format('m/d/Y') }}</td>
                                     <td style="{{ $info->order_type == 2 ? 'color:red;' : '' }}">
                                         {{ $info->order_type == 1 ? __('Sell') : __('Refund') }}
                                     </td>

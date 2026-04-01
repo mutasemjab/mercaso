@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>تسجيل الدخول</title>
+  <title>Admin Login</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -26,7 +26,7 @@
   <!-- /.login-logo -->
   <div class="card">
     <div class="card-body login-card-body">
-      <p class="login-box-msg">تسجيل الدخول</p>
+      <p class="login-box-msg">Admin Login</p>
 
       <form action="{{ route('admin.login') }}" method="post">
         @csrf
@@ -59,7 +59,7 @@
 
           <!-- /.col -->
           <div class="col-12">
-            <button type="submit" class="btn btn-primary btn-block btn-flat">دخول </button>
+            <button type="submit" class="btn btn-primary btn-block btn-flat">Login</button>
           </div>
           <!-- /.col -->
         </div>

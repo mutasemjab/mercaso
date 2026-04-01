@@ -54,23 +54,41 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
+        // Create an initial query to retrieve orders
+        $query = Order::query()->with('user');
 
-
-        // Create an initial query to retrieve orders for the authenticated user's 
-        $query = Order::query();
-
-        // Apply search filter if present in the request
+        // Apply search filter (order number or customer phone)
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function($q) use ($search) {
-                $q->where('number', 'LIKE', "%$search%");
+                $q->where('number', 'LIKE', "%$search%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('phone', 'LIKE', "%$search%");
+                  });
             });
+        }
+
+        // Apply date filters
+        $fromDate = $request->filled('from_date')
+            ? Carbon::createFromFormat('Y-m-d', $request->input('from_date'))->startOfDay()
+            : null;
+
+        $toDate = $request->filled('to_date')
+            ? Carbon::createFromFormat('Y-m-d', $request->input('to_date'))->endOfDay()
+            : null;
+
+        if ($fromDate && $toDate) {
+            $query->whereBetween('created_at', [$fromDate, $toDate]);
+        } elseif ($fromDate) {
+            $query->where('created_at', '>=', $fromDate);
+        } elseif ($toDate) {
+            $query->where('created_at', '<=', $toDate);
         }
 
         // Retrieve all orders with pagination
         $data = $query->orderBy('created_at', 'desc')->paginate(PAGINATION_COUNT);
 
-        return view('admin.orders.index', compact('data'));
+        return view('admin.orders.index', compact('data', 'fromDate', 'toDate'));
     }
 
 

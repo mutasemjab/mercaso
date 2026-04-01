@@ -13,8 +13,15 @@ class TaxCrvReportsController extends Controller
     public function index(Request $request)
     {
         // Get date range from request or use defaults
-        $startDate = $request->input('start_date', now()->startOfMonth());
-        $endDate = $request->input('end_date', now()->endOfMonth());
+        // Ensure dates are Carbon objects with proper day boundaries
+        $startDate = $request->has('start_date')
+            ? Carbon::createFromFormat('Y-m-d', $request->input('start_date'))->startOfDay()
+            : now()->startOfMonth();
+
+        $endDate = $request->has('end_date')
+            ? Carbon::createFromFormat('Y-m-d', $request->input('end_date'))->endOfDay()
+            : now()->endOfMonth();
+
         $userType = $request->input('user_type', 'all');
 
         // Get sales data grouped by category
