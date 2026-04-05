@@ -128,8 +128,8 @@
                     @endphp
 
                     <td><input type="number" class="form-control quantity" name="products[{{ $index }}][quantity]" value="{{ $orderProduct->pivot->quantity }}" /></td>
-                    <td><input type="number" class="form-control selling_price_without_tax" name="products[{{ $index }}][selling_price_without_tax]" step="any" value="{{ $sellingPriceWithoutTax }}" /></td>
-                    <td><input type="number" class="form-control selling_price_with_tax" name="products[{{ $index }}][selling_price_with_tax]" step="any" value="{{ $sellingPriceWithTax }}" /></td>
+                    <td><input type="number" class="form-control selling_price_without_tax" name="products[{{ $index }}][selling_price_without_tax]" step="any" value="{{ $sellingPriceWithoutTax }}" style="min-width:120px" /></td>
+                    <td><input type="number" class="form-control selling_price_with_tax" name="products[{{ $index }}][selling_price_with_tax]" step="any" value="{{ $sellingPriceWithTax }}" style="min-width:120px" /></td>
                     <td><input type="number" class="form-control tax" name="products[{{ $index }}][tax]" step="any" value="{{ $TaxPercentage }}" /></td>
 
                     <td>
@@ -299,8 +299,8 @@
                         </select>
                     </td>
                     <td><input type="number" class="form-control quantity" name="products[${rowIdx}][quantity]" /></td>
-                    <td><input type="number" class="form-control selling_price_without_tax" name="products[${rowIdx}][selling_price_without_tax]" step="any" /></td>
-                    <td><input type="number" class="form-control selling_price_with_tax" name="products[${rowIdx}][selling_price_with_tax]" step="any"  /></td>
+                    <td><input type="number" class="form-control selling_price_without_tax" name="products[${rowIdx}][selling_price_without_tax]" step="any" style="min-width:120px"/></td>
+                    <td><input type="number" class="form-control selling_price_with_tax" name="products[${rowIdx}][selling_price_with_tax]" step="any"  style="min-width:120px"/></td>
                     <td><input type="number" class="form-control tax" name="products[${rowIdx}][tax]" step="any"  /></td>
                     <td><input type="number" class="form-control line_discount_fixed" name="products[${rowIdx}][line_discount_fixed]}" step="any" /></td>
                     <td><input type="number" class="form-control line_discount_percentage" name="products[${rowIdx}][line_discount_percentage]}" step="any" /></td>
