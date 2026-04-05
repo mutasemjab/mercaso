@@ -570,5 +570,7 @@ return [
     'en' => 'English',
     'ar' => 'Arabic',
     'language' => 'Language',
+    'cheque' => 'Cheque',
+    'Visa' => 'Visa',
 
 ];
