@@ -22,7 +22,7 @@ return new class extends Migration
             $table->double('total_prices');
             $table->double('total_discounts');
             $table->double('coupon_discount')->nullable();
-            $table->string('payment_type');
+            $table->string('payment_type'); // cash // cheque // visa
             $table->tinyInteger('payment_status')->default(2); // 1 Paid   // 2 Unpaid
             $table->tinyInteger('order_type')->default(1);  // 1 Sell   // 2 Refund
             $table->date('date')->nullable();

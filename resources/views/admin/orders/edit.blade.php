@@ -41,7 +41,8 @@
                 <label for="payment_type">{{ __('messages.payment_type') }}</label>
                 <select name="payment_type" class="form-control" required>
                     <option value="1" {{ $order->payment_type == 1 ? 'selected' : '' }}>{{ __('messages.Cash') }}</option>
-                    <option value="2" {{ $order->payment_type == 2 ? 'selected' : '' }}>{{ __('messages.Receivables') }}</option>
+                    <option value="2" {{ $order->payment_type == 2 ? 'selected' : '' }}>{{ __('messages.cheque') }}</option>
+                    <option value="3" {{ $order->payment_type == 3 ? 'selected' : '' }}>{{ __('messages.visa') }}</option>
                 </select>
             </div>
         </div>
