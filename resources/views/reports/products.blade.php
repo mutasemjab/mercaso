@@ -6,107 +6,112 @@
 
 @section('content')
 <div class="container-fluid">
-    <!-- Header Section -->
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h1 class="h3 mb-3 text-gray-800">{{ __('messages.product_reports') }}</h1>
-        </div>
-    </div>
 
-    <!-- Filter Section -->
-    <div class="row mb-4">
+    <!-- Filter Section (hidden on print) -->
+    <div class="row mb-4 no-print">
         <div class="col-12">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-gradient-primary text-white">
                     <h5 class="mb-0"><i class="fas fa-filter mr-2"></i>{{ __('messages.report_filter') }}</h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ route('product_report') }}" class="form-inline justify-content-center flex-wrap">
-                        <div class="form-group {{ app()->getLocale() == 'ar' ? 'ml-3' : 'mr-3' }} mb-2">
-                            <label for="search" class="{{ app()->getLocale() == 'ar' ? 'ml-2' : 'mr-2' }} font-weight-bold">
-                                {{ __('messages.search') }}:
-                            </label>
-                            <input type="text"
-                                   name="search"
-                                   id="search"
-                                   class="form-control"
-                                   placeholder="Search by name, number, or barcode..."
-                                   value="{{ request('search') }}">
+                    <form method="GET" action="{{ route('product_report') }}" id="filterForm">
+                        <div class="row">
+                            <!-- Search -->
+                            <div class="col-md-3 mb-2">
+                                <label class="font-weight-bold small">{{ __('messages.search') }}</label>
+                                <input type="text" name="search" class="form-control"
+                                       placeholder="{{ __('messages.search') }}..."
+                                       value="{{ $search }}">
+                            </div>
+
+                            <!-- From Date -->
+                            <div class="col-md-2 mb-2">
+                                <label class="font-weight-bold small">{{ __('messages.From_Date') }}</label>
+                                <input type="date" name="from_date" class="form-control"
+                                       value="{{ \Carbon\Carbon::parse($fromDate)->format('Y-m-d') }}" required>
+                            </div>
+
+                            <!-- To Date -->
+                            <div class="col-md-2 mb-2">
+                                <label class="font-weight-bold small">{{ __('messages.To_Date') }}</label>
+                                <input type="date" name="to_date" class="form-control"
+                                       value="{{ \Carbon\Carbon::parse($toDate)->format('Y-m-d') }}" required>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="col-md-2 mb-2">
+                                <label class="font-weight-bold small">{{ __('messages.Category') }}</label>
+                                <select name="category_id" class="form-control">
+                                    <option value="">{{ __('messages.all') }}</option>
+                                    @foreach($categories as $cat)
+                                        <option value="{{ $cat->id }}" @selected($categoryId == $cat->id)>
+                                            {{ app()->getLocale() == 'ar' ? $cat->name_ar : $cat->name_en }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="col-md-1 mb-2">
+                                <label class="font-weight-bold small">{{ __('messages.Status') }}</label>
+                                <select name="status" class="form-control">
+                                    <option value="">{{ __('messages.all') }}</option>
+                                    <option value="1" @selected($status == '1')>{{ __('messages.Active') }}</option>
+                                    <option value="2" @selected($status == '2')>{{ __('messages.Not_Active') }}</option>
+                                </select>
+                            </div>
+
+                            <!-- In Stock -->
+                            <div class="col-md-2 mb-2">
+                                <label class="font-weight-bold small">{{ __('messages.Stock') }}</label>
+                                <select name="in_stock" class="form-control">
+                                    <option value="">{{ __('messages.all') }}</option>
+                                    <option value="1" @selected($inStock == '1')>{{ __('messages.In_Stock') }}</option>
+                                    <option value="2" @selected($inStock == '2')>{{ __('messages.Out_Of_Stock') }}</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="form-group {{ app()->getLocale() == 'ar' ? 'ml-3' : 'mr-3' }} mb-2">
-                            <label for="from_date" class="{{ app()->getLocale() == 'ar' ? 'ml-2' : 'mr-2' }} font-weight-bold">
-                                {{ __('messages.From_Date') }}:
-                            </label>
-                            <input type="date"
-                                   name="from_date"
-                                   id="from_date"
-                                   class="form-control"
-                                   value="{{ \Carbon\Carbon::parse($fromDate)->format('Y-m-d') }}"
-                                   required>
+                        <div class="row mt-2">
+                            <!-- Brand -->
+                            <div class="col-md-3 mb-2">
+                                <label class="font-weight-bold small">{{ __('messages.Brand') }}</label>
+                                <select name="brand_id" class="form-control">
+                                    <option value="">{{ __('messages.all') }}</option>
+                                    @foreach($brands as $brand)
+                                        <option value="{{ $brand->id }}" @selected($brandId == $brand->id)>
+                                            {{ $brand->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Tax -->
+                            <div class="col-md-3 mb-2">
+                                <label class="font-weight-bold small">{{ __('messages.Tax') }}</label>
+                                <select name="tax_id" class="form-control">
+                                    <option value="">{{ __('messages.all') }}</option>
+                                    @foreach($taxes as $tax)
+                                        <option value="{{ $tax->id }}" @selected($taxId == $tax->id)>
+                                            {{ $tax->name }} ({{ $tax->value }}%)
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-2 d-flex align-items-end gap-2">
+                                <button type="submit" class="btn btn-primary mr-2">
+                                    <i class="fas fa-sync-alt mr-1"></i>{{ __('messages.Generate_Report') }}
+                                </button>
+                                <a href="{{ route('product_report') }}" class="btn btn-outline-secondary mr-2">
+                                    <i class="fas fa-redo mr-1"></i>{{ __('messages.Reset') }}
+                                </a>
+                                <button type="button" class="btn btn-success" id="printBtn">
+                                    <i class="fas fa-print mr-1"></i>{{ __('messages.Print') }}
+                                </button>
+                            </div>
                         </div>
-
-                        <div class="form-group {{ app()->getLocale() == 'ar' ? 'ml-3' : 'mr-3' }} mb-2">
-                            <label for="to_date" class="{{ app()->getLocale() == 'ar' ? 'ml-2' : 'mr-2' }} font-weight-bold">
-                                {{ __('messages.To_Date') }}:
-                            </label>
-                            <input type="date"
-                                   name="to_date"
-                                   id="to_date"
-                                   class="form-control"
-                                   value="{{ \Carbon\Carbon::parse($toDate)->format('Y-m-d') }}"
-                                   required>
-                        </div>
-
-                        <div class="form-group {{ app()->getLocale() == 'ar' ? 'ml-3' : 'mr-3' }} mb-2">
-                            <label for="brand_id" class="{{ app()->getLocale() == 'ar' ? 'ml-2' : 'mr-2' }} font-weight-bold">
-                                {{ __('messages.Brand') }}:
-                            </label>
-                            <select name="brand_id" id="brand_id" class="form-control">
-                                <option value="">{{ __('messages.all') }}</option>
-                                @foreach($brands as $brand)
-                                    <option value="{{ $brand->id }}" @selected($brandId == $brand->id)>
-                                        {{ $brand->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group {{ app()->getLocale() == 'ar' ? 'ml-3' : 'mr-3' }} mb-2">
-                            <label for="category_id" class="{{ app()->getLocale() == 'ar' ? 'ml-2' : 'mr-2' }} font-weight-bold">
-                                {{ __('messages.Category') }}:
-                            </label>
-                            <select name="category_id" id="category_id" class="form-control">
-                                <option value="">{{ __('messages.all') }}</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" @selected($categoryId == $category->id)>
-                                        {{ app()->getLocale() == 'ar' ? $category->name_ar : $category->name_en }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="form-group {{ app()->getLocale() == 'ar' ? 'ml-3' : 'mr-3' }} mb-2">
-                            <label for="tax_id" class="{{ app()->getLocale() == 'ar' ? 'ml-2' : 'mr-2' }} font-weight-bold">
-                                {{ __('messages.Tax') }}:
-                            </label>
-                            <select name="tax_id" id="tax_id" class="form-control">
-                                <option value="">{{ __('messages.all') }}</option>
-                                @foreach($taxes as $tax)
-                                    <option value="{{ $tax->id }}" @selected($taxId == $tax->id)>
-                                        {{ $tax->name }} ({{ $tax->value }}%)
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary btn-lg {{ app()->getLocale() == 'ar' ? 'ml-2' : 'ml-2' }} mb-2">
-                            <i class="fas fa-sync-alt mr-2"></i>{{ __('messages.Generate_Report') }}
-                        </button>
-
-                        <a href="{{ route('product_report') }}" class="btn btn-outline-secondary btn-lg {{ app()->getLocale() == 'ar' ? 'ml-2' : 'ml-2' }} mb-2">
-                            <i class="fas fa-redo mr-2"></i>{{ __('messages.Reset') }}
-                        </a>
                     </form>
                 </div>
             </div>
@@ -117,25 +122,30 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">{{ __('messages.products') }}</h6>
-                    <button onclick="window.print()" class="btn btn-success btn-sm no-print">
-                        <i class="fas fa-print {{ app()->getLocale() == 'ar' ? 'ml-2' : 'mr-2' }}"></i>
-                        {{ __('messages.Print') }}
-                    </button>
+                <div class="card-header py-3 d-flex justify-content-between align-items-center no-print">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        {{ __('messages.products') }}
+                        <span class="badge badge-info ml-2">
+                            {{ $isPrint ? $products->count() : $products->total() }}
+                        </span>
+                    </h6>
                 </div>
+
+                <!-- Print header (only visible when printing) -->
+                <div class="print-only text-center mb-3">
+                    <h4>{{ __('messages.product_reports') }}</h4>
+                    <small>{{ __('messages.From_Date') }}: {{ $fromDate }} &nbsp;|&nbsp; {{ __('messages.To_Date') }}: {{ $toDate }}</small>
+                </div>
+
                 <div class="card-body">
                     <div class="table-responsive">
-                        <h3>
-                            {{ __('messages.products') }}
-                            <span class="badge badge-info">{{ $reportData['products']->count() }}</span>
-                        </h3>
-                        <table class="table table-bordered">
-                            <thead>
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-light">
                                 <tr>
-                                    <th>{{ __('messages.ID') }}</th>
+                                    <th>#</th>
                                     <th>{{ __('messages.Name') }}</th>
                                     <th>{{ __('messages.Status') }}</th>
+                                    <th>{{ __('messages.Stock') }}</th>
                                     <th>{{ __('messages.Category') }}</th>
                                     <th>{{ __('messages.UnitForNormalUser') }}</th>
                                     <th>{{ __('messages.PriceForNormalUser') }}</th>
@@ -144,84 +154,94 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($reportData['products'] as $index => $product)
+                                @forelse($products as $index => $product)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $product->name_en }}</td>
-                                    <td>{{ $product->status == 1 ? 'Active' : 'Not Active' }}</td>
-                                    <td>{{ $product->category->name_en ?? null }}</td>
-                                    <td>{{ $product->unit->name_en ?? null }}</td>
+                                    <td>{{ $isPrint ? $index + 1 : $products->firstItem() + $index }}</td>
+                                    <td>
+                                        <strong>{{ $product->name_ar }}</strong>
+                                        <br><small class="text-muted">{{ $product->name_en }}</small>
+                                    </td>
+                                    <td>
+                                        @if($product->status == 1)
+                                            <span class="badge badge-success">{{ __('messages.Active') }}</span>
+                                        @else
+                                            <span class="badge badge-danger">{{ __('messages.Not_Active') }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($product->in_stock == 1)
+                                            <span class="badge badge-success">{{ __('messages.In_Stock') }}</span>
+                                        @else
+                                            <span class="badge badge-warning">{{ __('messages.Out_Of_Stock') }}</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ app()->getLocale() == 'ar' ? ($product->category->name_ar ?? '-') : ($product->category->name_en ?? '-') }}</td>
+                                    <td>{{ $product->unit->name_en ?? '-' }}</td>
                                     <td>${{ number_format($product->selling_price_for_user ?? 0, 2) }}</td>
-                                    <td>{{ $product->units->first()->name_en ?? null }}</td>
+                                    <td>{{ $product->units->first()->name_en ?? '-' }}</td>
                                     <td>${{ number_format($product->units->first()->pivot->selling_price ?? 0, 2) }}</td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-3">{{ __('messages.No_data') }}</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- Pagination Links -->
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $reportData['products']->appends(request()->query())->links() }}
+                    <!-- Pagination (hidden in print mode) -->
+                    @if(!$isPrint && $products->hasPages())
+                    <div class="d-flex justify-content-between align-items-center mt-4 no-print">
+                        <div class="text-muted small">
+                            Showing {{ $products->firstItem() }} – {{ $products->lastItem() }} of {{ $products->total() }}
+                        </div>
+                        {{ $products->appends(request()->except('print'))->links() }}
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
-@endif
+    @endif
 
 </div>
 
-<!-- Styles -->
 <style>
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
+    .bg-gradient-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .print-only { display: none; }
 
-    /* RTL Support */
-    @media (prefers-direction: rtl) {
-        .mr-2 { margin-left: 0.5rem !important; margin-right: 0 !important; }
-        .ml-2 { margin-right: 0.5rem !important; margin-left: 0 !important; }
-        .mr-3 { margin-left: 0.75rem !important; margin-right: 0 !important; }
-        .ml-3 { margin-right: 0.75rem !important; margin-left: 0 !important; }
-    }
-
-    /* Print Styles */
     @media print {
-        /* Hide everything except the table */
-        .form-inline, .no-print, .pagination, .card-header, h3, .badge {
-            display: none !important;
-        }
+        .no-print, .sidebar, nav, header, .main-header, .main-sidebar,
+        .content-header, .breadcrumb { display: none !important; }
 
-        .card {
-            box-shadow: none !important;
-            border: none !important;
-        }
+        .print-only { display: block !important; }
 
-        .card-body {
-            padding: 5px !important;
-        }
+        .card { box-shadow: none !important; border: 1px solid #dee2e6 !important; }
+        .card-body { padding: 4px !important; }
+        body, .content-wrapper { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+        .container-fluid { padding: 4px !important; }
 
-        body {
-            margin: 0;
-            padding: 5px;
-        }
-
-        .container-fluid {
-            padding: 0 !important;
-        }
-
-        .table {
-            margin-bottom: 0 !important;
-        }
-
-        /* Make table font smaller for better fitting */
-        .table th,
-        .table td {
-            padding: 4px !important;
-            font-size: 12px !important;
-        }
+        .table th, .table td { padding: 4px 6px !important; font-size: 11px !important; }
+        .badge { border: 1px solid #999; padding: 2px 5px; font-size: 10px; }
     }
 </style>
+
+<script>
+document.getElementById('printBtn').addEventListener('click', function () {
+    // Build current filter params and append print=1, then navigate
+    const form = document.getElementById('filterForm');
+    const params = new URLSearchParams(new FormData(form));
+    params.set('print', '1');
+    window.location.href = '{{ route('product_report') }}?' + params.toString();
+});
+
+// Auto-print when in print mode
+@if($isPrint)
+window.addEventListener('load', function () {
+    window.print();
+});
+@endif
+</script>
 
 @endsection

@@ -153,15 +153,28 @@ class ProductController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name_ar', 'LIKE', "%$search%")
-                    ->orwhere('name_en', 'LIKE', "%$search%")
-                    ->orWhere('number', 'LIKE', "%$search%")
-                    ->orWhere('barcode', 'LIKE', "%$search%");
+                  ->orWhere('name_en', 'LIKE', "%$search%")
+                  ->orWhere('number', 'LIKE', "%$search%")
+                  ->orWhere('barcode', 'LIKE', "%$search%");
             });
         }
 
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('in_stock')) {
+            $query->where('in_stock', $request->input('in_stock'));
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->input('category_id'));
+        }
+
+        $categories = Category::orderBy('name_ar')->get();
         $data = $query->latest()->paginate(PAGINATION_COUNT);
 
-        return view('admin.products.index', compact('data'));
+        return view('admin.products.index', compact('data', 'categories'));
     }
 
     public function create()

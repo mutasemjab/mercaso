@@ -20,23 +20,59 @@
     <!-- Search and Filter Card -->
     <div class="card shadow mb-4">
         <div class="card-body">
-            <form action="{{ route('products.index') }}" method="GET" class="form-inline">
-                <div class="form-group mr-2">
-                    <input type="text" 
-                           name="search" 
-                           class="form-control" 
-                           placeholder="Search by name, number, or barcode..." 
-                           value="{{ request('search') }}"
-                           style="min-width: 300px;">
+            <form action="{{ route('products.index') }}" method="GET">
+                <div class="row">
+                    <!-- Search -->
+                    <div class="col-md-3 mb-2">
+                        <input type="text"
+                               name="search"
+                               class="form-control"
+                               placeholder="Search by name, number, or barcode..."
+                               value="{{ request('search') }}">
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-2 mb-2">
+                        <select name="category_id" class="form-control">
+                            <option value="">All Categories</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name_ar }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-2 mb-2">
+                        <select name="status" class="form-control">
+                            <option value="">All Status</option>
+                            <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Active</option>
+                            <option value="2" {{ request('status') == '2' ? 'selected' : '' }}>Not Active</option>
+                        </select>
+                    </div>
+
+                    <!-- In Stock -->
+                    <div class="col-md-2 mb-2">
+                        <select name="in_stock" class="form-control">
+                            <option value="">All Stock</option>
+                            <option value="1" {{ request('in_stock') == '1' ? 'selected' : '' }}>In Stock</option>
+                            <option value="2" {{ request('in_stock') == '2' ? 'selected' : '' }}>Out of Stock</option>
+                        </select>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="col-md-3 mb-2 d-flex">
+                        <button type="submit" class="btn btn-primary mr-2">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        @if(request()->hasAny(['search','category_id','status','in_stock']))
+                            <a href="{{ route('products.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        @endif
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary mr-2">
-                    <i class="fas fa-search"></i> Search
-                </button>
-                @if(request('search'))
-                    <a href="{{ route('products.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Clear
-                    </a>
-                @endif
             </form>
         </div>
     </div>

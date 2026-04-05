@@ -167,6 +167,7 @@ class PermissionSeeder extends Seeder
             'category-report-export',
             'customer-report-view',
             'customer-report-export',
+            'sales-report-view',
         ];
 
 

@@ -175,6 +175,9 @@ return [
      'success' => 'تم إكمال العملية بنجاح',
     'error_occurred' => 'حدث خطأ أثناء معالجة طلبك',
     'access_denied' => 'الوصول مرفوض',
+    'convert_to_wholesale' => 'تحويل إلى جملة',
+    'confirm_convert_to_wholesale' => 'هل أنت متأكد من تحويل هذا العميل إلى عميل جملة؟',
+    'converted_to_wholesale_success' => 'تم تحويل العميل إلى جملة بنجاح.',
     'deleted_successfully' => 'تم حذف العنصر بنجاح',
     'created_successfully' => 'تم إنشاء العنصر بنجاح',
     'updated_successfully' => 'تم تحديث العنصر بنجاح',
@@ -318,6 +321,20 @@ return [
     'sales_and_inventory_overview' => 'نظرة عامة على المبيعات والمخزون',
     'report_generated_on' => 'تم إنشاء التقرير بتاريخ',
     'existing_images' => 'الصور الموجودة',
+
+    // Sales Report
+    'sales_report'        => 'تقرير المبيعات',
+    'sold_products'       => 'المنتجات المباعة',
+    'total_revenue'       => 'إجمالي الإيرادات',
+    'total_quantity_sold' => 'إجمالي الكميات المباعة',
+    'orders_count'        => 'الطلبات',
+    'customer_type'       => 'نوع العميل',
+    'Retail'              => 'تجزئة',
+    'WholeSale'           => 'جملة',
+    'In_Stock'            => 'متوفر',
+    'Out_Of_Stock'        => 'غير متوفر',
+    'Not_Active'          => 'غير نشط',
+    'Stock'               => 'المخزون',
 
     // Customer Report
     'customer_report' => 'تقرير العملاء',

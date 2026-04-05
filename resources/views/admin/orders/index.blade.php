@@ -92,7 +92,7 @@
                                 <tr>
 
                                     <td>{{ $info->number }}</td>
-                                    <td>{{ $info->user->phone ?? '-' }}</td>
+                                    <td>{{ $info->phone_in_order ?? '-' }}</td>
                                     <td>{{ $info->type_delivery == 1 ? 'pickup' : 'delivery' }}</td>
                                     <td>{{ \Carbon\Carbon::parse($info->date)->format('m/d/Y') }}</td>
                                     <td style="{{ $info->order_type == 2 ? 'color:red;' : '' }}">

@@ -322,13 +322,18 @@ class OrderController extends Controller
     $oldStatus = $order->order_status;
     $newStatus = $request->order_status;
     
+    // Use the hidden user_id field directly; fall back to name lookup only if missing
+    $userId = $request->input('user_id')
+        ?: optional(User::where('name', $request->user)->first())->id
+        ?: $order->user_id;
+
     $order->update([
         'order_status' => $request->order_status,
         'payment_status' => $request->payment_status,
         'date' => Carbon::parse($request->date),
         'payment_type' => $request->payment_type,
-        'address_id' => $request->address,
-        'user_id' => User::where('name', $request->user)->first()->id,
+        'address_id' => $request->address ?: $order->address_id,
+        'user_id' => $userId,
         'coupon_discount' => $request->coupon_discount,
     ]);
 

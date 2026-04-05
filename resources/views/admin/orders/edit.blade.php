@@ -58,6 +58,7 @@
             <div class="form-group mt-3">
                 <label for="userSearch">{{ __('messages.User') }}</label>
                 <input type="text" id="userSearch" class="form-control" name="user" value="{{ $order->user->name }}" required />
+                <input type="hidden" id="userIdHidden" name="user_id" value="{{ $order->user_id }}">
             </div>
         </div>
         <div class="col-md-6">
@@ -83,9 +84,9 @@
         <table class="table table-bordered" id="products_table">
             <thead>
                 <tr>
-                    <th>{{ __('messages.Photo') }}</th>
-                    <th>{{ __('messages.product') }}</th>
-                    <th>{{ __('messages.unit') }}</th>
+                    <th style="width:70px">{{ __('messages.Photo') }}</th>
+                    <th style="min-width:220px">{{ __('messages.product') }}</th>
+                    <th style="width:120px">{{ __('messages.unit') }}</th>
                     <th>{{ __('messages.quantity') }}</th>
                     <th>{{ __('messages.selling_price_without_tax') }}</th>
                     <th>{{ __('messages.selling_price_with_tax') }}</th>
@@ -107,7 +108,7 @@
                             <span class="text-muted text-center d-block">-</span>
                         @endif
                     </td>
-                    <td><input type="text" class="form-control product-search" name="products[{{ $index }}][name]" value="{{ $orderProduct->name_ar }}" /></td>
+                    <td><input type="text" class="form-control product-search" name="products[{{ $index }}][name]" value="{{ $orderProduct->name_ar }}" style="min-width:220px" /></td>
                     <td>
                         <select class="form-control product-unit" name="products[{{ $index }}][unit]">
                             <option value="">Select Unit</option>
@@ -253,12 +254,12 @@
             },
             minLength: 2,
             select: function(event, ui) {
-                $('#userSearch').data('selected-user-id', ui.item.id);
-                fetchAddresses(ui.item.id);
+                $('#userIdHidden').val(ui.item.id);
+                fetchAddresses(ui.item.id, null);
             }
         });
 
-        function fetchAddresses(userId) {
+        function fetchAddresses(userId, currentAddressId) {
             if (!userId) {
                 document.getElementById('addressSelect').innerHTML = '<option value="">{{ __('messages.select_address') }}</option>';
                 return;
@@ -274,6 +275,9 @@
                         const option = document.createElement('option');
                         option.value = address.id;
                         option.textContent = address.address;
+                        if (currentAddressId && address.id == currentAddressId) {
+                            option.selected = true;
+                        }
                         addressSelect.appendChild(option);
                     });
                 })
@@ -288,7 +292,7 @@
             $('#products_table tbody').append(`
                 <tr>
                     <td></td>
-                    <td><input type="text" class="form-control product-search" name="products[${rowIdx}][name]" /></td>
+                    <td><input type="text" class="form-control product-search" name="products[${rowIdx}][name]" style="min-width:220px" /></td>
                     <td>
                         <select class="form-control product-unit" name="products[${rowIdx}][unit]">
                             <option value="">Select Unit</option>

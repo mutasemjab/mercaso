@@ -127,44 +127,50 @@ class ProductReportController extends Controller
     /// FOR Display all products with filters
     public function allProducts(Request $request)
     {
-        // Get filter inputs with defaults and convert to Carbon instances
-        $fromDate = $request->input('from_date', now()->subYear()->format('Y-m-d'));
-        $toDate = $request->input('to_date', now()->format('Y-m-d'));
-        $brandId = $request->input('brand_id', null);
-        $categoryId = $request->input('category_id', null);
-        $taxId = $request->input('tax_id', null);
-        $search = $request->input('search', null);
+        $fromDate   = $request->input('from_date', now()->subYear()->format('Y-m-d'));
+        $toDate     = $request->input('to_date', now()->format('Y-m-d'));
+        $brandId    = $request->input('brand_id');
+        $categoryId = $request->input('category_id');
+        $taxId      = $request->input('tax_id');
+        $search     = $request->input('search');
+        $status     = $request->input('status');   // 1=active, 2=not active
+        $inStock    = $request->input('in_stock'); // 1=in stock, 2=out of stock
+        $isPrint    = $request->boolean('print');  // print mode: fetch all, no pagination
 
-        // Convert date strings to Carbon instances with proper time boundaries
         $startDateTime = Carbon::createFromFormat('Y-m-d', $fromDate)->startOfDay();
-        $endDateTime = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
+        $endDateTime   = Carbon::createFromFormat('Y-m-d', $toDate)->endOfDay();
 
-        // Get all brands, categories, and taxes for filter dropdowns
-        $brands = Brand::all();
+        $brands     = Brand::all();
         $categories = Category::all();
-        $taxes = Tax::all();
+        $taxes      = Tax::all();
 
-        // Build query with filters
-        $products = Product::with('unit', 'units', 'category', 'brand')
-                        ->whereBetween('created_at', [$startDateTime, $endDateTime])
-                        ->when($brandId, fn($q) => $q->where('brand_id', $brandId))
-                        ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
-                        ->when($taxId, function($q) use ($taxId) {
-                            $tax = Tax::find($taxId);
-                            return $tax ? $q->where('tax', $tax->value) : $q;
-                        })
-                        ->when($search, function($q) use ($search) {
-                            return $q->where('number', 'like', "%{$search}%")
-                                    ->orWhere('name_en', 'like', "%{$search}%")
-                                    ->orWhere('name_ar', 'like', "%{$search}%");
-                        })
-                        ->paginate(15); // Show 15 items per page
+        $query = Product::with('unit', 'units', 'category', 'brand')
+            ->whereBetween('created_at', [$startDateTime, $endDateTime])
+            ->when($brandId,    fn($q) => $q->where('brand_id',    $brandId))
+            ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
+            ->when($status,     fn($q) => $q->where('status',      $status))
+            ->when($inStock,    fn($q) => $q->where('in_stock',    $inStock))
+            ->when($taxId, function ($q) use ($taxId) {
+                $tax = Tax::find($taxId);
+                return $tax ? $q->where('tax', $tax->value) : $q;
+            })
+            ->when($search, fn($q) => $q->where(fn($s) =>
+                $s->where('number',  'like', "%{$search}%")
+                  ->orWhere('name_en', 'like', "%{$search}%")
+                  ->orWhere('name_ar', 'like', "%{$search}%")
+            ));
 
-        $reportData = [
-            'products' => $products,
-        ];
+        // Print mode → fetch everything; otherwise paginate
+        $products = $isPrint ? $query->get() : $query->paginate(15);
 
-        return view('reports.products', compact('products', 'reportData', 'fromDate', 'toDate', 'brands', 'categories', 'taxes', 'brandId', 'categoryId', 'taxId', 'search'));
+        $reportData = ['products' => $products];
+
+        return view('reports.products', compact(
+            'products', 'reportData', 'fromDate', 'toDate',
+            'brands', 'categories', 'taxes',
+            'brandId', 'categoryId', 'taxId', 'search',
+            'status', 'inStock', 'isPrint'
+        ));
     }
 
 }

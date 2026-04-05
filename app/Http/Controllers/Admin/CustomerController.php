@@ -67,6 +67,20 @@ class CustomerController extends Controller
         return Excel::download(new UsersExport($request->search), 'users.xlsx');
     }
 
+    public function convertToWholesale($id)
+    {
+        if (!auth()->user()->can('customer-edit')) {
+            abort(403, __('messages.access_denied'));
+        }
+
+        $customer = User::where('user_type', 1)->findOrFail($id);
+        $customer->user_type = 2;
+        $customer->save();
+
+        return redirect()->route('admin.customer.index')
+            ->with('success', __('messages.converted_to_wholesale_success'));
+    }
+
 
     public function show($id)
     {

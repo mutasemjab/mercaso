@@ -35,6 +35,7 @@ use App\Http\Controllers\Reports\TaxCrvReportsController;
 use App\Http\Controllers\Reports\UserReportController;
 use App\Http\Controllers\Reports\CategoryReportController;
 use App\Http\Controllers\Reports\CustomerReportController;
+use App\Http\Controllers\Reports\SalesReportController;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Permission\Models\Permission;
 /*
@@ -89,6 +90,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::post('/customer/update/{id}', [CustomerController::class, 'update'])->name('admin.customer.update');
         Route::post('/customer/ajax_search', [CustomerController::class, 'ajax_search'])->name('admin.customer.ajax_search');
         Route::get('/customer/export', [CustomerController::class, 'export'])->name('admin.customer.export');
+        Route::post('/customer/convert-to-wholesale/{id}', [CustomerController::class, 'convertToWholesale'])->name('admin.customer.convertToWholesale');
         /*         end  customer                */
 
         /*         start  wholeSale                */
@@ -162,6 +164,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/customer-report', [CustomerReportController::class, 'index'])->name('customer-report.index');
         Route::get('/customer-report/search', [CustomerReportController::class, 'search'])->name('customer-report.search');
         Route::get('/customer-report/customer/{customerId}', [CustomerReportController::class, 'getCustomerStats'])->name('customer-report.stats');
+        Route::get('/sales-report', [SalesReportController::class, 'index'])->name('sales_report');
 
 
 

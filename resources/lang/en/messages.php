@@ -289,6 +289,9 @@ return [
       'success' => 'Operation completed successfully',
     'error_occurred' => 'An error occurred while processing your request',
     'access_denied' => 'Access Denied',
+    'convert_to_wholesale' => 'Convert to Wholesale',
+    'confirm_convert_to_wholesale' => 'Are you sure you want to convert this customer to Wholesale?',
+    'converted_to_wholesale_success' => 'Customer successfully converted to Wholesale.',
     'deleted_successfully' => 'Item deleted successfully',
     'created_successfully' => 'Item created successfully',
     'updated_successfully' => 'Item updated successfully',
@@ -430,6 +433,21 @@ return [
     'sales_and_inventory_overview' => 'Sales and Inventory Overview',
     'report_generated_on' => 'Report generated on',
     'existing_images' => 'Existing Images',
+
+    // Sales Report
+    'sales_report'           => 'Sales Report',
+    'sales-report-view'      => 'sales-report-view',
+    'sold_products'          => 'Sold Products',
+    'total_revenue'          => 'Total Revenue',
+    'total_quantity_sold'    => 'Total Qty Sold',
+    'orders_count'           => 'Orders',
+    'customer_type'          => 'Customer Type',
+    'Retail'                 => 'Retail',
+    'WholeSale'              => 'Wholesale',
+    'In_Stock'               => 'In Stock',
+    'Out_Of_Stock'           => 'Out of Stock',
+    'Not_Active'             => 'Not Active',
+    'Stock'                  => 'Stock',
 
     // Customer Report
     'customer_report' => 'Customer Report',

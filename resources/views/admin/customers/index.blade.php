@@ -63,9 +63,18 @@
                                                 class="btn btn-sm  btn-primary"> {{ __('messages.Show') }}</a> --}}
                                             @can('customer-edit')
                                                 <a href="{{ route('admin.customer.edit', $info->id) }}"
-                                                    class="btn btn-sm  btn-primary"> {{ __('messages.Edit') }}</a>
+                                                    class="btn btn-sm btn-primary">{{ __('messages.Edit') }}</a>
+
+                                                <form action="{{ route('admin.customer.convertToWholesale', $info->id) }}"
+                                                      method="POST" class="d-inline"
+                                                      onsubmit="return confirm('{{ __('messages.confirm_convert_to_wholesale') }}')">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-warning">
+                                                        <i class="fas fa-exchange-alt"></i>
+                                                        {{ __('messages.convert_to_wholesale') }}
+                                                    </button>
+                                                </form>
                                             @endcan
-                                 
 
                                         </td>
 
