@@ -57,7 +57,7 @@
                                 <label class="font-weight-bold small">{{ __('messages.Status') }}</label>
                                 <select name="status" class="form-control">
                                     <option value="">{{ __('messages.all') }}</option>
-                                    <option value="1" @selected($status == '1')>{{ __('messages.Active') }}</option>
+                                    <option value="1" @selected($status == '1')>{{ __('messages.active') }}</option>
                                     <option value="2" @selected($status == '2')>{{ __('messages.Not_Active') }}</option>
                                 </select>
                             </div>
@@ -163,7 +163,7 @@
                                     </td>
                                     <td>
                                         @if($product->status == 1)
-                                            <span class="badge badge-success">{{ __('messages.Active') }}</span>
+                                            <span class="badge badge-success">{{ __('messages.active') }}</span>
                                         @else
                                             <span class="badge badge-danger">{{ __('messages.Not_Active') }}</span>
                                         @endif
