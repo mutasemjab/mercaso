@@ -172,7 +172,7 @@ class ProductController extends Controller
         }
 
         $categories = Category::orderBy('name_ar')->get();
-        $data = $query->latest()->paginate(PAGINATION_COUNT);
+        $data = $query->with(['productImages', 'category', 'units'])->latest()->paginate(PAGINATION_COUNT);
 
         return view('admin.products.index', compact('data', 'categories'));
     }

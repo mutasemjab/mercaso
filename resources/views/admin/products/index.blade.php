@@ -140,8 +140,13 @@
                                 <td>
                                     @if($product->product_type == 1 || $product->product_type == 3)
                                         <strong>$ {{ number_format($product->selling_price_for_user, 2) }}</strong>
-                                    @else
-                                        <span class="text-muted">Wholesale Only</span>
+                                    @elseif($product->product_type == 2)
+                                        @if($product->units->isNotEmpty() && $product->units->first()->pivot->selling_price)
+                                            <strong>$ {{ number_format($product->units->first()->pivot->selling_price, 2) }}</strong>
+                                            <br><small class="text-muted">Wholesale</small>
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
                                     @endif
                                 </td>
                                 <td>
